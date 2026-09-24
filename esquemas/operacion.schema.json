@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Fila de operaciones.csv.",
+  "properties": {
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "entrada": {
+      "format": "date",
+      "title": "Entrada",
+      "type": "string"
+    },
+    "salida": {
+      "format": "date",
+      "title": "Salida",
+      "type": "string"
+    },
+    "pnl_bruto": {
+      "title": "Pnl Bruto",
+      "type": "number"
+    },
+    "coste_entrada": {
+      "minimum": 0,
+      "title": "Coste Entrada",
+      "type": "number"
+    },
+    "coste_salida": {
+      "minimum": 0,
+      "title": "Coste Salida",
+      "type": "number"
+    },
+    "pnl_neto": {
+      "description": "pnl_bruto - coste_entrada - coste_salida",
+      "title": "Pnl Neto",
+      "type": "number"
+    }
+  },
+  "required": [
+    "id",
+    "entrada",
+    "salida",
+    "pnl_bruto",
+    "coste_entrada",
+    "coste_salida",
+    "pnl_neto"
+  ],
+  "title": "Operacion",
+  "type": "object"
+}

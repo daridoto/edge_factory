@@ -1,0 +1,195 @@
+{
+  "version_esquema": "2.0",
+  "experimento": {
+    "id": "H007-IS-REAL-001",
+    "hipotesis": "H-007",
+    "version": "real-is-v1",
+    "fecha": "2026-09-24",
+    "sintetico": false,
+    "pregunta": "¿Rinde más el ES entre las 2:00 y las 3:00 ET que en cualquier otra hora?",
+    "muestra": "IS",
+    "inicio": "2009-09-27",
+    "fin": "2020-12-31",
+    "instrumento": "ES",
+    "frecuencia": "15min",
+    "moneda": "USD",
+    "capital_inicial": 10000.0,
+    "reglas": {
+      "entrada": "Comprar al cierre de la barra de 01:45 ET (precio de las 02:00), de lunes a viernes.",
+      "salida": "Vender al cierre de la barra de 02:45 ET (precio de las 03:00).",
+      "tamano": "1 unidad del índice (1 USD por punto, no el multiplicador de 50 USD del contrato); sin apalancamiento.",
+      "costes": "1 tick (0,25 puntos) por operación completa: 0,125 puntos por lado."
+    },
+    "receta": "estrategias/H-007.md",
+    "plan": "experimentos/H007-IS-REAL-001.md",
+    "fuente_datos": "data/indices/ES_15min_2009-2026.csv"
+  },
+  "evidencia": {
+    "estadistico": "Retorno medio en la ventana (02:00-03:00)",
+    "unidad": "pb/hora",
+    "valor": 1.6302654957908944,
+    "componentes": [
+      {
+        "nombre": "Horas 02:00-03:00",
+        "valor": 2903.0,
+        "unidad": "horas"
+      },
+      {
+        "nombre": "Horas resto",
+        "valor": 62615.0,
+        "unidad": "horas"
+      },
+      {
+        "nombre": "Retorno medio 02:00-03:00",
+        "valor": 1.6302654957908944,
+        "unidad": "pb/hora"
+      },
+      {
+        "nombre": "Retorno medio resto",
+        "valor": 0.1877757119562545,
+        "unidad": "pb/hora"
+      }
+    ],
+    "desglose": {
+      "0": 0.65587973502582,
+      "1": 0.3825204470485997,
+      "2": 1.6302654957908944,
+      "3": 0.3229867945944576,
+      "4": 0.194586770084939,
+      "5": 0.4344707814028596,
+      "6": 0.477709287006036,
+      "7": -0.06959050251305576,
+      "8": -0.10115384526363837,
+      "9": 0.20652941873054018,
+      "10": -0.0444756595969677,
+      "11": 0.640957813449868,
+      "12": 0.8649808151216557,
+      "13": -0.5012915926636841,
+      "14": 0.260703357118285,
+      "15": 0.25331525446440734,
+      "16": 0.21364149260854748,
+      "18": -0.8552047801363821,
+      "19": 0.6792908996283793,
+      "20": -0.257456580801985,
+      "21": 0.2614560737407533,
+      "22": -0.04510741930270052,
+      "23": -0.08658931797659569
+    }
+  },
+  "robustez": {
+    "bootstrap": {
+      "metodo": "bloques circulares",
+      "unidad": "día",
+      "bloque": 5,
+      "replicas": 5000,
+      "semilla": 7301,
+      "nivel": 0.95,
+      "ic_inf": 1.0107447764651976,
+      "ic_sup": 2.2903913476258784,
+      "incluye_cero": false,
+      "motivo": "Observaciones diarias; bloques de 5 días (una semana) conservan la dependencia de corto plazo."
+    },
+    "por_anio": {
+      "2009": 1.3775670742775068,
+      "2010": 2.8634787080453075,
+      "2011": 2.156893976942894,
+      "2012": 1.112210062411888,
+      "2013": 0.9770486091479226,
+      "2014": 0.9838907213090529,
+      "2015": 2.589733606979245,
+      "2016": 1.8441442079986965,
+      "2017": 0.44097549010337594,
+      "2018": 1.3022228583336715,
+      "2019": -0.5036245854361626,
+      "2020": 4.201937548951641
+    },
+    "sin_cada_anio": {
+      "2009": 1.6363266924973885,
+      "2010": 1.5094628399762604,
+      "2011": 1.5791152616049293,
+      "2012": 1.6805830492218863,
+      "2013": 1.6934402305776723,
+      "2014": 1.693046416819554,
+      "2015": 1.5362782640216877,
+      "2016": 1.6094032244299823,
+      "2017": 1.7457785462299318,
+      "2018": 1.6622636056071378,
+      "2019": 1.8384105396308117,
+      "2020": 1.3783505707649364
+    },
+    "pnl_costes_x2": -578.25
+  },
+  "metricas": {
+    "operaciones": 2903,
+    "pnl_neto": 147.5,
+    "esperanza": 0.05080950740613159,
+    "tasa_acierto": 0.43024457457802273,
+    "payoff": 1.2553809854223332,
+    "profit_factor": 1.0537438513390418,
+    "rentabilidad_total": 0.01475000000000004,
+    "rentabilidad_anual": 0.0010544983914226376,
+    "sharpe": 0.20807191945322212,
+    "sortino": 0.34161749127591395,
+    "max_drawdown": 0.019274179545059944,
+    "max_recuperacion": null,
+    "drawdown_abierto": 101,
+    "exposicion": 0.03932753236137614,
+    "rotacion": 1189.8666577531926,
+    "costes": 725.75,
+    "peso_costes": 0.12917723490410715,
+    "concentracion_anual": 0.08921805029280055,
+    "autocorrelacion": 0.011022000606370083
+  },
+  "no_calculables": {
+    "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
+  },
+  "operaciones_por_anio": {
+    "2009": 68,
+    "2010": 259,
+    "2011": 257,
+    "2012": 257,
+    "2013": 256,
+    "2014": 257,
+    "2015": 259,
+    "2016": 258,
+    "2017": 257,
+    "2018": 258,
+    "2019": 258,
+    "2020": 259
+  },
+  "conclusiones": {
+    "estado": "exploratoria",
+    "lectura": "Retorno medio en la ventana (02:00-03:00): 1,63 pb/hora. El intervalo no incluye cero bajo los supuestos del remuestreo; no prueba estabilidad futura. En el desglose, 02:00-03:00 ocupa el puesto 1 de 23.",
+    "supuestos": [
+      "Hora ET con horario de verano ya aplicado; ts marca el inicio de la barra.",
+      "Retorno simple con precios de operación, no mid quotes como el paper: hay rebote bid-ask.",
+      "Precios sin ajustar por roll; la ventana 02:00-03:00 no cruza la barra del domingo 18:00.",
+      "Si falta una barra necesaria, no se opera ni se mide esa hora."
+    ],
+    "limites": [
+      "La muestra empieza en 2009; el paper cubre 1998-2020.",
+      "La regla de roll anterior a 2022 no está verificada (C6); no afecta a la ventana, sí a horas del domingo.",
+      "La simulación usa 1 unidad del índice: la rentabilidad de cuenta no mide el edge.",
+      "No se ejecutan la t con Bonferroni, las submuestras por día de la semana ni la prueba de desfase horario."
+    ],
+    "siguiente_comprobacion": "En IS, submuestras por día de la semana y prueba de las semanas de desfase horario (parte C de la receta). OOS sigue bloqueado."
+  },
+  "procedencia": {
+    "motor_sha256": "bb121c743f71cbd8a97e116f979e6e259df7536728b9411239bc1103c8b89691",
+    "datos_sha256": "bdc9885d8a4d1c2bccf2be1e599a5cca909170372d54aec3f26a20f27f0b49ac",
+    "plan_sha256": "6e47ded5b2b5187ead6e7810195e9b4f1d10268a7e22760bb8a20614a56e1ed0",
+    "periodos_por_anio": 252
+  },
+  "historial": [
+    {
+      "id": "H007-IS-REAL-001",
+      "fecha": "2026-09-24",
+      "cambio": "Primera ejecución real."
+    }
+  ],
+  "ficheros": {
+    "equity": "equity.csv",
+    "operaciones": "operaciones.csv",
+    "ficha": "ficha.md"
+  }
+}

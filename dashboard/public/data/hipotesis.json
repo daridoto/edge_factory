@@ -1,0 +1,91 @@
+[
+  {
+    "id": "H-001-SPY",
+    "hipotesis": "H-001",
+    "nombre": "TOM · SPY",
+    "efecto": "TOM",
+    "experimentos": {
+      "IS": "H001-IS-REAL-005"
+    },
+    "reglas": {
+      "Entrada": "cierre · penúltima sesión del mes",
+      "Salida": "cierre · 3.ª sesión del mes siguiente",
+      "Tamaño": "30 % de la equity"
+    },
+    "costes": "0,01 USD / acción y lado",
+    "estados": {
+      "IS": "inconclusive"
+    }
+  },
+  {
+    "id": "H-001-QQQ",
+    "hipotesis": "H-001",
+    "nombre": "TOM · QQQ",
+    "efecto": "TOM",
+    "experimentos": {
+      "IS": "H001-IS-REAL-006"
+    },
+    "reglas": {
+      "Entrada": "cierre · penúltima sesión del mes",
+      "Salida": "cierre · 3.ª sesión del mes siguiente",
+      "Tamaño": "30 % de la equity"
+    },
+    "costes": "0,01 USD / acción y lado",
+    "estados": {
+      "IS": "inconclusive"
+    }
+  },
+  {
+    "id": "H-001-IWM",
+    "hipotesis": "H-001",
+    "nombre": "TOM · IWM",
+    "efecto": "TOM",
+    "experimentos": {
+      "IS": "H001-IS-REAL-007"
+    },
+    "reglas": {
+      "Entrada": "cierre · penúltima sesión del mes",
+      "Salida": "cierre · 3.ª sesión del mes siguiente",
+      "Tamaño": "30 % de la equity"
+    },
+    "costes": "0,01 USD / acción y lado",
+    "estados": {
+      "IS": "inconclusive"
+    }
+  },
+  {
+    "id": "H-001-DIA",
+    "hipotesis": "H-001",
+    "nombre": "TOM · DIA",
+    "efecto": "TOM",
+    "experimentos": {
+      "IS": "H001-IS-REAL-008"
+    },
+    "reglas": {
+      "Entrada": "cierre · penúltima sesión del mes",
+      "Salida": "cierre · 3.ª sesión del mes siguiente",
+      "Tamaño": "30 % de la equity"
+    },
+    "costes": "0,01 USD / acción y lado",
+    "estados": {
+      "IS": "inconclusive"
+    }
+  },
+  {
+    "id": "H-007",
+    "nombre": "HORA 2 · ES",
+    "efecto": "02:00",
+    "experimentos": {
+      "IS": "H007-IS-REAL-001"
+    },
+    "reglas": {
+      "Entrada": "cierre · barra de 01:45 ET, lun–vie",
+      "Salida": "cierre · barra de 02:45 ET",
+      "Tamaño": "1 punto del índice"
+    },
+    "costes": "1 tick (0,25 pt) por operación",
+    "estados": {
+      "IS": "inconclusive"
+    }
+  }
+]

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hipótesis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=VT323&display=swap">
+  </head>
+  <body>
+    <div class="state-line" aria-hidden="true"></div>
+    <!-- Portada: una fila por hipótesis -->
+    <main class="home" id="home" hidden>
+      <header class="home-head">
+        <h1>Hipótesis</h1>
+        <p class="question" id="home-sub"></p>
+      </header>
+      <nav class="rows" id="rows" aria-label="Hipótesis"></nav>
+    </main>
+
+    <!-- Comparativa: una hipótesis en varios instrumentos -->
+    <main class="cmp" id="cmp" hidden>
+      <header class="dash-head">
+        <div class="title">
+          <a class="back" href="#">← Hipótesis</a>
+          <h1 id="c-name"></h1>
+          <p class="question" id="c-q"></p>
+        </div>
+        <nav class="phases" id="c-phases" aria-label="Fase de la prueba"></nav>
+        <dl class="spec" id="c-spec"></dl>
+      </header>
+      <section class="cmp-main">
+        <div class="panel">
+          <div class="panel-head"><h3>Efecto e IC 95 %</h3><p class="sub" id="c-sub-ci"></p></div>
+          <div class="chart" id="c-ci"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Equity</h3><p class="sub" id="c-sub-eq"></p></div>
+          <div class="chart" id="c-eq"></div>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="panel-head"><h3>Por año</h3><p class="sub">efecto dentro del año · ▲ ▼ mismo signo en todos · <span id="c-years-sub"></span></p></div>
+        <div class="years" id="c-years"></div>
+      </section>
+      <section class="cmp-table" id="c-table" aria-label="Por instrumento"></section>
+      <footer class="foot" id="c-foot"></footer>
+    </main>
+
+    <main class="dash">
+
+      <!-- Cabecera: nombre, pregunta, fases y mecanismo -->
+      <header class="dash-head">
+        <div class="title">
+          <a class="back" href="#">← Hipótesis</a>
+          <h1 id="h-name"></h1>
+          <p class="question" id="h-q"></p>
+        </div>
+        <nav class="phases" id="phases" aria-label="Fase de la prueba"></nav>
+        <dl class="spec" id="spec"></dl>
+      </header>
+
+      <!-- KPIs: evidencia estadística | resultado económico -->
+      <section class="kpi-bar">
+        <div class="kpi-group"><span class="group-title">Evidencia</span><div class="kpis" id="kpi-ev"></div></div>
+        <div class="kpi-group"><span class="group-title">Resultado</span><div class="kpis" id="kpi-res"></div></div>
+      </section>
+
+      <!-- Gráficos: equity a la izquierda, robustez y años a la derecha -->
+      <section class="dash-main">
+        <div class="panel p-eq">
+          <div class="panel-head"><h3>Equity y drawdown</h3><p class="sub" id="sub-eq"></p></div>
+          <div class="chart" id="ch-eq"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Bootstrap</h3><p class="sub" id="sub-boot"></p></div>
+          <div class="chart" id="ch-boot"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Por año</h3><p class="sub">barras: efecto dentro del año · puntos: efecto total sin ese año</p></div>
+          <div class="chart" id="ch-year"></div>
+        </div>
+      </section>
+
+      <footer class="foot" id="foot"></footer>
+
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

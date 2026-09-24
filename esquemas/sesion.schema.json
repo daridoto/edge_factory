@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Fila de equity.csv: valoración al cierre de cada sesión, incluidas las que no tienen posición.",
+  "properties": {
+    "fecha": {
+      "format": "date",
+      "title": "Fecha",
+      "type": "string"
+    },
+    "equity": {
+      "description": "Capital al cierre = anterior + pnl_bruto - coste",
+      "exclusiveMinimum": 0,
+      "title": "Equity",
+      "type": "number"
+    },
+    "pnl_bruto": {
+      "description": "Variación de valor de la posición en la sesión, antes de costes",
+      "title": "Pnl Bruto",
+      "type": "number"
+    },
+    "coste": {
+      "description": "Costes cargados en la sesión (entradas y salidas)",
+      "minimum": 0,
+      "title": "Coste",
+      "type": "number"
+    },
+    "nocional": {
+      "description": "Nocional negociado en la sesión, ambos lados",
+      "minimum": 0,
+      "title": "Nocional",
+      "type": "number"
+    },
+    "exposicion": {
+      "description": "Fracción de la sesión con posición abierta",
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Exposicion",
+      "type": "number"
+    }
+  },
+  "required": [
+    "fecha",
+    "equity",
+    "pnl_bruto",
+    "coste",
+    "nocional",
+    "exposicion"
+  ],
+  "title": "Sesion",
+  "type": "object"
+}

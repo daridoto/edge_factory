@@ -1,0 +1,708 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "Bootstrap": {
+      "additionalProperties": false,
+      "properties": {
+        "metodo": {
+          "const": "bloques circulares",
+          "default": "bloques circulares",
+          "title": "Metodo",
+          "type": "string"
+        },
+        "unidad": {
+          "description": "Unidad remuestreada: sesión, semana, mes…",
+          "title": "Unidad",
+          "type": "string"
+        },
+        "bloque": {
+          "description": "Unidades consecutivas por bloque",
+          "minimum": 1,
+          "title": "Bloque",
+          "type": "integer"
+        },
+        "replicas": {
+          "minimum": 2,
+          "title": "Replicas",
+          "type": "integer"
+        },
+        "semilla": {
+          "title": "Semilla",
+          "type": "integer"
+        },
+        "nivel": {
+          "exclusiveMaximum": 1,
+          "exclusiveMinimum": 0,
+          "title": "Nivel",
+          "type": "number"
+        },
+        "ic_inf": {
+          "title": "Ic Inf",
+          "type": "number"
+        },
+        "ic_sup": {
+          "title": "Ic Sup",
+          "type": "number"
+        },
+        "incluye_cero": {
+          "title": "Incluye Cero",
+          "type": "boolean"
+        },
+        "motivo": {
+          "description": "Por qué esa unidad y ese bloque",
+          "title": "Motivo",
+          "type": "string"
+        }
+      },
+      "required": [
+        "unidad",
+        "bloque",
+        "replicas",
+        "semilla",
+        "nivel",
+        "ic_inf",
+        "ic_sup",
+        "incluye_cero",
+        "motivo"
+      ],
+      "title": "Bootstrap",
+      "type": "object"
+    },
+    "Componente": {
+      "additionalProperties": false,
+      "properties": {
+        "nombre": {
+          "title": "Nombre",
+          "type": "string"
+        },
+        "valor": {
+          "title": "Valor",
+          "type": "number"
+        },
+        "unidad": {
+          "title": "Unidad",
+          "type": "string"
+        }
+      },
+      "required": [
+        "nombre",
+        "valor",
+        "unidad"
+      ],
+      "title": "Componente",
+      "type": "object"
+    },
+    "Conclusiones": {
+      "additionalProperties": false,
+      "properties": {
+        "estado": {
+          "const": "exploratoria",
+          "default": "exploratoria",
+          "title": "Estado",
+          "type": "string"
+        },
+        "lectura": {
+          "title": "Lectura",
+          "type": "string"
+        },
+        "supuestos": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supuestos",
+          "type": "array"
+        },
+        "limites": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Limites",
+          "type": "array"
+        },
+        "siguiente_comprobacion": {
+          "description": "Propuesta, nunca ejecutada automáticamente",
+          "title": "Siguiente Comprobacion",
+          "type": "string"
+        }
+      },
+      "required": [
+        "lectura",
+        "supuestos",
+        "limites",
+        "siguiente_comprobacion"
+      ],
+      "title": "Conclusiones",
+      "type": "object"
+    },
+    "Evidencia": {
+      "additionalProperties": false,
+      "description": "El contraste de la hipótesis: un estadístico y sus componentes descriptivos.",
+      "properties": {
+        "estadistico": {
+          "description": "Nombre del estadístico, p. ej. 'media TOM − media resto'",
+          "title": "Estadistico",
+          "type": "string"
+        },
+        "unidad": {
+          "title": "Unidad",
+          "type": "string"
+        },
+        "valor": {
+          "title": "Valor",
+          "type": "number"
+        },
+        "componentes": {
+          "description": "Cifras de las que sale el estadístico",
+          "items": {
+            "$ref": "#/$defs/Componente"
+          },
+          "title": "Componentes",
+          "type": "array"
+        },
+        "desglose": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "default": {},
+          "description": "Retorno medio por etiqueta (hora, día del mes…), en la unidad del estadístico",
+          "title": "Desglose",
+          "type": "object"
+        }
+      },
+      "required": [
+        "estadistico",
+        "unidad",
+        "valor",
+        "componentes"
+      ],
+      "title": "Evidencia",
+      "type": "object"
+    },
+    "Experimento": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "HNNN-IS-REAL-NNN",
+          "title": "Id",
+          "type": "string"
+        },
+        "hipotesis": {
+          "description": "H-NNN",
+          "title": "Hipotesis",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        },
+        "fecha": {
+          "description": "Fecha de ejecución",
+          "format": "date",
+          "title": "Fecha",
+          "type": "string"
+        },
+        "sintetico": {
+          "description": "True solo en tests: nunca es evidencia",
+          "title": "Sintetico",
+          "type": "boolean"
+        },
+        "pregunta": {
+          "title": "Pregunta",
+          "type": "string"
+        },
+        "muestra": {
+          "const": "IS",
+          "title": "Muestra",
+          "type": "string"
+        },
+        "inicio": {
+          "format": "date",
+          "title": "Inicio",
+          "type": "string"
+        },
+        "fin": {
+          "format": "date",
+          "title": "Fin",
+          "type": "string"
+        },
+        "instrumento": {
+          "title": "Instrumento",
+          "type": "string"
+        },
+        "frecuencia": {
+          "title": "Frecuencia",
+          "type": "string"
+        },
+        "moneda": {
+          "title": "Moneda",
+          "type": "string"
+        },
+        "capital_inicial": {
+          "exclusiveMinimum": 0,
+          "title": "Capital Inicial",
+          "type": "number"
+        },
+        "reglas": {
+          "$ref": "#/$defs/Reglas"
+        },
+        "receta": {
+          "description": "Ruta de la receta en el repo",
+          "title": "Receta",
+          "type": "string"
+        },
+        "plan": {
+          "description": "Ruta del plan fijado antes de calcular",
+          "title": "Plan",
+          "type": "string"
+        },
+        "fuente_datos": {
+          "title": "Fuente Datos",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "hipotesis",
+        "version",
+        "fecha",
+        "sintetico",
+        "pregunta",
+        "muestra",
+        "inicio",
+        "fin",
+        "instrumento",
+        "frecuencia",
+        "moneda",
+        "capital_inicial",
+        "reglas",
+        "receta",
+        "plan",
+        "fuente_datos"
+      ],
+      "title": "Experimento",
+      "type": "object"
+    },
+    "Ficheros": {
+      "additionalProperties": false,
+      "properties": {
+        "equity": {
+          "const": "equity.csv",
+          "default": "equity.csv",
+          "title": "Equity",
+          "type": "string"
+        },
+        "operaciones": {
+          "const": "operaciones.csv",
+          "default": "operaciones.csv",
+          "title": "Operaciones",
+          "type": "string"
+        },
+        "ficha": {
+          "const": "ficha.md",
+          "default": "ficha.md",
+          "title": "Ficha",
+          "type": "string"
+        }
+      },
+      "title": "Ficheros",
+      "type": "object"
+    },
+    "Intento": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "fecha": {
+          "format": "date",
+          "title": "Fecha",
+          "type": "string"
+        },
+        "cambio": {
+          "title": "Cambio",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "fecha",
+        "cambio"
+      ],
+      "title": "Intento",
+      "type": "object"
+    },
+    "Metricas": {
+      "additionalProperties": false,
+      "description": "Métricas de la simulación de la operativa. Null si no son calculables (motivo en no_calculables).",
+      "properties": {
+        "operaciones": {
+          "description": "Operaciones cerradas",
+          "minimum": 0,
+          "title": "Operaciones",
+          "type": "integer"
+        },
+        "pnl_neto": {
+          "description": "Equity final - capital inicial",
+          "title": "Pnl Neto",
+          "type": "number"
+        },
+        "esperanza": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Media del PnL neto por operación",
+          "title": "Esperanza"
+        },
+        "tasa_acierto": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Operaciones con PnL neto > 0 / todas",
+          "title": "Tasa Acierto"
+        },
+        "payoff": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Ganancia neta media / |pérdida neta media|",
+          "title": "Payoff"
+        },
+        "profit_factor": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Suma de ganancias netas / |suma de pérdidas netas|",
+          "title": "Profit Factor"
+        },
+        "rentabilidad_total": {
+          "description": "Equity final / inicial - 1",
+          "title": "Rentabilidad Total",
+          "type": "number"
+        },
+        "rentabilidad_anual": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "(final / inicial)^(A / n) - 1; A = sesiones por año",
+          "title": "Rentabilidad Anual"
+        },
+        "sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "√A · media(r) / desv. típica muestral(r); r diaria de equity, rf = 0",
+          "title": "Sharpe"
+        },
+        "sortino": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "√A · media(r) / √media(min(r, 0)²), sobre todas las sesiones",
+          "title": "Sortino"
+        },
+        "max_drawdown": {
+          "description": "Máximo de 1 - equity / máximo acumulado, incluido el capital inicial",
+          "title": "Max Drawdown",
+          "type": "number"
+        },
+        "max_recuperacion": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Mayor duración pico-recuperación, en sesiones",
+          "title": "Max Recuperacion"
+        },
+        "drawdown_abierto": {
+          "description": "Sesiones desde el último pico si el drawdown sigue abierto",
+          "title": "Drawdown Abierto",
+          "type": "integer"
+        },
+        "exposicion": {
+          "description": "Media de la fracción de sesión con posición abierta",
+          "title": "Exposicion",
+          "type": "number"
+        },
+        "rotacion": {
+          "description": "Σ nocional negociado / equity previa",
+          "title": "Rotacion",
+          "type": "number"
+        },
+        "costes": {
+          "description": "Suma de costes de entrada y salida",
+          "title": "Costes",
+          "type": "number"
+        },
+        "peso_costes": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Costes / Σ |PnL bruto por operación|",
+          "title": "Peso Costes"
+        },
+        "concentracion_anual": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Máxima proporción de operaciones cerradas en un año",
+          "title": "Concentracion Anual"
+        },
+        "autocorrelacion": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Correlación de r[t] con r[t-1]",
+          "title": "Autocorrelacion"
+        }
+      },
+      "required": [
+        "operaciones",
+        "pnl_neto",
+        "esperanza",
+        "tasa_acierto",
+        "payoff",
+        "profit_factor",
+        "rentabilidad_total",
+        "rentabilidad_anual",
+        "sharpe",
+        "sortino",
+        "max_drawdown",
+        "max_recuperacion",
+        "drawdown_abierto",
+        "exposicion",
+        "rotacion",
+        "costes",
+        "peso_costes",
+        "concentracion_anual",
+        "autocorrelacion"
+      ],
+      "title": "Metricas",
+      "type": "object"
+    },
+    "Procedencia": {
+      "additionalProperties": false,
+      "properties": {
+        "motor_sha256": {
+          "title": "Motor Sha256",
+          "type": "string"
+        },
+        "datos_sha256": {
+          "title": "Datos Sha256",
+          "type": "string"
+        },
+        "plan_sha256": {
+          "title": "Plan Sha256",
+          "type": "string"
+        },
+        "periodos_por_anio": {
+          "minimum": 1,
+          "title": "Periodos Por Anio",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "motor_sha256",
+        "datos_sha256",
+        "plan_sha256",
+        "periodos_por_anio"
+      ],
+      "title": "Procedencia",
+      "type": "object"
+    },
+    "Reglas": {
+      "additionalProperties": false,
+      "properties": {
+        "entrada": {
+          "title": "Entrada",
+          "type": "string"
+        },
+        "salida": {
+          "title": "Salida",
+          "type": "string"
+        },
+        "tamano": {
+          "title": "Tamano",
+          "type": "string"
+        },
+        "costes": {
+          "title": "Costes",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entrada",
+        "salida",
+        "tamano",
+        "costes"
+      ],
+      "title": "Reglas",
+      "type": "object"
+    },
+    "Robustez": {
+      "additionalProperties": false,
+      "description": "Batería fija, igual para todas las hipótesis; cambian los parámetros.",
+      "properties": {
+        "bootstrap": {
+          "$ref": "#/$defs/Bootstrap"
+        },
+        "por_anio": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "Estadístico calculado en cada año",
+          "title": "Por Anio",
+          "type": "object"
+        },
+        "sin_cada_anio": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "Estadístico excluyendo cada año",
+          "title": "Sin Cada Anio",
+          "type": "object"
+        },
+        "pnl_costes_x2": {
+          "description": "PnL neto de la simulación con costes duplicados",
+          "title": "Pnl Costes X2",
+          "type": "number"
+        }
+      },
+      "required": [
+        "bootstrap",
+        "por_anio",
+        "sin_cada_anio",
+        "pnl_costes_x2"
+      ],
+      "title": "Robustez",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "resumen.json: todo lo necesario para leer, comparar o graficar un experimento sin abrir el código.",
+  "properties": {
+    "version_esquema": {
+      "const": "2.0",
+      "default": "2.0",
+      "title": "Version Esquema",
+      "type": "string"
+    },
+    "experimento": {
+      "$ref": "#/$defs/Experimento"
+    },
+    "evidencia": {
+      "$ref": "#/$defs/Evidencia"
+    },
+    "robustez": {
+      "$ref": "#/$defs/Robustez"
+    },
+    "metricas": {
+      "$ref": "#/$defs/Metricas"
+    },
+    "no_calculables": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Métrica -> motivo por el que es null",
+      "title": "No Calculables",
+      "type": "object"
+    },
+    "operaciones_por_anio": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "Operaciones Por Anio",
+      "type": "object"
+    },
+    "conclusiones": {
+      "$ref": "#/$defs/Conclusiones"
+    },
+    "procedencia": {
+      "$ref": "#/$defs/Procedencia"
+    },
+    "historial": {
+      "description": "Intentos de esta hipótesis, en orden; el último es este",
+      "items": {
+        "$ref": "#/$defs/Intento"
+      },
+      "minItems": 1,
+      "title": "Historial",
+      "type": "array"
+    },
+    "ficheros": {
+      "$ref": "#/$defs/Ficheros",
+      "default": {
+        "equity": "equity.csv",
+        "operaciones": "operaciones.csv",
+        "ficha": "ficha.md"
+      }
+    }
+  },
+  "required": [
+    "experimento",
+    "evidencia",
+    "robustez",
+    "metricas",
+    "no_calculables",
+    "operaciones_por_anio",
+    "conclusiones",
+    "procedencia",
+    "historial"
+  ],
+  "title": "Resumen",
+  "type": "object"
+}
