@@ -1,6 +1,6 @@
 ---
 name: nueva-hipotesis
-description: Añadir una hipótesis al dashboard (datos del lab + entrada en el registro) o actualizar sus fases y estados. Úsala cuando el usuario diga "añade H-00X", "sube el OOS de…", "marca … como falsada" o similar.
+description: Añadir una hipótesis al dashboard (datos del lab + entrada en el registro) o actualizar sus fases y estados, incluida la misma hipótesis en varios activos (comparativa). Úsala cuando el usuario diga "añade H-00X", "añade H-00X en QQQ/IWM…", "sube el OOS de…", "marca … como falsada" o similar.
 ---
 
 # Añadir o actualizar una hipótesis
@@ -13,6 +13,7 @@ description: Añadir una hipótesis al dashboard (datos del lab + entrada en el 
    - `experimentos`: `{ "IS": "<ID del experimento>" }`, p. ej. `H001-IS-REAL-001`.
    - `costes`: una línea.
    - `estados`: `inconclusive` | `holds` | `falsified` por fase (`IS`, `OOS`, `Total`).
+   - **Varios activos de una hipótesis** (p. ej. H-001 en SPY, QQQ, IWM, DIA): una entrada por activo con `id` `H-NNN-ACTIVO`, `hipotesis: "H-NNN"`, `nombre` `EFECTO · ACTIVO` y mismas `efecto`, `reglas` y `costes`. Con 2 o más entradas del mismo `hipotesis`, la portada las agrupa en una fila y `#H-NNN` abre la comparativa (`src/comparativa.js`) sin tocar código. Orden del registro = color (`--series-1…4`): máximo 4 activos; con más, hay que ampliar y validar la paleta.
 3. **Formato distinto:** si la ficha no encaja, adapta **solo** `dashboard/src/data.js` para que devuelva fases con la forma
    `{ key, state, start, end, equity: [[fecha, equity, exposición]], trades: [{ net, cost }], research }`.
    No toques `dashboard/src/ficha.js` para casos particulares.

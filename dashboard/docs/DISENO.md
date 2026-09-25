@@ -29,10 +29,19 @@ Estética: **depth map**. Monocromo sobre negro, superficies hechas de puntos, r
 - **Barras:** columnas de filas de puntos (`dotBar`).
 - **Estado:** línea de 2px arriba del todo con el color de la fase.
 
+## Comparativa (una hipótesis en varios activos, `#H-NNN`)
+
+- De arriba abajo: IC 95 % en escala común · equity en % sobre el capital, superpuesta · matriz año × activo (color por signo, intensidad por magnitud; ▲▼ si todos coinciden) · tabla por activo (clic → ficha).
+- **Color por activo:** `--series-1…4`, validados para daltonismo en claro y oscuro. Es la única excepción al monocromo. El color sigue al activo (orden del registro), no a su puesto. El texto va siempre en tinta; el color, en la línea o en una marca `.sw`.
+- **Filtro de equity:** un botón por activo con su color; oculta la curva (selección nativa de ECharts, leyenda oculta) y el eje se reajusta. Siempre queda al menos una.
+- **Resaltado cruzado:** pasar por un activo en la tabla, la matriz, el filtro o una curva lo destaca en todos los bloques y atenúa el resto.
+- Las cifras por año son **antes de costes**; la equity, neta. Se indica en el subtítulo.
+
 ## Movimiento
 
 - Cambio de fase: el tramo nuevo de la equity se traza de izquierda a derecha mientras el eje se amplía (`DRAW_MS`).
 - Las cifras KPI cuentan hasta su valor nuevo (`DUR`).
+- Entre vistas: la actual se desvanece (~0,15 s) antes de recargar; la nueva no se muestra hasta tener datos y sus bloques entran escalonados (`main.js` + final de `styles.css`).
 - Todo se desactiva con `prefers-reduced-motion`.
 
 ## Qué no hacer

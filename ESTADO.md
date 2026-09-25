@@ -1,6 +1,6 @@
 # Estado
 
-**Última actualización:** 2026-09-24. Normas y funcionamiento en [CLAUDE.md](CLAUDE.md); aquí solo lo que cambia.
+**Última actualización:** 2026-09-25. Normas y funcionamiento en [CLAUDE.md](CLAUDE.md); aquí solo lo que cambia.
 
 ## Siguiente paso
 1. **H-001 · QQQ a OOS** (candidato elegido: efecto +4,30 pb/día, positivo sin cualquier año; IC IS aún cruza 0). Antes de calcular: el usuario fija las fechas OOS y autoriza explícitamente su uso para QQQ.
@@ -34,3 +34,4 @@
 - **2026-09-24 (noche):** H-001 replicada en IS sobre QQQ, IWM y DIA (misma especificación); datasets añadidos al catálogo con test de filtrado IS; registradas en el dashboard como `H-001-QQQ/IWM/DIA`.
 - **2026-09-24 (noche):** sizing opcional por fracción de equity (`fraccion` en `[operativa]`, C10), con test; el modo 1 unidad reproduce los resultados previos. H-001 ejecutada con 30 % en los cuatro ETF (005-008). Dashboard: comparativa por hipótesis (`#H-001`) y fila agrupada en la portada.
 - **2026-09-24 (cierre):** paleta por instrumento en la comparativa. QQQ elegido como candidato a OOS de H-001 (pendiente de muestra y autorización). Transiciones de entrada y salida entre vistas del dashboard. Primer commit de `edge_factory`.
+- **2026-09-25:** dashboard: filtro de curvas y resaltado cruzado en la comparativa; arreglado el tooltip de la equity (fecha numérica en eje temporal), que bloqueaba ECharts; nota «antes de costes» en los gráficos por año. Comparativa y trampas de ECharts documentadas en la skill `nueva-hipotesis`, `dashboard/CLAUDE.md` y `DISENO.md`.

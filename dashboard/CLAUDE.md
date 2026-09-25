@@ -36,6 +36,12 @@ Forma de una fase (contrato interno; todo lo demás depende solo de esto):
 - **Una pantalla, sin scroll**, en ventanas normales. Si algo no cabe, se compacta dentro de los gráficos antes que añadir alto.
 - Patrón por bloque: **método → cifras → gráfico**. Nada de párrafos explicativos.
 
+## Trampas conocidas
+
+- **Un error dentro de un `formatter` de ECharts bloquea el gráfico:** después, todo `setOption` falla con "should not be called during main process" y parece que el filtro o el resaltado no funcionan. Revisar la consola antes de buscar el fallo en otra parte.
+- En eje `type: 'time'`, `axisValue` es un número; la fecha en texto se toma del dato (`p.data[0]`).
+- Sin navegador en el entorno de la IA: compilar (`npx vite build`) no prueba la interacción. Pedir al usuario que lo pruebe y pegue la consola.
+
 ## Cómo trabajar con el usuario
 
 - Habla de diseño (jerarquía, densidad, tipografía, gráficos), no del formato de los datos.

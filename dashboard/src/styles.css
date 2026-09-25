@@ -165,6 +165,12 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .cmp-table .pos{color:var(--pos)} .cmp-table .neg{color:var(--neg)} .cmp-table .warn{font-size:var(--fs-1);color:var(--caution)}
 .cmp [data-name]{transition:opacity .15s}
 .cmp .dim{opacity:.35}
+.chips{display:flex;gap:var(--s1);margin-left:auto}
+.chip{font:var(--fs-1)/1 var(--mono);color:var(--ink);background:transparent;border:1px solid var(--rule);border-radius:var(--r);padding:4px 8px;cursor:pointer;display:flex;align-items:center}
+.chip:hover{background:var(--surface)}
+.chip[aria-pressed="false"]{color:var(--faint);border-style:dashed}
+.chip[aria-pressed="false"] .sw{opacity:.25}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .sw{display:inline-block;width:10px;height:2px;border-radius:1px;background:var(--sc);vertical-align:middle;margin-right:6px}
 @media (max-width:1000px){
   .cmp{height:auto}

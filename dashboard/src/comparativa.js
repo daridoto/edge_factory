@@ -61,6 +61,7 @@ let booted = false;
 const anim = () => ({ animation: !reduced && !booted, animationDuration: 700 });
 const cCI = echarts.init($('c-ci'), null, { renderer: 'svg' }), cEq = echarts.init($('c-eq'), null, { renderer: 'canvas' });
 let hl = null;   // instrumento resaltado (hover en tabla o gráficos)
+const off = new Set();   // instrumentos ocultos en la equity (filtro)
 
 /* ---------- efecto e IC 95 %: todos en la misma escala, siempre con el 0 ---------- */
 function renderCI() {
@@ -92,17 +93,20 @@ function renderEq() {
     ...anim(),
     grid: { left: 44, right: 44, top: 8, bottom: 22 },
     tooltip: { ...tip(), trigger: 'axis', axisPointer: { lineStyle: { color: css('--faint'), type: [1, 3] } },
-      formatter: ps => `${fdate(ps[0].axisValue)}<br>` + [...ps].sort((a, b) => b.value[1] - a.value[1])
+      // en eje temporal axisValue es un número: la fecha se toma del dato ('AAAA-MM-DD')
+      formatter: ps => `${fdate(ps[0].data[0])}<br>` + [...ps].sort((a, b) => b.value[1] - a.value[1])
         .map(p => `${p.marker}${p.seriesName} <span class="mono">${sgn(p.value[1])} %</span>`).join('<br>') },
     xAxis: { type: 'time', ...axisBase(), splitLine: { show: false }, axisLabel: { ...axisBase().axisLabel, formatter: '{yyyy}' } },
     yAxis: { type: 'value', ...axisBase(), axisLabel: { ...axisBase().axisLabel, formatter: v => v + ' %' } },
-    series: items.map(i => {
-      const on = !hl || hl === i.name;
-      return { name: i.name, type: 'line', showSymbol: false, sampling: 'lttb', z: on ? 3 : 2,
+    // el filtro usa la selección nativa (leyenda oculta): ECharts quita la serie y reajusta el eje
+    legend: { show: false, data: items.map(i => i.name), selected: Object.fromEntries(items.map(i => [i.name, !off.has(i.name)])) },
+    series: items.map((i, k) => {
+      const h = off.has(hl) ? null : hl, on = !h || h === i.name;
+      return { id: 'eq' + i.name, name: i.name, type: 'line', showSymbol: false, sampling: 'lttb', z: on ? 3 : 2,
         data: i.ph.equity.map(([d, eq]) => [d, +((eq / i.D.initialEquity - 1) * 100).toFixed(3)]),
-        lineStyle: { color: css(i.color), width: hl === i.name ? 2.4 : 1.6, opacity: on ? 1 : .2 },
+        lineStyle: { color: css(i.color), width: h === i.name ? 2.6 : 1.6, opacity: on ? 1 : .12 },
         endLabel: { show: true, formatter: '{a}', color: on ? css('--ink') : css('--faint'), ...mono() },
-        markLine: i === items[0] ? { silent: true, symbol: 'none', label: { show: false }, data: [{ yAxis: 0, lineStyle: { color: css('--rule'), type: 'solid' } }] } : undefined };
+        markLine: i === items.find(x => !off.has(x.name)) ? { silent: true, symbol: 'none', label: { show: false }, data: [{ yAxis: 0, lineStyle: { color: css('--rule'), type: 'solid' } }] } : undefined };
     }),
   }, { notMerge: true });
 }
@@ -143,13 +147,26 @@ function renderTable() {
     + items.map(i => `<a class="tr" href="#${i.e.id}" data-name="${i.name}">${td(i).map(c => `<span>${c}</span>`).join('')}</a>`).join('');
 }
 
-/* ---------- resaltado cruzado: tabla, años y gráficos ---------- */
+/* ---------- filtro de la equity: un botón por instrumento, con su color ---------- */
+function renderFilter() {
+  $('c-filter').innerHTML = items.map(i => `<button class="chip" data-name="${i.name}" aria-pressed="${!off.has(i.name)}"
+    title="${off.has(i.name) ? 'Mostrar' : 'Ocultar'} ${i.name} en la equity"><i class="sw" style="--sc:var(${i.color})"></i>${i.name}</button>`).join('');
+}
+$('c-filter').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  const n = b.dataset.name;
+  if (off.has(n)) off.delete(n);
+  else if (off.size < items.length - 1) off.add(n);   // siempre queda al menos una
+  renderFilter(); renderEq();
+});
+
+/* ---------- resaltado cruzado: tabla, años, filtro y gráficos ---------- */
 function highlight(name) {
   if (name === hl) return; hl = name;
   document.querySelectorAll('#cmp [data-name]').forEach(el => el.classList.toggle('dim', !!hl && el.dataset.name !== hl));
   renderCI(); renderEq();
 }
-for (const id of ['c-table', 'c-years']) {
+for (const id of ['c-table', 'c-years', 'c-filter']) {
   $(id).addEventListener('mouseover', e => highlight(e.target.closest('[data-name]')?.dataset.name ?? null));
   $(id).addEventListener('mouseleave', () => highlight(null));
 }
@@ -157,7 +174,7 @@ cEq.on('mouseover', p => highlight(p.seriesName)); cEq.on('mouseout', () => high
 cCI.on('mouseover', p => highlight(p.data?.name ?? null)); cCI.on('mouseout', () => highlight(null));
 
 /* ---------- arranque + tema ---------- */
-const render = () => { renderCI(); renderEq(); renderYears(); renderTable(); };
+const render = () => { renderCI(); renderEq(); renderYears(); renderTable(); renderFilter(); };
 render();
 booted = true;
 new ResizeObserver(() => { cCI.resize(); cEq.resize(); }).observe($('cmp'));
