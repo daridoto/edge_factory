@@ -19,8 +19,9 @@ La IA traduce, implementa y mide; **no puntúa ni recomienda**. El usuario decid
 2. **`data/` es de solo lectura** y no está en git. Lo que se sabe de los datos está en [.claude/contexto/datos.md](.claude/contexto/datos.md); no hace falta abrirlos.
 3. **Sobre resultados, se cita `resultados/indice.csv` o el campo de `resumen.json`.** Si el dato no está ahí, se dice que no consta; no se responde de memoria.
 4. **No se crea un `.py` por hipótesis.** Una hipótesis es una especificación TOML dentro de su plan. Si falta una pieza (dataset, ventana, estadístico), se añade de forma genérica a `laboratorio/` con su test.
-5. Las fichas son siempre `exploratoria`. Nunca se presentan datos sintéticos como evidencia. La siguiente comprobación se propone, no se ejecuta.
-6. Responder en español y de forma concisa.
+5. **Lo que se descubre en la conversación** (hallazgos, razonamientos, definiciones, preguntas abiertas) se añade a `conocimiento/` en el momento: una nota por hipótesis o por concepto, con fecha y fuente, sin borrar lo anterior. No va a ESTADO.md.
+6. Las fichas son siempre `exploratoria`. Nunca se presentan datos sintéticos como evidencia. La siguiente comprobación se propone, no se ejecuta.
+7. Responder en español y de forma concisa.
 
 ## Flujo y agentes
 | paso | agente (`.claude/agents/`) | entrada → salida | cuándo lanzarlo |
@@ -48,6 +49,7 @@ Entorno: `.venv/` con Python 3.11 y pydantic (`requirements.txt`).
 |---|---|
 | `.claude/contexto/` | `datos.md` (catálogo de datos), `convenciones.md` (C1–C13: costes, rolls, tamaño…), `familias.md` |
 | `triaje/`, `estrategias/`, `experimentos/` | índice de triaje, recetas y planes |
+| `conocimiento/` | hallazgos y definiciones acumulados: `H-NNN.md` por hipótesis y `conceptos/`; enlaces `[[...]]` (bóveda de Obsidian). Leer la nota de una hipótesis antes de trabajar en ella |
 | `resultados/` | un directorio por experimento y `indice.csv` con una fila por experimento. Se versiona |
 | `laboratorio/` | `ejecutar` (lee el TOML) → `datos` (datasets y periodos) → `catalogo` (ventanas y estadísticos) → `backtest` → `robustez` (batería fija) → `motor` (contabilidad, métricas, E/S) → `presentacion` (ficha). `contratos` (pydantic) y `proteccion` (IS) |
 | `esquemas/` | JSON Schema de la salida, exportados desde `contratos.py` (su docstring explica la salida y sus garantías). Es lo que lee el dashboard |
