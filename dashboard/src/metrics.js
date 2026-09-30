@@ -1,7 +1,8 @@
 // Métricas económicas de una fase, calculadas igual para IS, OOS y Total.
-// Convenciones: 252 sesiones/año, rf = 0, desviación muestral (ddof = 1).
+// Convenciones: sesiones/año del lab (phase.periodsPerYear; 252 por defecto, 365 en cripto), rf = 0, desviación muestral (ddof = 1).
 
 export function computeMetrics(phase) {
+  const A = phase.periodsPerYear ?? 252;
   const eq = phase.equity.map(e => e[1]);
   // el primer día cuenta con retorno 0 frente al capital inicial (igual que el motor del lab)
   const r = eq.map((v, i) => i ? v / eq[i - 1] - 1 : 0);
@@ -29,8 +30,8 @@ export function computeMetrics(phase) {
     winRate: nets.length ? wins.length / nets.length : 0,
     payoff: avgLoss ? avgWin / avgLoss : 0,
     profitFactor: losses.length ? sum(wins) / Math.abs(sum(losses)) : 0,
-    sharpe: Math.sqrt(252) * mean / sd,
-    sortino: Math.sqrt(252) * mean / down,
+    sharpe: Math.sqrt(A) * mean / sd,
+    sortino: Math.sqrt(A) * mean / down,
     maxDD,
     openDDAge,
   };

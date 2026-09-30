@@ -1,19 +1,20 @@
 # Estado
 
-**Última actualización:** 2026-09-25. Normas y funcionamiento en [CLAUDE.md](CLAUDE.md); aquí solo lo que cambia.
+**Última actualización:** 2026-09-30. Normas y funcionamiento en [CLAUDE.md](CLAUDE.md); aquí solo lo que cambia.
 
 ## Siguiente paso
-1. **H-001 · QQQ a OOS** (candidato elegido: efecto +4,30 pb/día, positivo sin cualquier año; IC IS aún cruza 0). Antes de calcular: el usuario fija las fechas OOS y autoriza explícitamente su uso para QQQ.
-2. Comprobaciones de H-007 en IS (día de la semana, semanas de desfase horario).
-3. Aparcado por decisión del usuario: métricas al 100 % del capital (DD de referencia de la estrategia) en `resumen.json` o como experimentos aparte.
+1. **H-PROPIA-001 · RAY en tiempo real** desde el 2026-09-30: registrar las operaciones nuevas y aplicar los criterios de refutación del usuario (≥ 10 operaciones). Cualquier cálculo posterior al 2026-09-29 es OOS y necesita autorización.
+2. **H-001 · QQQ a OOS** (candidato elegido: efecto +4,30 pb/día, positivo sin cualquier año; IC IS aún cruza 0). Antes de calcular: el usuario fija las fechas OOS y autoriza explícitamente su uso para QQQ.
+3. Comprobaciones de H-007 en IS (día de la semana, semanas de desfase horario).
+4. Aparcado por decisión del usuario: métricas al 100 % del capital (DD de referencia de la estrategia) en `resumen.json` o como experimentos aparte.
 
 ## Dónde estamos
 | pieza | estado |
 |---|---|
 | Triaje | 36 hipótesis: 11 compatibles, 5 proxy, 20 bloqueadas. Los datos son los que hay: las bloqueadas quedan fuera, no esperan datos |
 | Recetas | H-001, H-007, H-008 y H-010 `lista`; H-025 `bloqueada` (FOMC) |
-| Experimentos | H-001 en IS sobre SPY, QQQ, IWM y DIA: 1 acción (H001-IS-REAL-001 a 004) y 30 % de la equity (005 a 008, las que muestra el dashboard). H007-IS-REAL-001 sigue con 1 punto. Cifras en [resultados/indice.csv](resultados/indice.csv) |
-| Catálogo del ejecutor | datasets `SPY 1d`, `QQQ 1d`, `IWM 1d`, `DIA 1d` y `ES 15min`; periodos `1d` y `1h`; ventanas `dias_de_mes` y `hora`; estadísticos `media_ventana` y `media_vs_resto` |
+| Experimentos | H-PROPIA-001 (propia, RAY) en IS cripto: HPROPIA001-IS-REAL-001, en el dashboard. H-001 en IS sobre SPY, QQQ, IWM y DIA: 1 acción (H001-IS-REAL-001 a 004) y 30 % de la equity (005 a 008, las que muestra el dashboard). H007-IS-REAL-001 sigue con 1 punto. Cifras en [resultados/indice.csv](resultados/indice.csv) |
+| Catálogo del ejecutor | datasets `SPY 1d`, `QQQ 1d`, `IWM 1d`, `DIA 1d`, `ES 15min` y `RAY 1d`; series `Raydium volumen 1d` y `BTC 1d`; operativa por eventos (`eventos.py`: señal `ratio_medianas`, tenencia con stop, placebo); periodos `1d` y `1h`; ventanas `dias_de_mes` y `hora`; estadísticos `media_ventana` y `media_vs_resto` |
 | Agente `investigador` | sin estrenar: H-001 y H-007 se hicieron en línea |
 
 ## Pendiente (hoja de ruta)
@@ -35,3 +36,5 @@
 - **2026-09-24 (noche):** sizing opcional por fracción de equity (`fraccion` en `[operativa]`, C10), con test; el modo 1 unidad reproduce los resultados previos. H-001 ejecutada con 30 % en los cuatro ETF (005-008). Dashboard: comparativa por hipótesis (`#H-001`) y fila agrupada en la portada.
 - **2026-09-24 (cierre):** paleta por instrumento en la comparativa. QQQ elegido como candidato a OOS de H-001 (pendiente de muestra y autorización). Transiciones de entrada y salida entre vistas del dashboard. Primer commit de `edge_factory`.
 - **2026-09-25:** dashboard: filtro de curvas y resaltado cruzado en la comparativa; arreglado el tooltip de la equity (fecha numérica en eje temporal), que bloqueaba ECharts; nota «antes de costes» en los gráficos por año. Comparativa y trampas de ECharts documentadas en la skill `nueva-hipotesis`, `dashboard/CLAUDE.md` y `DISENO.md`.
+- **2026-09-25:** nace `conocimiento/` (notas por hipótesis y conceptos, compatibles con Obsidian) con lo descubierto sobre H-001 y H-007; regla 5 en CLAUDE.md.
+- **2026-09-30:** H-PROPIA-001 (hipótesis propia del usuario: RAY largo 28 días cuando el volumen de Raydium dobla su nivel normal). Primero, contraste independiente fuera del lab, que reproduce sus cifras. Después, en el lab: IS por mercado en `proteccion.py` (`cripto` 2021-08-10 → 2026-09-29, solo para H-PROPIA-001, con autorización literal en `conocimiento/`), campo `mercado` en el contrato, dataset RAY con OHLC, series auxiliares, `eventos.py` con tests y estadístico `media_operacion`. Ejecutado HPROPIA001-IS-REAL-001: +37,5 %/op, t 2,44, max DD −54,1 %. Dashboard: registro `VOL×2 · RAY` y Sharpe con los periodos por año del lab (365 en cripto).

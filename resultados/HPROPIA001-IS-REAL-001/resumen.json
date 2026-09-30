@@ -1,0 +1,181 @@
+{
+  "version_esquema": "2.0",
+  "experimento": {
+    "id": "HPROPIA001-IS-REAL-001",
+    "hipotesis": "H-PROPIA-001",
+    "version": "real-is-v1",
+    "fecha": "2026-09-30",
+    "sintetico": false,
+    "pregunta": "¿Rinde RAY en los 28 días siguientes a que el volumen de Raydium doble su nivel normal?",
+    "muestra": "IS",
+    "mercado": "cripto",
+    "inicio": "2022-08-15",
+    "fin": "2026-09-29",
+    "instrumento": "RAY",
+    "frecuencia": "1d",
+    "moneda": "USDT",
+    "capital_inicial": 10000.0,
+    "reglas": {
+      "entrada": "Largo a la apertura del día siguiente a la señal (mediana 7 d / mediana 90 d del volumen de Raydium ≥ 2).",
+      "salida": "Stop −25 % (al stop, o a la apertura si abre por debajo); si no, al cierre del día t + 28.",
+      "tamano": "100 % de la equity, una operación a la vez, sin apalancamiento; 28 días sin señales tras cada una.",
+      "costes": "0,2 % del nocional por lado."
+    },
+    "receta": "estrategias/H-PROPIA-001.md",
+    "plan": "experimentos/HPROPIA001-IS-REAL-001.md",
+    "fuente_datos": "data/cripto/RAY_diario.csv + data/cripto/defillama_volumen_diario.csv + data/cripto/RAY_diario.csv"
+  },
+  "evidencia": {
+    "estadistico": "Retorno neto medio por operación (VOL×2)",
+    "unidad": "% / operación",
+    "valor": 37.51200691091013,
+    "componentes": [
+      {
+        "nombre": "Operaciones cerradas",
+        "valor": 16.0,
+        "unidad": "operaciones"
+      },
+      {
+        "nombre": "Sorteos placebo",
+        "valor": 2000.0,
+        "unidad": "sorteos"
+      },
+      {
+        "nombre": "Retorno neto medio por operación",
+        "valor": 37.51200691091013,
+        "unidad": "% / operación"
+      },
+      {
+        "nombre": "Media del placebo",
+        "valor": 12.658016045278814,
+        "unidad": "% / operación"
+      },
+      {
+        "nombre": "Mediana por operación",
+        "valor": 11.080293863083968,
+        "unidad": "%"
+      },
+      {
+        "nombre": "t de la media",
+        "valor": 2.441390430668609,
+        "unidad": "t"
+      },
+      {
+        "nombre": "Percentil 95 del placebo",
+        "valor": 30.979210108532552,
+        "unidad": "% / operación"
+      },
+      {
+        "nombre": "Percentil del resultado en el placebo",
+        "valor": 98.85000000000001,
+        "unidad": "%"
+      },
+      {
+        "nombre": "Señales sin cerrar al final de la muestra",
+        "valor": 1.0,
+        "unidad": "operaciones"
+      },
+      {
+        "nombre": "Exceso medio frente a BTC",
+        "valor": 31.00627537624576,
+        "unidad": "%"
+      }
+    ],
+    "desglose": {}
+  },
+  "robustez": {
+    "bootstrap": {
+      "metodo": "bloques circulares",
+      "unidad": "operación",
+      "bloque": 1,
+      "replicas": 5000,
+      "semilla": 7301,
+      "nivel": 0.95,
+      "ic_inf": 9.409205306315249,
+      "ic_sup": 68.21916162468415,
+      "incluye_cero": false,
+      "motivo": "Las operaciones no se solapan (enfriamiento = tenencia); con 16 operaciones no caben bloques más largos."
+    },
+    "por_anio": {
+      "2022": -25.299401197604787,
+      "2023": 53.421319947357524,
+      "2024": 39.334795270632746,
+      "2025": -25.299401197604787,
+      "2026": 119.55362285943498
+    },
+    "sin_cada_anio": {
+      "2022": 41.69943411814446,
+      "2023": 27.966419089041704,
+      "2024": 36.41833389507658,
+      "2025": 46.48506521212655,
+      "2026": 32.04256584767515
+    },
+    "pnl_costes_x2": 343888.8426583765
+  },
+  "metricas": {
+    "operaciones": 16,
+    "pnl_neto": 367278.4305279112,
+    "esperanza": 22954.90190799446,
+    "tasa_acierto": 0.625,
+    "payoff": 1.8334697283249994,
+    "profit_factor": 3.0557828805416656,
+    "rentabilidad_total": 36.727843052791115,
+    "rentabilidad_anual": 1.4091971647909127,
+    "sharpe": 1.343804917649271,
+    "sortino": 2.90961106616188,
+    "max_drawdown": 0.5414715292538317,
+    "max_recuperacion": null,
+    "drawdown_abierto": 11,
+    "exposicion": 0.26343729263437293,
+    "rotacion": 31.715883163037965,
+    "costes": 7734.107269680278,
+    "peso_costes": 0.010635215068886648,
+    "concentracion_anual": 0.4375,
+    "autocorrelacion": 0.018212950839697227
+  },
+  "no_calculables": {
+    "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
+  },
+  "operaciones_por_anio": {
+    "2022": 1,
+    "2023": 5,
+    "2024": 7,
+    "2025": 2,
+    "2026": 1
+  },
+  "conclusiones": {
+    "estado": "exploratoria",
+    "lectura": "Retorno neto medio por operación (VOL×2): 37,51 % / operación en 16 operaciones; mediana 11,08 %, t 2,44. Placebo: percentil 99 (p95 30,98 %). El intervalo no incluye cero bajo los supuestos del remuestreo; no prueba estabilidad futura.",
+    "supuestos": [
+      "Velas diarias UTC de Binance spot; el volumen de DefiLlama se da por conocido al cierre UTC de su día.",
+      "Las medianas cuentan días con dato: los 4 huecos de DefiLlama se saltan, como en la implementación del usuario.",
+      "El stop se ejecuta exactamente al nivel salvo gap de apertura; sin más deslizamiento.",
+      "Exceso frente a BTC: del cierre del día de señal (≈ apertura de entrada) al cierre del día de salida."
+    ],
+    "limites": [
+      "Parámetros (stop, día 28) elegidos por el usuario mirando todo el histórico: la muestra IS no es independiente de ellos.",
+      "Un solo token y pocas operaciones: el resultado depende de unas pocas operaciones grandes.",
+      "DefiLlama no es point-in-time: el volumen se revisa hacia atrás.",
+      "Rentabilidad y drawdown con el 100 % de la equity en un token muy volátil: miden la cuenta, no el edge."
+    ],
+    "siguiente_comprobacion": "Seguimiento en tiempo real desde el 2026-09-30 con los criterios de refutación del usuario (≥ 10 operaciones)."
+  },
+  "procedencia": {
+    "motor_sha256": "743ead336944518f1fd6bd1cbdc4adb90d694912d67f24f3bd5cb60465b69521",
+    "datos_sha256": "e3370d071166b3a3bf77905b6fa0aa8d19aad5042a937dc8023d048ddd0a73da",
+    "plan_sha256": "f914653d0dddd909cb20eeb33dc4d926f17767b0ea96ebfed6b061bc2527b3c5",
+    "periodos_por_anio": 365
+  },
+  "historial": [
+    {
+      "id": "HPROPIA001-IS-REAL-001",
+      "fecha": "2026-09-30",
+      "cambio": "Primer ensayo: reglas del usuario sin cambios."
+    }
+  ],
+  "ficheros": {
+    "equity": "equity.csv",
+    "operaciones": "operaciones.csv",
+    "ficha": "ficha.md"
+  }
+}

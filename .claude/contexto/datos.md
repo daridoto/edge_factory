@@ -24,6 +24,8 @@ Lo que hay, sin matices. El detalle de cada dataset está más abajo.
 | VIX | volatilidad implícita S&P 500 | 1d | OHLC (volumen 0) | 2006-07-17 | 2026-07-15 | sesión |
 | TSLA | acción individual EE. UU. | 1d | no inspeccionado | 2010-06-29 | 2026-05-29 | — |
 | SOLUSDT | cripto | 1d | OHLCV | 2020-08-11 | 2026-06-01 | — |
+| RAYUSDT (Binance spot) | cripto, token de DEX (Raydium) | 1d | OHLCV + btc_close + columnas derivadas | 2021-08-10 | 2026-09-29 | UTC |
+| Volumen DEX (DefiLlama) | volumen diario de 23 DEX y total | 1d | USD por DEX | 2019-01-01 (RAY desde 2022-08-15) | 2026-09-29 | UTC |
 | Eventos macro EE. UU. | calendario con hora | evento | NFP, CPI, PPI, JOLTS, REAL_EARNINGS, PRODUCTIVITY, ECI | 2009-01 | 2020-12 | hora EE. UU. |
 
 **No hay:** calendario FOMC; PIB, ISM, MCSI ni actas; barras de menos de 15 min; bid/ask, spread o volumen firmado (compras/ventas); VIX intradía; universo de acciones individuales (solo TSLA); REITs; mercados fuera de EE. UU. (salvo cripto); curva del Tesoro; sentimiento; sorpresas (consenso frente a dato); resultados empresariales. Los festivos de NYSE solo se pueden derivar de los huecos de sesión del SPY.
@@ -69,6 +71,11 @@ Lo que hay, sin matices. El detalle de cada dataset está más abajo.
 ### Otros
 - `equities/TSLA ...` (TradingView BATS, diario): **no inspeccionado**.
 - `cripto/SOLUSDT ...` (Binance, diario): CSV exportado con indicadores mezclados (medias, RSI, columnas duplicadas `2Y-MA`). Solo son útiles `time,open,high,low,close,Volume`.
+
+### Cripto de DEX (añadido por el usuario el 2026-09-30)
+- IS propia: **2021-08-10 → 2026-09-29** (`proteccion.MUESTRAS["cripto"]`), autorizada **solo para H-PROPIA-001**. Otra hipótesis cripto necesita su propia autorización.
+- `cripto/RAY_diario.csv`: `fecha` (UTC) y `binance_open/high/low/close/volume…`, `btc_close`, `raydium_volumen_usd` y columnas derivadas (`vol_ratio`, `S1-S3`, `evento_*`, `ret_neto_*`, `exc_*`). **Las derivadas no se usan:** algunas miran al futuro (`ret_neto_28d`…). Sin huecos. Dataset `RAY 1d` y serie `BTC 1d`.
+- `cripto/defillama_volumen_diario.csv`: `fecha` y `<DEX>_volumen_usd` (UNI, CAKE, RAY, ORCA, SUSHI, CRV…, `TOTAL_DEX_volumen_usd`). Las celdas vacías son días sin dato. RAY tiene 4 huecos (2022-10-14, 2022-10-26, 2022-11-22 y 2025-05-06). Serie `Raydium volumen 1d`. **No es point-in-time:** DefiLlama revisa hacia atrás. `raydium_volumen_usd` de RAY_diario es la misma serie (solo difiere por redondeo).
 
 ## Qué falta (bloquea hipótesis)
 - **Calendario FOMC** (fechas y horas de los anuncios, con y sin rueda de prensa): H-003-006, H-021-028, H-035.

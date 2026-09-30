@@ -27,9 +27,9 @@ def huella_motor():
     return digest(b"".join(p.name.encode() + b"\0" + p.read_bytes() for p in ficheros))
 
 
-def validar_contabilidad(capital, inicio, fin, sesiones, operaciones):
+def validar_contabilidad(capital, inicio, fin, sesiones, operaciones, mercado="clasica", hipotesis=None):
     """La equity debe cubrir la muestra, conciliar sesión a sesión y cuadrar con el libro de operaciones."""
-    exigir_is(inicio, fin)
+    exigir_is(inicio, fin, mercado, hipotesis)
     inicio, fin = (d if isinstance(d, date) else date.fromisoformat(d) for d in (inicio, fin))
     fechas = [s.fecha for s in sesiones]
     if not fechas or fechas != sorted(set(fechas)) or fechas[0] != inicio or fechas[-1] != fin:
@@ -134,7 +134,7 @@ def _leer_csv(ruta, modelo):
 def guardar(directorio, resumen, sesiones, operaciones):
     """Escribe resumen.json, equity.csv, operaciones.csv y ficha.md en un directorio nuevo."""
     e = resumen.experimento
-    validar_contabilidad(e.capital_inicial, e.inicio, e.fin, sesiones, operaciones)
+    validar_contabilidad(e.capital_inicial, e.inicio, e.fin, sesiones, operaciones, e.mercado, e.hipotesis)
     directorio = Path(directorio)
     directorio.mkdir(parents=True, exist_ok=False)
     (directorio / "resumen.json").write_text(resumen.model_dump_json(indent=2) + "\n")
@@ -150,7 +150,7 @@ def cargar(directorio):
     sesiones = _leer_csv(directorio / "equity.csv", Sesion)
     operaciones = _leer_csv(directorio / "operaciones.csv", Operacion)
     e = resumen.experimento
-    validar_contabilidad(e.capital_inicial, e.inicio, e.fin, sesiones, operaciones)
+    validar_contabilidad(e.capital_inicial, e.inicio, e.fin, sesiones, operaciones, e.mercado, e.hipotesis)
     return resumen, sesiones, operaciones
 
 

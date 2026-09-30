@@ -98,7 +98,7 @@ const KPIS = {
     { l: 'Operaciones', v: ph => [ph.m.trades], f: ([v]) => nf(0).format(v), d: ph => 'exposición ' + nf(0).format(ph.m.exposure * 100) + ' %', t: 'Número de operaciones cerradas' },
     { l: 'Win rate', v: ph => [ph.m.winRate * 100], f: ([v]) => nf(0).format(v) + ' %', d: ph => 'payoff ' + nf(2).format(ph.m.payoff), t: 'Operaciones con PnL neto > 0 / todas' },
     { l: 'Profit factor', v: ph => [ph.m.profitFactor], f: ([v]) => nf(2).format(v), d: () => '', t: 'Ganancias netas / pérdidas netas' },
-    { l: 'Sharpe', v: ph => [ph.m.sharpe], f: ([v]) => nf(2).format(v), d: ph => 'Sortino ' + nf(2).format(ph.m.sortino), t: 'Anualizado, 252 sesiones, rf = 0' },
+    { l: 'Sharpe', v: ph => [ph.m.sharpe], f: ([v]) => nf(2).format(v), d: ph => 'Sortino ' + nf(2).format(ph.m.sortino), t: `Anualizado, ${P.IS.periodsPerYear ?? 252} sesiones, rf = 0` },
     { l: 'Max DD', v: ph => [ph.m.maxDD * 100], f: ([v]) => nf(2).format(v) + ' %', d: ph => ph.m.openDDAge ? 'abierto ' + ph.m.openDDAge + ' ses.' : 'cerrado', t: 'Máxima caída desde un máximo de equity' },
   ],
 };
@@ -305,7 +305,10 @@ function renderYear() {
   const barVals = years.map(y => Math.abs(pb(byYear[y])));
   const yStep = 10 ** Math.floor(Math.log10(Math.max(...barVals) || 1));
   const vals = loyo.filter(v => v != null).concat(0, full);
-  const lo = Math.floor(Math.min(...vals) - .5), hi = Math.ceil(Math.max(...vals) + .5);
+  // paso "redondo" (1, 2, 5 × 10ⁿ) para ~4 tramos: sirve igual para ±5 pb que para +50 %
+  const raw = (Math.max(...vals) - Math.min(...vals)) / 4 || 1, mag = 10 ** Math.floor(Math.log10(raw));
+  const loyoStep = mag * ([1, 2, 5].find(k => k * mag >= raw) ?? 10);
+  const lo = Math.floor(Math.min(...vals) / loyoStep) * loyoStep, hi = Math.ceil(Math.max(...vals) / loyoStep) * loyoStep;
   cYear.setOption({
     ...anim,
     axisPointer: { link: [{ xAxisIndex: 'all' }] },
@@ -316,7 +319,7 @@ function renderYear() {
       { type: 'category', gridIndex: 1, data: years.map(yLabel), ...axisBase() }],
     yAxis: [
       { type: 'value', gridIndex: 0, splitNumber: 3, min: v => Math.min(0, Math.floor(v.min / yStep) * yStep), max: v => Math.max(0, Math.ceil(v.max / yStep) * yStep), ...axisBase() },
-      { type: 'value', gridIndex: 1, min: lo, max: hi, interval: 1, ...axisBase(), axisLabel: { ...axisBase().axisLabel, formatter: v => v % 2 === 0 ? v : '' } }],
+      { type: 'value', gridIndex: 1, min: lo, max: hi, interval: loyoStep, ...axisBase() }],
     series: [
       { ...dotBar, id: 'years', name: 'Dentro del año', xAxisIndex: 0, yAxisIndex: 0, barWidth: '58%',
         data: years.map(y => ({ value: pb(byYear[y]), itemStyle: { color: byYear[y] >= 0 ? css('--pos') : css('--neg'), opacity: !inView(y) ? .2 : y === '2009' ? .35 : .85 } })) },

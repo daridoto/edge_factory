@@ -8,7 +8,7 @@ Un experimento produce en resultados/<ID>/:
 resultados/indice.csv tiene una fila por experimento (motor.reconstruir_indice).
 
 Garantías:
-- Solo IS: Experimento rechaza otra muestra y fechas fuera de proteccion.INICIO_IS/FIN_IS.
+- Solo IS: Experimento rechaza otra muestra y fechas fuera de la IS de su mercado (proteccion.MUESTRAS).
 - Contabilidad (motor.validar_contabilidad, al guardar y al cargar): la equity cubre la muestra,
   concilia sesión a sesión (anterior + pnl_bruto - coste) y cuadra con operaciones y costes por lado.
 - Sin campos desconocidos, NaN ni infinitos; una métrica null necesita motivo; guardar no sobrescribe.
@@ -74,6 +74,7 @@ class Experimento(Modelo):
     sintetico: bool = Field(description="True solo en tests: nunca es evidencia")
     pregunta: str
     muestra: Literal["IS"]
+    mercado: Literal["clasica", "cripto"] = Field(default="clasica", description="Qué IS aplica (proteccion.MUESTRAS)")
     inicio: date
     fin: date
     instrumento: str
@@ -87,7 +88,7 @@ class Experimento(Modelo):
 
     @model_validator(mode="after")
     def _solo_is(self):
-        exigir_is(self.inicio, self.fin)
+        exigir_is(self.inicio, self.fin, self.mercado, self.hipotesis)
         return self
 
 

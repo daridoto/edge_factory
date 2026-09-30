@@ -87,5 +87,22 @@
     "estados": {
       "IS": "inconclusive"
     }
+  },
+  {
+    "id": "H-PROPIA-001",
+    "nombre": "VOL×2 · RAY",
+    "efecto": "VOL×2",
+    "experimentos": {
+      "IS": "HPROPIA001-IS-REAL-001"
+    },
+    "reglas": {
+      "Entrada": "apertura · día siguiente a vol 7d / 90d ≥ 2",
+      "Salida": "stop −25 % o cierre del día t + 28",
+      "Tamaño": "100 % de la equity"
+    },
+    "costes": "0,2 % del nocional por lado",
+    "estados": {
+      "IS": "inconclusive"
+    }
   }
 ]

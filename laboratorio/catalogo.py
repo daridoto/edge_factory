@@ -76,7 +76,15 @@ def media_vs_resto(gs):
     return (s_v / n_v - s_r / n_r) * PB
 
 
-ESTADISTICOS = {"media_ventana": media_ventana, "media_vs_resto": media_vs_resto}
+def media_operacion(gs):
+    """Retorno neto medio por operación, en %. Grupos [1, retorno, 0, 0], uno por operación (operativa por eventos)."""
+    n, s = sum(g[0] for g in gs), sum(g[1] for g in gs)
+    if not n:
+        raise ValueError("Sin operaciones")
+    return s / n * 100
+
+
+ESTADISTICOS = {"media_ventana": media_ventana, "media_vs_resto": media_vs_resto, "media_operacion": media_operacion}
 
 
 def desglose(obs):

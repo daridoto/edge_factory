@@ -215,6 +215,16 @@
           "title": "Muestra",
           "type": "string"
         },
+        "mercado": {
+          "default": "clasica",
+          "description": "Qué IS aplica (proteccion.MUESTRAS)",
+          "enum": [
+            "clasica",
+            "cripto"
+          ],
+          "title": "Mercado",
+          "type": "string"
+        },
         "inicio": {
           "format": "date",
           "title": "Inicio",

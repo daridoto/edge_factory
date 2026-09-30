@@ -58,6 +58,7 @@ function toView(r, equity, trades, entry) {
         state: entry.estados?.IS ?? 'inconclusive',
         start: x.inicio,
         end: x.fin,
+        periodsPerYear: r.procedencia.periodos_por_anio,
         equity: equity.map(e => [e.fecha, +e.equity, +e.exposicion]),
         trades: trades.map(t => ({ net: +t.pnl_neto, cost: +t.coste_entrada + +t.coste_salida })),
         research: {
