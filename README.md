@@ -1,5 +1,110 @@
-# edge_factory · laboratorio de validación y dashboard
+<div align="center">
 
-Valida en in-sample las hipótesis del repo de papers y deja en `resultados/<ID>/` un `resumen.json`, dos CSV y una ficha legible. `dashboard/` los muestra para revisión humana (`cd dashboard && npm run dev`).
+# edge_factory
 
-Cómo funciona y comandos: [CLAUDE.md](CLAUDE.md). Estado actual: [ESTADO.md](ESTADO.md).
+**Laboratorio de validación de hipótesis de trading sistemático**
+
+De la idea al resultado medido, solo con datos in-sample.
+
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
+![pydantic](https://img.shields.io/badge/pydantic-v2-E92063?logo=pydantic&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-dashboard-646CFF?logo=vite&logoColor=white)
+![ECharts](https://img.shields.io/badge/ECharts-6-AA344D?logo=apacheecharts&logoColor=white)
+![Muestra](https://img.shields.io/badge/muestra-solo%20IS-555)
+
+</div>
+
+---
+
+## Qué hace
+
+Toma hipótesis de trading sacadas de papers (o propias), comprueba si se pueden testear con los datos disponibles, las traduce a una especificación y las ejecuta contra datos históricos. Cada experimento deja una salida estandarizada que un dashboard muestra para revisión humana.
+
+El laboratorio **mide**; no puntúa ni recomienda. La decisión es siempre humana.
+
+## Flujo
+
+```mermaid
+flowchart LR
+    A[Hipótesis<br/>H-NNN] --> B{Triaje}
+    B -->|compatible / proxy| C[Receta<br/>pseudocódigo]
+    B -->|bloqueada| X[Fuera]
+    C --> D[Plan<br/>bloque TOML]
+    D --> E[Ejecutor<br/>laboratorio/]
+    E --> F[(resultados/ID)]
+    F --> G[Dashboard]
+```
+
+| paso | entrada → salida | dónde |
+|---|---|---|
+| **Triaje** | hipótesis → `compatible` · `proxy` · `bloqueada` según los datos | [`triaje/indice.md`](triaje/indice.md) |
+| **Receta** | hipótesis → reglas en pseudocódigo con citas | [`estrategias/`](estrategias/) |
+| **Plan** | receta → experimento fijado antes de calcular (TOML) | [`experimentos/`](experimentos/) |
+| **Ejecución** | plan → backtest, métricas y batería de robustez | [`laboratorio/`](laboratorio/) |
+| **Resultados** | `resumen.json` · `equity.csv` · `operaciones.csv` · `ficha.md` | [`resultados/`](resultados/) |
+
+## Principios
+
+> 🔒 **Solo in-sample.** La muestra IS va de 2009-09-27 a 2020-12-31. OOS y holdout no se usan sin autorización explícita y concreta. Las fechas viven en un único sitio (`laboratorio/proteccion.py`) y el contrato rechaza cualquier otra muestra.
+
+- 🧩 **Sin código por hipótesis.** Una hipótesis es una especificación TOML. Si falta una pieza (dataset, ventana, estadístico) se añade de forma genérica al catálogo, con su test.
+- 📐 **Salida con contrato.** Los resultados se validan con pydantic y se exportan como JSON Schema en [`esquemas/`](esquemas/).
+- 🧪 **Exploratorio por defecto.** Ninguna ficha es una conclusión; la siguiente comprobación se propone, no se ejecuta sola.
+- 📚 **Conocimiento acumulado.** Hallazgos y definiciones en [`conocimiento/`](conocimiento/), una nota por hipótesis o concepto (compatible con Obsidian).
+
+## Estado
+
+| | |
+|---|---|
+| Hipótesis triadas | **36** · 11 compatibles · 5 proxy · 20 bloqueadas |
+| Recetas | H-001 · H-007 · H-008 · H-010 · H-PROPIA-001 |
+| Experimentos | H-001 en SPY, QQQ, IWM y DIA · H-007 en ES · H-PROPIA-001 en RAY |
+
+Las cifras de cada experimento están en [`resultados/indice.csv`](resultados/indice.csv), una fila por experimento.
+
+## Estructura
+
+```
+edge_factory/
+├── triaje/          clasificación de hipótesis según los datos
+├── estrategias/     recetas en pseudocódigo
+├── experimentos/    planes con su bloque TOML
+├── laboratorio/     motor: datos → backtest → robustez → métricas → ficha
+├── resultados/      una carpeta por experimento + indice.csv
+├── esquemas/        JSON Schema de la salida
+├── conocimiento/    notas por hipótesis y conceptos
+├── dashboard/       interfaz de lectura (Vite + ECharts)
+├── tests/           tests con datos sintéticos
+└── data/            datos históricos (no versionados)
+```
+
+## Uso
+
+```sh
+# entorno
+python3.11 -m venv .venv && .venv/bin/pip install -r requirements.txt
+
+# ejecutar un plan → resultados/<ID>/ (no sobrescribe)
+.venv/bin/python -m laboratorio ejecutar experimentos/<ID>.md
+
+# validar y regenerar la ficha
+.venv/bin/python -m laboratorio ficha resultados/<ID>
+
+# reconstruir el índice
+.venv/bin/python -m laboratorio indice
+
+# tests
+.venv/bin/python -m unittest discover -s tests
+```
+
+### Dashboard
+
+```sh
+cd dashboard && npm install && npm run dev
+```
+
+Lee `resultados/` en solo lectura: portada con todas las hipótesis, ficha por hipótesis y comparativa entre instrumentos.
+
+## Datos
+
+`data/` no se versiona. Incluye diarios de SPY, QQQ, IWM y DIA, futuro ES en 15 minutos y series cripto (RAY, BTC y volumen de Raydium).

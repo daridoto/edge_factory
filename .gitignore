@@ -2,3 +2,10 @@
 __pycache__/
 .DS_Store
 /data/
+
+# Ficheros para asistentes de IA (solo locales)
+.claude/
+CLAUDE.md
+AGENTS.md
+ESTADO.md
+dashboard/docs/HANDOFF.md
