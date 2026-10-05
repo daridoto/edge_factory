@@ -10,10 +10,10 @@ import re
 import statistics as st
 import tomllib
 
-from . import catalogo, datos, eventos, motor
+from . import catalogo, datos, eventos, motor, variantes
 from .backtest import backtest
 from .contratos import (Componente, Conclusiones, Evidencia, Experimento, Ficheros, Intento, Procedencia, Reglas,
-                        Resumen, Robustez)
+                        Resumen, Robustez, Variantes)
 from .presentacion import n
 from .proteccion import FIN_IS, INICIO_IS
 from .robustez import bateria
@@ -40,8 +40,21 @@ def historial(hipotesis, id_actual, fecha, cambio, resultados=motor.RESULTADOS):
     return sorted(previos, key=lambda i: i.fecha) + [Intento(id=id_actual, fecha=fecha, cambio=cambio)]
 
 
+def tabla_variantes(spec, barras, dataset, inicio, fin, serie=None):
+    """(Variantes, filas) si el plan tiene [variantes]; si no, (None, None). `serie` inyecta la serie en tests."""
+    if "variantes" not in spec:
+        return None, None
+    va = spec["variantes"]
+    if serie is None and va.get("serie"):
+        serie = datos.cargar_serie(va["serie"], inicio, fin)
+    filas = variantes.tabla(barras, dataset["frecuencia"], va["ventanas"], va.get("senal"), serie)
+    return Variantes(ventanas=va["ventanas"], base=va["base"], senal=va.get("senal"), serie=va.get("serie"),
+                     coste_lado=spec["operativa"]["coste_lado"], filas=len(filas)), filas
+
+
 def ejecutar(spec, plan, barras=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS, **sinteticos):
-    """Devuelve (Resumen, sesiones, operaciones, (sesiones, operaciones) al 100 %). `barras` permite inyectar datos sintéticos en tests.
+    """Devuelve (Resumen, sesiones, operaciones, (sesiones, operaciones) al 100 %, filas de variantes o None).
+    `barras` (y `serie`) permiten inyectar datos sintéticos en tests.
     Un plan con [senal] usa la operativa por eventos (eventos.py) en lugar de ventana + estadístico."""
     if "senal" in spec:
         return ejecutar_eventos(spec, plan, barras=barras, hoy=hoy, **sinteticos)
@@ -71,6 +84,8 @@ def ejecutar(spec, plan, barras=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS, **
     if desglose and len(v["valores"]) == 1:
         orden = sorted(desglose, key=desglose.get, reverse=True)
         lectura += f" En el desglose, {ventana} ocupa el puesto {orden.index(str(v['valores'][0])) + 1} de {len(orden)}."
+    meta, filas = tabla_variantes(spec, barras, dataset, inicio, fin, sinteticos.get("serie"))
+    fuentes = [dataset["ruta"]] + ([datos.SERIES[meta.serie]["ruta"]] if meta and meta.serie else [])
     hoy = hoy or date.today()
     return Resumen(
         experimento=Experimento(
@@ -78,21 +93,23 @@ def ejecutar(spec, plan, barras=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS, **
             pregunta=spec["pregunta"], muestra="IS", inicio=sesiones[0].fecha, fin=sesiones[-1].fecha,
             instrumento=dataset["instrumento"], frecuencia=dataset["frecuencia"], moneda="USD", capital_inicial=op["capital"],
             reglas=Reglas(entrada=op["entrada"], salida=op["salida"], tamano=op["tamano"], costes=op["costes"]),
-            receta=spec["receta"], plan=str(plan), fuente_datos=dataset["ruta"]),
+            receta=spec["receta"], plan=str(plan), fuente_datos=" + ".join(fuentes)),
         evidencia=Evidencia(
             estadistico=f"{NOMBRES[es['tipo']]} ({ventana})", unidad=unidad, valor=valor, desglose=desglose,
             componentes=[Componente(nombre=f"{nombre_periodo} {ventana}", valor=n_v, unidad=nombre_periodo.lower()),
                          Componente(nombre=f"{nombre_periodo} resto", valor=n_r, unidad=nombre_periodo.lower()),
                          Componente(nombre=f"Retorno medio {ventana}", valor=s_v / n_v * catalogo.PB, unidad=unidad),
                          Componente(nombre="Retorno medio resto", valor=s_r / n_r * catalogo.PB, unidad=unidad)]),
-        robustez=robustez, metricas=m, referencia=ref, no_calculables=motivos, operaciones_por_anio=por_anio,
+        robustez=robustez, metricas=m, referencia=ref, variantes=meta, no_calculables=motivos, operaciones_por_anio=por_anio,
         conclusiones=Conclusiones(lectura=lectura, supuestos=cc["supuestos"], limites=cc["limites"],
                                   siguiente_comprobacion=cc["siguiente"]),
         procedencia=Procedencia(motor_sha256=motor.huella_motor(),
-                                datos_sha256=motor.digest(json.dumps([(str(x.ts), x.close, x.precio) for x in barras]).encode()),
+                                datos_sha256=motor.digest(json.dumps([(str(x.ts), x.close, x.precio) for x in barras]
+                                                                     + [f.model_dump(mode="json") for f in filas or []]).encode()),
                                 plan_sha256=motor.digest(Path(motor.RAIZ / plan).read_bytes()) if (motor.RAIZ / plan).exists() else "sin plan",
                                 periodos_por_anio=dataset.get("periodos_por_anio", 252)),
-        historial=historial(spec["hipotesis"], spec["id"], hoy, spec["cambio"]), ficheros=FICHEROS_100), sesiones, operaciones, al_100
+        historial=historial(spec["hipotesis"], spec["id"], hoy, spec["cambio"]),
+        ficheros=FICHEROS_100.model_copy(update={"variantes": "variantes.csv" if meta else None})), sesiones, operaciones, al_100, filas
 
 
 def ejecutar_eventos(spec, plan, barras=None, serie=None, referencia=None, hoy=None, inicio=None, fin=None):
@@ -172,7 +189,7 @@ def ejecutar_eventos(spec, plan, barras=None, serie=None, referencia=None, hoy=N
                                                                      + sorted((str(k), v) for k, v in serie.items())).encode()),
                                 plan_sha256=motor.digest(Path(motor.RAIZ / plan).read_bytes()) if (motor.RAIZ / plan).exists() else "sin plan",
                                 periodos_por_anio=dataset.get("periodos_por_anio", 252)),
-        historial=historial(h, spec["id"], hoy, spec["cambio"]), ficheros=FICHEROS_100), sesiones, operaciones, al_100
+        historial=historial(h, spec["id"], hoy, spec["cambio"]), ficheros=FICHEROS_100), sesiones, operaciones, al_100, None
 
 
 def anadir_referencia(directorio):
@@ -181,7 +198,7 @@ def anadir_referencia(directorio):
     directorio = Path(directorio)
     resumen, sesiones, operaciones = motor.cargar(directorio)
     e = resumen.experimento
-    nuevo, repetidas, _, al_100 = ejecutar(leer_plan(motor.RAIZ / e.plan), Path(e.plan), hoy=e.fecha)
+    nuevo, repetidas, _, al_100, _ = ejecutar(leer_plan(motor.RAIZ / e.plan), Path(e.plan), hoy=e.fecha)
     p, q = resumen.procedencia, nuevo.procedencia
     if (p.datos_sha256, p.plan_sha256) != (q.datos_sha256, q.plan_sha256):
         raise ValueError(f"{e.id}: datos o plan distintos de los de la ejecución original")
@@ -199,8 +216,8 @@ def anadir_referencia(directorio):
 def main(plan):
     plan = Path(plan).resolve().relative_to(motor.RAIZ)
     spec = leer_plan(motor.RAIZ / plan)
-    resumen, sesiones, operaciones, al_100 = ejecutar(spec, plan)
+    resumen, sesiones, operaciones, al_100, filas = ejecutar(spec, plan)
     salida = motor.RESULTADOS / spec["id"]
-    motor.guardar(salida, resumen, sesiones, operaciones, al_100)
+    motor.guardar(salida, resumen, sesiones, operaciones, al_100, filas)
     motor.reconstruir_indice()
     return salida

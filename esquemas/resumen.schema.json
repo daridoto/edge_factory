@@ -340,6 +340,20 @@
           "default": null,
           "description": "Operaciones de la referencia",
           "title": "Operaciones 100"
+        },
+        "variantes": {
+          "anyOf": [
+            {
+              "const": "variantes.csv",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Tabla de variantes; presente si hay `variantes`",
+          "title": "Variantes"
         }
       },
       "title": "Ficheros",
@@ -764,16 +778,87 @@
       ],
       "title": "Robustez",
       "type": "object"
+    },
+    "Variantes": {
+      "additionalProperties": false,
+      "description": "Describe variantes.csv. El dashboard combina en vivo filtros (senal < 0, serie > umbral, sin desfase) y tamaño.",
+      "properties": {
+        "ventanas": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": "Nombre -> [hora de entrada, hora de salida], hora del dato",
+          "title": "Ventanas",
+          "type": "object"
+        },
+        "base": {
+          "description": "Ventana que reproduce la operativa del experimento",
+          "title": "Base",
+          "type": "string"
+        },
+        "senal": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "[hora inicial, hora final] del retorno de la sesión previa",
+          "title": "Senal"
+        },
+        "serie": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Serie diaria de la columna serie (nombre del catálogo)",
+          "title": "Serie"
+        },
+        "coste_lado": {
+          "description": "Coste por unidad y lado, en unidades de precio",
+          "minimum": 0,
+          "title": "Coste Lado",
+          "type": "number"
+        },
+        "filas": {
+          "minimum": 1,
+          "title": "Filas",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "ventanas",
+        "base",
+        "senal",
+        "serie",
+        "coste_lado",
+        "filas"
+      ],
+      "title": "Variantes",
+      "type": "object"
     }
   },
   "additionalProperties": false,
   "description": "resumen.json: todo lo necesario para leer, comparar o graficar un experimento sin abrir el código.",
   "properties": {
     "version_esquema": {
-      "default": "2.1",
+      "default": "2.2",
       "enum": [
         "2.0",
-        "2.1"
+        "2.1",
+        "2.2"
       ],
       "title": "Version Esquema",
       "type": "string"
@@ -801,6 +886,18 @@
       ],
       "default": null,
       "description": "Riesgo al 100 % del capital; null en experimentos previos al esquema 2.1 sin recalcular"
+    },
+    "variantes": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Variantes"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Tabla de variantes para el dashboard; null si el plan no la pide"
     },
     "no_calculables": {
       "additionalProperties": {
@@ -839,7 +936,8 @@
         "operaciones": "operaciones.csv",
         "ficha": "ficha.md",
         "equity_100": null,
-        "operaciones_100": null
+        "operaciones_100": null,
+        "variantes": null
       }
     }
   },

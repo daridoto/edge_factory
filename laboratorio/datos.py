@@ -49,6 +49,9 @@ SERIES = {
     "Raydium volumen 1d": dict(ruta="data/cripto/defillama_volumen_diario.csv", ts="fecha", valor="RAY_volumen_usd",
                                mercado="cripto"),
     "BTC 1d": dict(ruta="data/cripto/RAY_diario.csv", ts="fecha", valor="btc_close", mercado="cripto"),
+    # Cierre diario del VIX (16:15 ET); fichero mixto: se filtra IS por fecha antes de leer el valor.
+    "VIX 1d": dict(ruta="data/macro/Indice de volatilidad VIX - Temp. 1d - Date 2006-07-17 a 2026-07-15 - Norgate.csv",
+                   ts="Date", valor="Close", mercado="clasica"),
 }
 
 

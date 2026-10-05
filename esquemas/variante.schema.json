@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Fila de variantes.csv: una sesión en una ventana alternativa, con lo conocido al cierre de la sesión previa.",
+  "properties": {
+    "fecha": {
+      "description": "Sesión de la operación (día de entrada y salida)",
+      "format": "date",
+      "title": "Fecha",
+      "type": "string"
+    },
+    "previa": {
+      "description": "Sesión lun-vie anterior, de la que salen senal y serie",
+      "format": "date",
+      "title": "Previa",
+      "type": "string"
+    },
+    "ventana": {
+      "description": "Nombre de la ventana (clave de `variantes.ventanas`)",
+      "minLength": 1,
+      "title": "Ventana",
+      "type": "string"
+    },
+    "entrada": {
+      "description": "Precio a la hora de entrada",
+      "exclusiveMinimum": 0,
+      "title": "Entrada",
+      "type": "number"
+    },
+    "salida": {
+      "description": "Precio a la hora de salida",
+      "exclusiveMinimum": 0,
+      "title": "Salida",
+      "type": "number"
+    },
+    "senal": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Retorno de la sesión previa entre las horas de `variantes.senal`; null si falta una barra",
+      "title": "Senal"
+    },
+    "serie": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Valor de `variantes.serie` en la sesión previa; null si no hay dato",
+      "title": "Serie"
+    },
+    "desfase": {
+      "description": "EE. UU. y Europa con distinto horario de verano ese día",
+      "title": "Desfase",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "fecha",
+    "previa",
+    "ventana",
+    "entrada",
+    "salida",
+    "senal",
+    "serie",
+    "desfase"
+  ],
+  "title": "Variante",
+  "type": "object"
+}

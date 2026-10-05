@@ -6,6 +6,8 @@ Un experimento produce en resultados/<ID>/:
 - operaciones.csv  -> una fila Operacion por operación cerrada.
 - ficha.md         -> lectura humana generada desde resumen.json.
 - equity_100.csv, operaciones_100.csv -> la misma operativa al 100 % del capital (resumida en `referencia`).
+- variantes.csv    -> opcional: una fila Variante por sesión y ventana alternativa, con las covariables para
+                      filtrar o dimensionar en el dashboard (descrita en `variantes`; ver variantes.py).
 `metricas` usa el tamaño del plan; `referencia`, el 100 % del capital (riesgo comparable entre experimentos).
 resultados/indice.csv tiene una fila por experimento (motor.reconstruir_indice).
 
@@ -13,6 +15,7 @@ Garantías:
 - Solo IS: Experimento rechaza otra muestra y fechas fuera de la IS de su mercado (proteccion.MUESTRAS).
 - Contabilidad (motor.validar_contabilidad, al guardar y al cargar): la equity cubre la muestra,
   concilia sesión a sesión (anterior + pnl_bruto - coste) y cuadra con operaciones y costes por lado.
+- Variantes (motor.validar_variantes): la ventana base reproduce, operación a operación, los precios del libro.
 - Sin campos desconocidos, NaN ni infinitos; una métrica null necesita motivo; guardar no sobrescribe.
 """
 from datetime import date
@@ -25,7 +28,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .proteccion import exigir_is
 
-VERSION = "2.1"  # 2.1: bloque `referencia` (riesgo al 100 % del capital)
+VERSION = "2.2"  # 2.1: bloque `referencia` (riesgo al 100 % del capital); 2.2: `variantes` opcional
 
 
 class Modelo(BaseModel):
@@ -58,6 +61,34 @@ class Operacion(Modelo):
             raise ValueError("Salida anterior a la entrada")
         if not math.isclose(self.pnl_neto, self.pnl_bruto - self.coste_entrada - self.coste_salida, abs_tol=1e-9):
             raise ValueError("pnl_neto no cuadra con bruto menos costes")
+        return self
+
+
+class Variante(Modelo):
+    """Fila de variantes.csv: una sesión en una ventana alternativa, con lo conocido al cierre de la sesión previa."""
+    fecha: date = Field(description="Sesión de la operación (día de entrada y salida)")
+    previa: date = Field(description="Sesión lun-vie anterior, de la que salen senal y serie")
+    ventana: str = Field(min_length=1, description="Nombre de la ventana (clave de `variantes.ventanas`)")
+    entrada: float = Field(gt=0, description="Precio a la hora de entrada")
+    salida: float = Field(gt=0, description="Precio a la hora de salida")
+    senal: Optional[float] = Field(description="Retorno de la sesión previa entre las horas de `variantes.senal`; null si falta una barra")
+    serie: Optional[float] = Field(description="Valor de `variantes.serie` en la sesión previa; null si no hay dato")
+    desfase: bool = Field(description="EE. UU. y Europa con distinto horario de verano ese día")
+
+
+class Variantes(Modelo):
+    """Describe variantes.csv. El dashboard combina en vivo filtros (senal < 0, serie > umbral, sin desfase) y tamaño."""
+    ventanas: dict[str, list[str]] = Field(description="Nombre -> [hora de entrada, hora de salida], hora del dato")
+    base: str = Field(description="Ventana que reproduce la operativa del experimento")
+    senal: Optional[list[str]] = Field(description="[hora inicial, hora final] del retorno de la sesión previa")
+    serie: Optional[str] = Field(description="Serie diaria de la columna serie (nombre del catálogo)")
+    coste_lado: float = Field(ge=0, description="Coste por unidad y lado, en unidades de precio")
+    filas: int = Field(ge=1)
+
+    @model_validator(mode="after")
+    def _base(self):
+        if self.base not in self.ventanas or any(len(h) != 2 for h in self.ventanas.values()):
+            raise ValueError("La base debe ser una de las ventanas y cada ventana, [entrada, salida]")
         return self
 
 
@@ -195,16 +226,18 @@ class Ficheros(Modelo):
     ficha: Literal["ficha.md"] = "ficha.md"
     equity_100: Optional[Literal["equity_100.csv"]] = Field(default=None, description="Equity de la referencia; presente si hay `referencia`")
     operaciones_100: Optional[Literal["operaciones_100.csv"]] = Field(default=None, description="Operaciones de la referencia")
+    variantes: Optional[Literal["variantes.csv"]] = Field(default=None, description="Tabla de variantes; presente si hay `variantes`")
 
 
 class Resumen(Modelo):
     """resumen.json: todo lo necesario para leer, comparar o graficar un experimento sin abrir el código."""
-    version_esquema: Literal["2.0", "2.1"] = VERSION
+    version_esquema: Literal["2.0", "2.1", "2.2"] = VERSION
     experimento: Experimento
     evidencia: Evidencia
     robustez: Robustez
     metricas: Metricas
     referencia: Optional[Referencia] = Field(default=None, description="Riesgo al 100 % del capital; null en experimentos previos al esquema 2.1 sin recalcular")
+    variantes: Optional[Variantes] = Field(default=None, description="Tabla de variantes para el dashboard; null si el plan no la pide")
     no_calculables: dict[str, str] = Field(description="Métrica -> motivo por el que es null")
     operaciones_por_anio: dict[str, int]
     conclusiones: Conclusiones
@@ -216,6 +249,8 @@ class Resumen(Modelo):
     def _coherente(self):
         if (self.referencia is None) != (self.ficheros.equity_100 is None) or (self.ficheros.equity_100 is None) != (self.ficheros.operaciones_100 is None):
             raise ValueError("`referencia` va siempre con equity_100.csv y operaciones_100.csv")
+        if (self.variantes is None) != (self.ficheros.variantes is None):
+            raise ValueError("`variantes` va siempre con variantes.csv")
         if self.historial[-1].id != self.experimento.id:
             raise ValueError("El último intento debe ser este experimento")
         faltan = {k for k, v in self.metricas.model_dump().items() if v is None} - set(self.no_calculables)
@@ -224,7 +259,7 @@ class Resumen(Modelo):
         return self
 
 
-ESQUEMAS = {"resumen": Resumen, "sesion": Sesion, "operacion": Operacion}
+ESQUEMAS = {"resumen": Resumen, "sesion": Sesion, "operacion": Operacion, "variante": Variante}
 
 
 def exportar_esquemas(directorio):

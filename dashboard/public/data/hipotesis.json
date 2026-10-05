@@ -76,7 +76,11 @@
     "nombre": "HORA 2 · ES",
     "efecto": "02:00",
     "experimentos": {
-      "IS": "H007-IS-REAL-001"
+      "IS": "H007-IS-REAL-002"
+    },
+    "variantes": {
+      "senal": "BtD",
+      "serie": "VIX"
     },
     "reglas": {
       "Entrada": "cierre · barra de 01:45 ET, lun–vie",

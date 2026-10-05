@@ -1,6 +1,7 @@
 import * as echarts from 'echarts';
 import { loadRegistro, loadFicha } from './data.js';
 import { computeMetrics } from './metrics.js';
+import { BUCKETS, DEFAULTS, byBucket, isBase, simulate } from './variantes.js';
 
 // La hipótesis se elige por la URL (#H-001); sin nada, la primera del registro.
 const registro = await loadRegistro();
@@ -9,6 +10,20 @@ const D = await loadFicha(entry);
 const P = D.phases;
 const U = P.IS.research.unit;   // unidad del estadístico, tal como la da el lab
 for (const ph of Object.values(P)) ph.m = computeMetrics(ph);
+
+/* variantes (si el lab trae variantes.csv): la fase IS se recalcula en vivo con la combinación elegida */
+const V = D.variants;
+const VO = V && { ...DEFAULTS, ventana: V.meta.base };
+// nombres de los toggles: los da el registro (p. ej. BtD, VIX); si no, genéricos
+if (V) V.label = { senal: entry.variantes?.senal ?? 'Señal < 0', serie: entry.variantes?.serie ?? V.meta.serie };
+let varBase = null;   // la base del lab simulada aquí (con la serie de cada operación) para comparar
+if (V) {
+  P.IS.labEquity = P.IS.equity; P.IS.labTrades = P.IS.trades;
+  varBase = simulate(V, P.IS, VO);
+  const a = varBase.equity.at(-1)[1], b = P.IS.equity.at(-1)[1];
+  console.assert(Math.abs(a / b - 1) < 1e-9, `variantes: la base simulada (${a}) no reproduce la equity del lab (${b})`);
+}
+const varActive = () => V && view === 'IS' && !isBase(VO, V.meta);
 
 /* estado de la vista */
 let view = 'IS', oosOpen = false;
@@ -136,7 +151,7 @@ const tip = () => ({ backgroundColor: css('--surface'), borderColor: css('--rule
 const anim = { animation: !reduced, animationDuration: DUR, animationDurationUpdate: DUR, animationEasingUpdate: 'cubicOut' };
 
 // la equity usa canvas: dibuja miles de puntos
-const cEq = mk('ch-eq', 'canvas'), cBoot = mk('ch-boot'), cYear = mk('ch-year');
+const cEq = mk('ch-eq', 'canvas'), cBoot = mk('ch-boot'), cYear = mk('ch-year'), cVix = V ? mk('ch-vix') : null;
 
 /* ---------- equity y drawdown ---------- */
 // Nube de puntos (estética depth map): cada día se rellena con puntos entre la curva y la base.
@@ -188,10 +203,13 @@ function renderEq() {
   const eqv = ph.equity.map(e => e[1]);
   let peak = -Infinity;
   const dd = eqv.map(v => { peak = Math.max(peak, v); return +((v / peak - 1) * 100).toFixed(4); });
-  const lo = Math.min(...eqv), hi = Math.max(...eqv), pad = (hi - lo) * .06;
+  // con una variante activa, la base del lab queda de referencia en gris (equity y drawdown)
+  const ghost = varActive() ? P.IS.labEquity.map(e => e[1]) : null;
+  let gPeak = -Infinity;
+  const ghostDD = ghost && ghost.map(v => { gPeak = Math.max(gPeak, v); return +((v / gPeak - 1) * 100).toFixed(4); });
+  const lo = Math.min(...eqv, ...(ghost ?? [])), hi = Math.max(...eqv, ...(ghost ?? [])), pad = (hi - lo) * .06;
   const eqLo = Math.floor(lo - pad), eqHi = Math.ceil(hi + pad);
   const yearStart = new Set(dates.map((d, i) => i > 0 && d.slice(0, 4) !== dates[i - 1].slice(0, 4) ? i : -1).filter(i => i >= 0));
-  const eqCloud = cloudOf(eqv, eqLo, 8 / (eqHi - eqLo), 11);
   const ddCloud = cloudOf(dd, 0, 5 / Math.abs(Math.min(...dd) || 1), 12);
   const split = view !== 'IS';
 
@@ -216,11 +234,15 @@ function renderEq() {
           axisLabel: { ...axisBase().axisLabel, interval: i => yearStart.has(i), formatter: v => v.slice(0, 4) } }],
       yAxis: [
         { type: 'value', gridIndex: 0, min: eqLo, max: eqHi, ...axisBase(), axisLabel: { ...axisBase().axisLabel, formatter: v => nf(0).format(v) } },
-        { type: 'value', gridIndex: 1, max: 0, splitNumber: 2, ...axisBase(), axisLabel: { ...axisBase().axisLabel, formatter: v => nf(2).format(v) + '%' } }],
+        { type: 'value', gridIndex: 1, max: 0, min: ghostDD ? Math.floor(Math.min(...dd, ...ghostDD)) : null, splitNumber: 2, ...axisBase(), axisLabel: { ...axisBase().axisLabel, formatter: v => nf(2).format(v) + '%' } }],
       series: [
         { id: 'hl0', type: 'line', data: [], xAxisIndex: 0, yAxisIndex: 0, silent: true },
         { id: 'hl1', type: 'line', data: [], xAxisIndex: 1, yAxisIndex: 1, silent: true },
-        ...cloudSeries('ec', cutCloud(eqCloud), css('--ink'), 0),
+        ...(ghost ? [
+          { id: 'ghost', name: 'Base', type: 'line', data: cut(ghost), showSymbol: false, xAxisIndex: 0, yAxisIndex: 0, z: 1,
+            lineStyle: { color: css('--faint'), width: 1, type: [3, 3] }, tooltip: { valueFormatter: v => v == null ? '—' : nf(2).format(v) + ' USD' } },
+          { id: 'ghostDD', name: 'DD base', type: 'line', data: cut(ghostDD), showSymbol: false, xAxisIndex: 1, yAxisIndex: 1, z: 1,
+            lineStyle: { color: css('--faint'), width: 1, type: [3, 3] }, tooltip: { valueFormatter: v => v == null ? '—' : nf(3).format(v) + ' %' } }] : []),
         ...cloudSeries('dc', cutCloud(ddCloud), css('--neg'), 1),
         { id: 'eq', name: 'Equity', type: 'line', data: cut(eqv), showSymbol: false, connectNulls: false, lineStyle: { color: css('--ink'), width: 1.6 },
           xAxisIndex: 0, yAxisIndex: 0, markArea: { silent: true, data: bands },
@@ -349,18 +371,94 @@ function highlightYear(y) {
 cYear.on('updateAxisPointer', e => { const info = e.axesInfo && e.axesInfo[0]; highlightYear(info ? years[info.value] : null); });
 cYear.getZr().on('globalout', () => highlightYear(null));
 
+/* ---------- variantes: expectancy por tramo de VIX (combinación frente a base) ---------- */
+function renderVix() {
+  if (!cVix) return;
+  const cur = byBucket(varActive() ? P.IS.trades : varBase.trades), base = byBucket(varBase.trades);
+  cVix.setOption({
+    ...anim,
+    grid: { left: 44, right: 0, top: 12, bottom: 36 },
+    tooltip: { ...tip(), trigger: 'axis', axisPointer: { type: 'none' },
+      formatter: p => `${V.label.serie} ${BUCKETS[p[0].dataIndex][0]}<br>` +
+        p.map(q => `${q.seriesName}: ${nf(2).format(q.value)} pb · ${(q.seriesName === 'Base' ? base : cur)[q.dataIndex].n} op.`).join('<br>') },
+    xAxis: { type: 'category', data: cur.map(b => `${b.label}\nn ${b.n}`), ...axisBase(), axisLabel: { ...axisBase().axisLabel, lineHeight: 14 } },
+    yAxis: { type: 'value', splitNumber: 3, ...axisBase(), axisLabel: { ...axisBase().axisLabel, formatter: v => v + ' pb' } },
+    series: [
+      { ...dotBar, id: 'vixBase', name: 'Base', barGap: '15%', data: base.map(b => ({ value: +b.pb.toFixed(3), itemStyle: { color: css('--faint'), opacity: varActive() ? .5 : 0 } })) },
+      { ...dotBar, id: 'vixCur', name: varActive() ? 'Combinación' : 'Base lab', data: cur.map(b => ({ value: +b.pb.toFixed(3), itemStyle: { color: b.pb >= 0 ? css('--pos') : css('--neg'), opacity: .85 } })) },
+    ],
+  });
+}
+
+/* ---------- variantes: barra de toggles ---------- */
+function initVariants() {
+  const m = V.meta, L = V.label;
+  const alt = Object.keys(m.ventanas).filter(k => k !== m.base);
+  const hh = k => m.ventanas[k].join('–');
+  $('var-bar').hidden = false; $('p-vix').hidden = false;
+  document.querySelector('.dash-main').classList.add('has-var');
+  $('sub-vix').textContent = `media neta por operación · ${L.serie} de la sesión previa · gris: base`;
+  const tg = (id, label) => `<button class="tg" data-k="${id}" aria-pressed="false">${label}</button>`;
+  $('var-bar').innerHTML = [
+    ...alt.map(k => tg('w:' + k, k)),
+    m.senal ? tg('btd', L.senal) : '',
+    tg('desfase', 'Sin desfase'),
+    m.serie ? `<span class="sep"></span><span class="lbl">${L.serie} &gt;</span>
+      <input class="thr" id="v-umbral" type="number" value="${VO.umbral}" min="0" step="1" aria-label="Umbral de ${L.serie}">
+      ${tg('filtro', 'Solo esas')}${tg('tamano', 'Tamaño ×')}
+      <input class="thr" id="v-k" type="number" value="${VO.k}" min="0" max="5" step="0.5" aria-label="Multiplicador de tamaño">` : '',
+    `<span class="info" tabindex="0" aria-label="Qué hace cada variante">i<span class="tip" role="tooltip">
+      <b>Base</b> ${hh(m.base)}, todas las sesiones (el experimento del lab).<br>
+      ${alt.map(k => `<b>${k}</b> ventana ${hh(k)}.<br>`).join('')}
+      ${m.senal ? `<b>${L.senal}</b> solo si la sesión previa cerró vendedora: retorno ${m.senal.join('–')} &lt; 0.<br>` : ''}
+      <b>Sin desfase</b> no opera las semanas en que EE. UU. y Europa tienen distinto horario.<br>
+      ${m.serie ? `<b>${L.serie} &gt; · Solo esas</b> solo opera si ${L.serie} al cierre de la sesión previa supera el umbral.<br>
+      <b>${L.serie} &gt; · Tamaño ×</b> opera las mismas sesiones y multiplica el tamaño en las que lo superan (×2 = 200 % del capital).<br>` : ''}
+      <span class="tip-foot">Calculado en el navegador sobre variantes.csv del lab: sin bootstrap ni batería. La evidencia y el bootstrap son siempre los de la base.</span>
+    </span></span>`,
+    '<button class="reset" id="v-reset">restablecer</button>',
+  ].join('');
+  $('var-bar').addEventListener('click', e => {
+    const b = e.target.closest('.tg'); if (!b) return;
+    const k = b.dataset.k;
+    if (k.startsWith('w:')) VO.ventana = VO.ventana === k.slice(2) ? m.base : k.slice(2);
+    else VO[k] = !VO[k];
+    applyVariants();
+  });
+  const num = (id, key) => $(id)?.addEventListener('input', e => { const v = parseFloat(e.target.value); if (isFinite(v)) { VO[key] = v; applyVariants(); } });
+  num('v-umbral', 'umbral'); num('v-k', 'k');
+  $('v-reset').addEventListener('click', () => {
+    Object.assign(VO, DEFAULTS, { ventana: m.base });
+    if ($('v-umbral')) { $('v-umbral').value = VO.umbral; $('v-k').value = VO.k; }
+    applyVariants();
+  });
+}
+
+function applyVariants() {
+  for (const b of $('var-bar').querySelectorAll('.tg')) {
+    const k = b.dataset.k;
+    b.setAttribute('aria-pressed', k.startsWith('w:') ? VO.ventana === k.slice(2) : !!VO[k]);
+  }
+  const sim = isBase(VO, V.meta) ? { equity: P.IS.labEquity, trades: P.IS.labTrades } : simulate(V, P.IS, VO);
+  Object.assign(P.IS, sim);
+  P.IS.m = computeMetrics(P.IS);
+  document.querySelector('#kpi-ev').previousElementSibling.textContent = varActive() ? 'Evidencia · base del lab' : 'Evidencia';
+  updateKPIs(); renderEq(); renderVix();
+}
+
 /* ---------- cambio de fase ---------- */
 function setView(v) {
   view = v; hlYear = null;
   document.documentElement.dataset.state = P[v].state;   // color de la línea superior
   renderPhases(); renderSpec(); updateKPIs();
-  renderEq(); renderBoot(); renderYear();
+  renderEq(); renderBoot(); renderYear(); renderVix();
 }
 
 /* ---------- arranque + tema ---------- */
+if (V) initVariants();
 setView('IS');
 new ResizeObserver(() => charts.forEach(c => c.resize())).observe(document.querySelector('.dash-main'));
-const retheme = () => { hlYear = null; renderEq(); renderBoot(); renderYear(); };
+const retheme = () => { hlYear = null; renderEq(); renderBoot(); renderYear(); renderVix(); };
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', retheme);
 new MutationObserver(retheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(retheme);

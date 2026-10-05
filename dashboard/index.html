@@ -59,6 +59,8 @@
         </div>
         <nav class="phases" id="phases" aria-label="Fase de la prueba"></nav>
         <dl class="spec" id="spec"></dl>
+        <!-- Variantes (solo si el experimento trae variantes.csv): combinan en vivo ventana, filtros y tamaño -->
+        <div class="var-bar" id="var-bar" role="group" aria-label="Variantes" hidden></div>
       </header>
 
       <!-- KPIs: evidencia estadística | resultado económico -->
@@ -80,6 +82,10 @@
         <div class="panel">
           <div class="panel-head"><h3>Por año</h3><p class="sub">barras: efecto dentro del año · puntos: efecto total sin ese año · <span title="La equity sí descuenta costes">antes de costes</span></p></div>
           <div class="chart" id="ch-year"></div>
+        </div>
+        <div class="panel p-vix" id="p-vix" hidden>
+          <div class="panel-head"><h3>Expectancy por VIX</h3><p class="sub" id="sub-vix"></p></div>
+          <div class="chart" id="ch-vix"></div>
         </div>
       </section>
 

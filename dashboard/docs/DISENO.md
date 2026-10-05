@@ -25,7 +25,7 @@ Estética: **depth map**. Monocromo sobre negro, superficies hechas de puntos, r
 - **Bloque:** método → cifras → gráfico.
 - **KPI:** etiqueta (fs-1, muted) / cifra (fs-4, mono) / detalle (fs-1, muted). Cifras con signo en `--pos`/`--neg`.
 - **Gráfico:** sin marco. Título fs-2 + subtítulo fs-1 en una línea. Rejilla punteada `[1, 3]`. Gráfico principal + tira secundaria con eje X compartido (equity/DD, histograma/IC, barras/puntos).
-- **Superficies:** nube de puntos en 4 capas de profundidad (`DEPTH` en `main.js`): densa y brillante junto a la curva, tenue al alejarse. La curva real va encima, a 1,6px.
+- **Superficies:** nube de puntos en 4 capas de profundidad (`DEPTH` en `ficha.js`): densa y brillante junto a la curva, tenue al alejarse. La curva real va encima, a 1,6px. **Solo en el drawdown:** en la equity la nube ensuciaba la lectura (decisión del usuario, 2026-10-05); la equity va con su curva y las bandas de caída/expansión.
 - **Barras:** columnas de filas de puntos (`dotBar`).
 - **Estado:** línea de 2px arriba del todo con el color de la fase.
 
@@ -36,6 +36,13 @@ Estética: **depth map**. Monocromo sobre negro, superficies hechas de puntos, r
 - **Filtro de equity:** un botón por activo con su color; oculta la curva (selección nativa de ECharts, leyenda oculta) y el eje se reajusta. Siempre queda al menos una.
 - **Resaltado cruzado:** pasar por un activo en la tabla, la matriz, el filtro o una curva lo destaca en todos los bloques y atenúa el resto.
 - Las cifras por año son **antes de costes**; la equity, neta. Se indica en el subtítulo.
+
+## Variantes (ficha con `variantes.csv`)
+
+- **Barra de toggles** bajo la especificación: un botón por ventana alternativa (OD+), señal (BtD), «Sin desfase», y umbral de la serie (VIX >) con «Solo esas» (filtro) y «Tamaño ×» (multiplicador). Botones píldora; activo = tinta sobre fondo. «restablecer» en la esquina derecha.
+- **ⓘ** al final: al pasar el cursor explica cada toggle y que el cálculo es exploratorio. Nada de texto fijo.
+- Con una combinación activa: los KPIs de **Resultado** y la equity/drawdown se recalculan; la base del lab queda en **gris discontinuo** en ambos. **Evidencia**, bootstrap y «Por año» son siempre los del lab (el título pasa a «Evidencia · base del lab»).
+- **Expectancy por VIX** (tercer panel de la derecha): barras de puntos por tramo (≤15, 15–20, 20–30, >30) con el nº de operaciones; color por signo; base en gris.
 
 ## Movimiento
 

@@ -12,7 +12,7 @@ RAIZ = Path(__file__).resolve().parents[1]
 
 class Resultados(unittest.TestCase):
     def test_guardar_cargar_indice_y_ficha(self):
-        resumen, sesiones, operaciones, al_100 = experimento()
+        resumen, sesiones, operaciones, al_100, _ = experimento()
         with tempfile.TemporaryDirectory() as tmp:
             d = Path(tmp) / "X"
             with self.assertRaisesRegex(ValueError, "al 100"):
@@ -33,7 +33,7 @@ class Resultados(unittest.TestCase):
             self.assertEqual((d / "ficha.md").read_text(), original)
 
     def test_csv_manipulado_no_carga(self):
-        resumen, sesiones, operaciones, al_100 = experimento()
+        resumen, sesiones, operaciones, al_100, _ = experimento()
         with tempfile.TemporaryDirectory() as tmp:
             d = Path(tmp) / "X"
             motor.guardar(d, resumen, sesiones, operaciones, al_100)
@@ -44,7 +44,7 @@ class Resultados(unittest.TestCase):
                 motor.cargar(d)
 
     def test_referencia_debe_salir_de_su_equity(self):
-        resumen, sesiones, operaciones, (s100, o100) = experimento()
+        resumen, sesiones, operaciones, (s100, o100), _ = experimento()
         with tempfile.TemporaryDirectory() as tmp:
             falsa = resumen.model_copy(update={"referencia": resumen.referencia.model_copy(update={"max_drawdown": .01})})
             with self.assertRaisesRegex(ValueError, "no coincide"):

@@ -21,6 +21,20 @@ def _referencia(r):
     ]
 
 
+def _variantes(v):
+    if v is None:
+        return []
+    ventanas = ", ".join(f"{k} {a}–{b}" + (" (base)" if k == v.base else "") for k, (a, b) in v.ventanas.items())
+    return [
+        "## Variantes (para el dashboard)", "",
+        f"[variantes.csv](variantes.csv): {v.filas} filas, una por sesión y ventana ({ventanas}). "
+        f"Con cada una: retorno de la sesión previa {'–'.join(v.senal) if v.senal else '(sin señal)'}, "
+        f"{v.serie or 'sin serie'} de la sesión previa y si es semana de desfase horario EE. UU.–Europa. "
+        "La ventana base reproduce el libro de operaciones. Las combinaciones se calculan en el dashboard "
+        "y no pasan por la batería: son exploratorias.", "",
+    ]
+
+
 def render(resumen):
     e, ev, rb, m, c = (resumen.experimento, resumen.evidencia, resumen.robustez,
                        resumen.metricas, resumen.conclusiones)
@@ -71,6 +85,7 @@ def render(resumen):
         f"| Sharpe | {opcional(m.sharpe)} |",
         f"| Costes | {n(m.costes)} {e.moneda} |", "",
         *_referencia(resumen.referencia),
+        *_variantes(resumen.variantes),
         "Métricas completas y sus definiciones: `metricas` en resumen.json y [esquema](../../esquemas/resumen.schema.json).", "",
         "## Supuestos y límites", "",
         *[f"- {x}" for x in c.supuestos + c.limites], "",

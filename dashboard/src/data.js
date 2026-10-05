@@ -3,7 +3,8 @@
 //   { key, state, start, end, equity: [[fecha, equity, exposición]], trades: [{ net, cost }], research }
 // Si cambia el formato del lab, este es el único sitio que hay que tocar.
 //
-// Por experimento, el lab deja: resumen.json, equity.csv y operaciones.csv (esquemas en sentinel2/esquemas/).
+// Por experimento, el lab deja: resumen.json, equity.csv y operaciones.csv (esquemas en ../esquemas/);
+// opcionalmente, variantes.csv (una fila por sesión y ventana; ver src/variantes.js).
 
 const LAB = '/lab';
 
@@ -32,9 +33,22 @@ export async function loadFicha(entry) {
   const r = await getJSON(`${dir}/resumen.json`);
   // Con simulación al 100 % del capital (lab ≥ 2.1) se pinta esa: el riesgo es comparable entre tamaños.
   const f = r.ficheros, al100 = !!f.equity_100;
-  const [equity, trades] = await Promise.all([getCSV(`${dir}/${al100 ? f.equity_100 : f.equity}`),
-                                              getCSV(`${dir}/${al100 ? f.operaciones_100 : f.operaciones}`)]);
-  return toView(r, equity, trades, entry);
+  const [equity, trades, variantes] = await Promise.all([getCSV(`${dir}/${al100 ? f.equity_100 : f.equity}`),
+                                              getCSV(`${dir}/${al100 ? f.operaciones_100 : f.operaciones}`),
+                                              f.variantes ? getCSV(`${dir}/${f.variantes}`) : null]);
+  const view = toView(r, equity, trades, entry);
+  if (variantes) view.variants = toVariants(r, variantes, al100);
+  return view;
+}
+
+// variantes.csv → { meta, fraccion, rows: Map(ventana → Map(fecha → fila)) }. Celda vacía = sin dato.
+function toVariants(r, filas, al100) {
+  const num = v => v === '' ? null : +v;
+  const rows = new Map(Object.keys(r.variantes.ventanas).map(k => [k, new Map()]));
+  for (const x of filas)
+    rows.get(x.ventana).set(x.fecha, { entrada: +x.entrada, salida: +x.salida, senal: num(x.senal), serie: num(x.serie), desfase: x.desfase === 'True' });
+  // misma fracción que la equity que se pinta: así, sin toggles, la simulación reproduce la del lab
+  return { meta: r.variantes, fraccion: al100 ? r.referencia.fraccion : 1, rows };
 }
 
 // El dashboard trabaja en fracciones (× 10.000 = pb); el lab publica en pb.

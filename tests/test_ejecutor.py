@@ -122,7 +122,7 @@ class PlanH007(unittest.TestCase):
             ts += timedelta(minutes=15)
         plan = "experimentos/H007-IS-REAL-001.md"
         spec = ejecutar.leer_plan(ejecutar.motor.RAIZ / plan)
-        r, sesiones, operaciones, _ = ejecutar.ejecutar(spec, plan, barras=bs, inicio=date(2018, 1, 1), fin=date(2018, 12, 31))
+        r, sesiones, operaciones, _, _ = ejecutar.ejecutar(spec, plan, barras=bs, inicio=date(2018, 1, 1), fin=date(2018, 12, 31))
         self.assertTrue(r.experimento.sintetico)
         self.assertEqual(len(r.evidencia.desglose), 23)
         self.assertEqual(len(operaciones), 40)  # 8 semanas × 5 días

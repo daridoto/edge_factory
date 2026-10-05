@@ -7,7 +7,7 @@ import math
 from pathlib import Path
 import statistics as st
 
-from .contratos import Metricas, Operacion, Referencia, Resumen, Sesion
+from .contratos import Metricas, Operacion, Referencia, Resumen, Sesion, Variante
 from .presentacion import render
 from .proteccion import exigir_is
 
@@ -147,8 +147,9 @@ def _csv(ruta, filas, modelo):
 
 
 def _leer_csv(ruta, modelo):
+    """Una celda vacía es null (solo en campos opcionales; en los demás, el modelo la rechaza)."""
     with ruta.open(newline="") as f:
-        return [modelo.model_validate(fila) for fila in csv.DictReader(f)]
+        return [modelo.model_validate({k: (None if v == "" else v) for k, v in fila.items()}) for fila in csv.DictReader(f)]
 
 
 def validar_referencia(resumen, sesiones, operaciones):
@@ -160,27 +161,58 @@ def validar_referencia(resumen, sesiones, operaciones):
         raise ValueError("`referencia` no coincide con equity_100.csv y operaciones_100.csv")
 
 
-def guardar(directorio, resumen, sesiones, operaciones, referencia_100=None):
+def validar_variantes(resumen, operaciones, filas):
+    """La tabla cuadra con su descripción y su ventana base reproduce el libro: mismas sesiones de entrada y, en cada
+    operación, pnl_bruto = unidades × (salida - entrada), con unidades = coste de entrada / coste por lado."""
+    v = resumen.variantes
+    if len(filas) != v.filas or {f.ventana for f in filas} - set(v.ventanas):
+        raise ValueError("variantes.csv no cuadra con `variantes` (filas o ventanas)")
+    claves = [(f.fecha, f.ventana) for f in filas]
+    if claves != sorted(set(claves)):
+        raise ValueError("variantes.csv: (fecha, ventana) únicas y ordenadas")
+    e = resumen.experimento
+    if any(not (e.inicio <= f.fecha <= e.fin and f.previa < f.fecha) for f in filas):
+        raise ValueError("variantes.csv: fechas fuera de la muestra o sesión previa posterior")
+    base = {f.fecha: f for f in filas if f.ventana == v.base}
+    if sorted(base) != sorted(o.entrada for o in operaciones):
+        raise ValueError("La ventana base no tiene las mismas sesiones que operaciones.csv")
+    if v.coste_lado:
+        for o in operaciones:
+            f = base[o.entrada]
+            if not math.isclose(o.pnl_bruto, o.coste_entrada / v.coste_lado * (f.salida - f.entrada), rel_tol=1e-9, abs_tol=1e-9):
+                raise ValueError(f"Operación {o.id}: la ventana base no reproduce su PnL bruto")
+
+
+def guardar(directorio, resumen, sesiones, operaciones, referencia_100=None, variantes=None):
     """Escribe resumen.json, equity.csv, operaciones.csv y ficha.md en un directorio nuevo; con `referencia`,
-    también equity_100.csv y operaciones_100.csv (`referencia_100` = (sesiones, operaciones) al 100 %)."""
+    también equity_100.csv y operaciones_100.csv (`referencia_100` = (sesiones, operaciones) al 100 %);
+    con `variantes` (filas Variante), variantes.csv."""
     e = resumen.experimento
     validar_contabilidad(e.capital_inicial, e.inicio, e.fin, sesiones, operaciones, e.mercado, e.hipotesis)
     if (resumen.referencia is None) != (referencia_100 is None):
         raise ValueError("`referencia` necesita su simulación al 100 %, y viceversa")
     if referencia_100:
         validar_referencia(resumen, *referencia_100)
+    if (resumen.variantes is None) != (variantes is None):
+        raise ValueError("`variantes` necesita su tabla, y viceversa")
+    if variantes:
+        validar_variantes(resumen, operaciones, variantes)
+        if referencia_100:
+            validar_variantes(resumen, referencia_100[1], variantes)
     directorio = Path(directorio)
     directorio.mkdir(parents=True, exist_ok=False)
-    escribir(directorio, resumen, sesiones, operaciones, referencia_100)
+    escribir(directorio, resumen, sesiones, operaciones, referencia_100, variantes)
 
 
-def escribir(directorio, resumen, sesiones, operaciones, referencia_100=None):
+def escribir(directorio, resumen, sesiones, operaciones, referencia_100=None, variantes=None):
     (directorio / "resumen.json").write_text(resumen.model_dump_json(indent=2) + "\n")
     _csv(directorio / "equity.csv", sesiones, Sesion)
     _csv(directorio / "operaciones.csv", operaciones, Operacion)
     if referencia_100:
         _csv(directorio / "equity_100.csv", referencia_100[0], Sesion)
         _csv(directorio / "operaciones_100.csv", referencia_100[1], Operacion)
+    if variantes:
+        _csv(directorio / "variantes.csv", variantes, Variante)
     (directorio / "ficha.md").write_text(render(resumen))
 
 
@@ -195,6 +227,8 @@ def cargar(directorio):
     if resumen.ficheros.equity_100:
         validar_referencia(resumen, _leer_csv(directorio / resumen.ficheros.equity_100, Sesion),
                            _leer_csv(directorio / resumen.ficheros.operaciones_100, Operacion))
+    if resumen.ficheros.variantes:
+        validar_variantes(resumen, operaciones, _leer_csv(directorio / resumen.ficheros.variantes, Variante))
     return resumen, sesiones, operaciones
 
 
