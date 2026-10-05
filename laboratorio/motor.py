@@ -7,7 +7,7 @@ import math
 from pathlib import Path
 import statistics as st
 
-from .contratos import Metricas, Operacion, Resumen, Sesion
+from .contratos import Metricas, Operacion, Referencia, Resumen, Sesion
 from .presentacion import render
 from .proteccion import exigir_is
 
@@ -15,7 +15,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 RESULTADOS = RAIZ / "resultados"
 COLUMNAS_INDICE = ["id", "hipotesis", "fecha", "instrumento", "frecuencia", "inicio", "fin",
                    "estadistico", "unidad", "valor", "ic_inf", "ic_sup", "incluye_cero",
-                   "anios_positivos", "anios", "operaciones", "pnl_neto", "sharpe", "max_drawdown"]
+                   "anios_positivos", "anios", "operaciones", "pnl_neto", "sharpe", "max_drawdown", "max_drawdown_100"]
 
 
 def digest(raw):
@@ -116,6 +116,26 @@ def metricas(capital, sesiones, operaciones, periodos=252):
     return m, motivos, dict(sorted(por_anio.items()))
 
 
+def referencia(capital, sesiones, operaciones, fraccion, periodos=252):
+    """Referencia: métricas de riesgo y el episodio del drawdown máximo de una simulación al 100 % del capital."""
+    m, _, _ = metricas(capital, sesiones, operaciones, periodos)
+    fechas = [s.fecha for s in sesiones]
+    equity = [s.equity for s in sesiones]
+    pico, i_pico, peor = capital, 0, (0.0, 0, 0)
+    for i, valor in enumerate(equity):
+        if valor >= pico:
+            pico, i_pico = valor, i
+        elif 1 - valor / pico > peor[0]:
+            peor = (1 - valor / pico, i_pico, i)
+    _, i_pico, i_valle = peor
+    i_rec = next((i for i in range(i_valle, len(equity)) if equity[i] >= equity[i_pico]), None) if peor[0] else None
+    return Referencia(fraccion=fraccion, rentabilidad_total=m.rentabilidad_total, rentabilidad_anual=m.rentabilidad_anual,
+                      sharpe=m.sharpe, max_drawdown=m.max_drawdown, pico=fechas[i_pico], valle=fechas[i_valle],
+                      recuperacion=None if i_rec is None else fechas[i_rec],
+                      sesiones_bajo_agua=((len(equity) - 1 if i_rec is None else i_rec) - i_pico) if peor[0] else 0,
+                      motor_sha256=huella_motor())
+
+
 def _csv(ruta, filas, modelo):
     columnas = list(modelo.model_fields)
     with ruta.open("w", newline="") as f:
@@ -131,15 +151,36 @@ def _leer_csv(ruta, modelo):
         return [modelo.model_validate(fila) for fila in csv.DictReader(f)]
 
 
-def guardar(directorio, resumen, sesiones, operaciones):
-    """Escribe resumen.json, equity.csv, operaciones.csv y ficha.md en un directorio nuevo."""
+def validar_referencia(resumen, sesiones, operaciones):
+    """La simulación al 100 % concilia como cualquier otra y su resumen sale de ella."""
+    e, r = resumen.experimento, resumen.referencia
+    validar_contabilidad(e.capital_inicial, e.inicio, e.fin, sesiones, operaciones, e.mercado, e.hipotesis)
+    calculada = referencia(e.capital_inicial, sesiones, operaciones, r.fraccion, resumen.procedencia.periodos_por_anio)
+    if calculada.model_dump(exclude={"motor_sha256"}) != r.model_dump(exclude={"motor_sha256"}):
+        raise ValueError("`referencia` no coincide con equity_100.csv y operaciones_100.csv")
+
+
+def guardar(directorio, resumen, sesiones, operaciones, referencia_100=None):
+    """Escribe resumen.json, equity.csv, operaciones.csv y ficha.md en un directorio nuevo; con `referencia`,
+    también equity_100.csv y operaciones_100.csv (`referencia_100` = (sesiones, operaciones) al 100 %)."""
     e = resumen.experimento
     validar_contabilidad(e.capital_inicial, e.inicio, e.fin, sesiones, operaciones, e.mercado, e.hipotesis)
+    if (resumen.referencia is None) != (referencia_100 is None):
+        raise ValueError("`referencia` necesita su simulación al 100 %, y viceversa")
+    if referencia_100:
+        validar_referencia(resumen, *referencia_100)
     directorio = Path(directorio)
     directorio.mkdir(parents=True, exist_ok=False)
+    escribir(directorio, resumen, sesiones, operaciones, referencia_100)
+
+
+def escribir(directorio, resumen, sesiones, operaciones, referencia_100=None):
     (directorio / "resumen.json").write_text(resumen.model_dump_json(indent=2) + "\n")
     _csv(directorio / "equity.csv", sesiones, Sesion)
     _csv(directorio / "operaciones.csv", operaciones, Operacion)
+    if referencia_100:
+        _csv(directorio / "equity_100.csv", referencia_100[0], Sesion)
+        _csv(directorio / "operaciones_100.csv", referencia_100[1], Operacion)
     (directorio / "ficha.md").write_text(render(resumen))
 
 
@@ -151,6 +192,9 @@ def cargar(directorio):
     operaciones = _leer_csv(directorio / "operaciones.csv", Operacion)
     e = resumen.experimento
     validar_contabilidad(e.capital_inicial, e.inicio, e.fin, sesiones, operaciones, e.mercado, e.hipotesis)
+    if resumen.ficheros.equity_100:
+        validar_referencia(resumen, _leer_csv(directorio / resumen.ficheros.equity_100, Sesion),
+                           _leer_csv(directorio / resumen.ficheros.operaciones_100, Operacion))
     return resumen, sesiones, operaciones
 
 
@@ -161,7 +205,8 @@ def fila_indice(resumen):
                 frecuencia=e.frecuencia, inicio=e.inicio.isoformat(), fin=e.fin.isoformat(),
                 estadistico=ev.estadistico, unidad=ev.unidad, valor=ev.valor, ic_inf=b.ic_inf, ic_sup=b.ic_sup,
                 incluye_cero=b.incluye_cero, anios_positivos=sum(v > 0 for v in anios.values()), anios=len(anios),
-                operaciones=m.operaciones, pnl_neto=m.pnl_neto, sharpe=m.sharpe, max_drawdown=m.max_drawdown)
+                operaciones=m.operaciones, pnl_neto=m.pnl_neto, sharpe=m.sharpe, max_drawdown=m.max_drawdown,
+                max_drawdown_100=resumen.referencia.max_drawdown if resumen.referencia else None)
 
 
 def reconstruir_indice(resultados=RESULTADOS):

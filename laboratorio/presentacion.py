@@ -5,6 +5,22 @@ def n(x, decimales=2):
     return f"{x:,.{decimales}f}".replace(",", "_").replace(".", ",").replace("_", ".")
 
 
+def _referencia(r):
+    if r is None:
+        return ["**Referencia al 100 % del capital:** no calculada (experimento anterior al esquema 2.1).", ""]
+    return [
+        f"**Referencia al 100 % del capital** (la misma operativa con el {n(r.fraccion * 100, 1)} % de la equity, sin apalancamiento):", "",
+        "| Riesgo | Valor |", "|---|---:|",
+        f"| Máximo drawdown | **{n(r.max_drawdown * 100)} %** |",
+        f"| Pico → valle | {r.pico} → {r.valle} |",
+        f"| Recuperación | {r.recuperacion or 'no recupera en la muestra'} |",
+        f"| Sesiones bajo el agua | {r.sesiones_bajo_agua} |",
+        f"| Rentabilidad total | {n(r.rentabilidad_total * 100)} % |",
+        f"| Rentabilidad anual | {'no calculable' if r.rentabilidad_anual is None else n(r.rentabilidad_anual * 100) + ' %'} |",
+        f"| Sharpe | {'no calculable' if r.sharpe is None else n(r.sharpe)} |", "",
+    ]
+
+
 def render(resumen):
     e, ev, rb, m, c = (resumen.experimento, resumen.evidencia, resumen.robustez,
                        resumen.metricas, resumen.conclusiones)
@@ -51,9 +67,10 @@ def render(resumen):
         f"| Resultado medio por operación | {opcional(m.esperanza, ' ' + e.moneda)} |",
         f"| Tasa de acierto | {opcional(None if m.tasa_acierto is None else m.tasa_acierto * 100, ' %')} |",
         f"| Rentabilidad sobre {n(e.capital_inicial, 0)} {e.moneda} | {n(m.rentabilidad_total * 100)} % |",
-        f"| Máximo drawdown | {n(m.max_drawdown * 100)} % |",
+        f"| Máximo drawdown (tamaño del plan) | {n(m.max_drawdown * 100)} % |",
         f"| Sharpe | {opcional(m.sharpe)} |",
         f"| Costes | {n(m.costes)} {e.moneda} |", "",
+        *_referencia(resumen.referencia),
         "Métricas completas y sus definiciones: `metricas` en resumen.json y [esquema](../../esquemas/resumen.schema.json).", "",
         "## Supuestos y límites", "",
         *[f"- {x}" for x in c.supuestos + c.limites], "",

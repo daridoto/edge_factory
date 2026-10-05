@@ -32,7 +32,7 @@ $('h-q').textContent = P.IS.research.question;
 document.title = D.name;
 const B = P.IS.research.bootstrap;
 $('sub-boot').textContent = `${B.replicas.toLocaleString('es-ES', { useGrouping: 'always' })} réplicas · bloques de ${B.bloque} · ${U}`;
-$('sub-eq').textContent = `USD · ${entry.reglas['Tamaño'] ?? ''} por entrada`;
+$('sub-eq').textContent = `USD · ${D.sizing ?? entry.reglas['Tamaño'] ?? ''} por entrada`;
 // si la hipótesis se probó en varios instrumentos, «volver» lleva a su comparativa
 if (registro.filter(e => entry.hipotesis && e.hipotesis === entry.hipotesis).length > 1)
   Object.assign(document.querySelector('.dash .back'), { href: `#${entry.hipotesis}`, textContent: `← ${entry.hipotesis} · todos` });
@@ -58,7 +58,8 @@ $('phases').addEventListener('click', e => {
 function renderSpec() {
   const ph = P[view];
   $('spec').innerHTML = [
-    ...Object.entries(entry.reglas),
+    // el tamaño del plan se conserva; lo que se pinta va al 100 % si el lab lo da
+    ...Object.entries(entry.reglas).map(([k, v]) => k === 'Tamaño' && D.sizing ? [k, `${D.sizing} (plan: ${v})`] : [k, v]),
     ['Activo', `${D.identity.instrument} · ${D.identity.frequency}`],
     ['Periodo', `${fdate(ph.start)} → ${fdate(ph.end)}`],
     ['Capital', `${nf(0).format(D.initialEquity)} USD`],
@@ -94,10 +95,10 @@ const KPIS = {
     { l: 'Réplicas < 0', v: ph => [ph.bootNeg * 100], f: ([v]) => nf(0).format(v) + unit('%'), d: () => 'por debajo de 0', t: 'Porcentaje de réplicas con el estadístico negativo' },
   ],
   'kpi-res': [
-    { l: 'PnL neto', v: ph => [ph.m.pnl], f: ([v]) => nf(2).format(v) + unit('USD'), d: ph => 'costes 2×: ' + nf(2).format(ph.m.pnlCosts2x), cls: ph => sign(ph.m.pnl), t: 'Equity final − inicial, neto de costes' },
+    { l: 'ROI', v: ph => [ph.m.roi * 100], f: ([v]) => (v >= 0 ? '+' : '') + nf(2).format(v) + ' %', d: ph => `anual ${nf(2).format(ph.m.cagr * 100)} % · ${nf(0).format(ph.m.pnl)} USD`, cls: ph => sign(ph.m.roi), t: 'Rentabilidad total sobre el capital inicial, neta de costes; anual = compuesta' },
     { l: 'Operaciones', v: ph => [ph.m.trades], f: ([v]) => nf(0).format(v), d: ph => 'exposición ' + nf(0).format(ph.m.exposure * 100) + ' %', t: 'Número de operaciones cerradas' },
     { l: 'Win rate', v: ph => [ph.m.winRate * 100], f: ([v]) => nf(0).format(v) + ' %', d: ph => 'payoff ' + nf(2).format(ph.m.payoff), t: 'Operaciones con PnL neto > 0 / todas' },
-    { l: 'Profit factor', v: ph => [ph.m.profitFactor], f: ([v]) => nf(2).format(v), d: () => '', t: 'Ganancias netas / pérdidas netas' },
+    { l: 'Expectancy', v: ph => [ph.m.expectancy * 100], f: ([v]) => (v >= 0 ? '+' : '') + nf(3).format(v) + ' %', d: ph => `mediana ${nf(3).format(ph.m.medianRet * 100)} % · PF ${nf(2).format(ph.m.profitFactor)}`, cls: ph => sign(ph.m.expectancy), t: 'Retorno neto medio por operación sobre el capital al entrar; PF = ganancias / pérdidas netas' },
     { l: 'Sharpe', v: ph => [ph.m.sharpe], f: ([v]) => nf(2).format(v), d: ph => 'Sortino ' + nf(2).format(ph.m.sortino), t: `Anualizado, ${P.IS.periodsPerYear ?? 252} sesiones, rf = 0` },
     { l: 'Max DD', v: ph => [ph.m.maxDD * 100], f: ([v]) => nf(2).format(v) + ' %', d: ph => ph.m.openDDAge ? 'abierto ' + ph.m.openDDAge + ' ses.' : 'cerrado', t: 'Máxima caída desde un máximo de equity' },
   ],

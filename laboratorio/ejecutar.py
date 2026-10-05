@@ -4,6 +4,7 @@
 """
 from datetime import date
 import json
+import math
 from pathlib import Path
 import re
 import statistics as st
@@ -11,7 +12,7 @@ import tomllib
 
 from . import catalogo, datos, eventos, motor
 from .backtest import backtest
-from .contratos import (Componente, Conclusiones, Evidencia, Experimento, Intento, Procedencia, Reglas,
+from .contratos import (Componente, Conclusiones, Evidencia, Experimento, Ficheros, Intento, Procedencia, Reglas,
                         Resumen, Robustez)
 from .presentacion import n
 from .proteccion import FIN_IS, INICIO_IS
@@ -19,6 +20,8 @@ from .robustez import bateria
 
 NOMBRES = {"media_ventana": "Retorno medio en la ventana", "media_vs_resto": "Diferencia ventana − resto"}
 PERIODOS = {"1d": ("Sesiones", "pb/día"), "1h": ("Horas", "pb/hora")}
+FRACCION_REF = 0.999  # referencia al 100 % del capital; al 100 % exacto no cabe la comisión de entrada
+FICHEROS_100 = Ficheros(equity_100="equity_100.csv", operaciones_100="operaciones_100.csv")
 
 
 def leer_plan(ruta):
@@ -38,7 +41,7 @@ def historial(hipotesis, id_actual, fecha, cambio, resultados=motor.RESULTADOS):
 
 
 def ejecutar(spec, plan, barras=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS, **sinteticos):
-    """Devuelve (Resumen, sesiones, operaciones). `barras` permite inyectar datos sintéticos en tests.
+    """Devuelve (Resumen, sesiones, operaciones, (sesiones, operaciones) al 100 %). `barras` permite inyectar datos sintéticos en tests.
     Un plan con [senal] usa la operativa por eventos (eventos.py) en lugar de ventana + estadístico."""
     if "senal" in spec:
         return ejecutar_eventos(spec, plan, barras=barras, hoy=hoy, **sinteticos)
@@ -53,6 +56,8 @@ def ejecutar(spec, plan, barras=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS, **
     n_v, s_v, n_r, s_r = catalogo._sumas(g.values())
     sesiones, operaciones = backtest(obs, len(v["valores"]), op["capital"], op["coste_lado"], op.get("fraccion"))
     m, motivos, por_anio = motor.metricas(op["capital"], sesiones, operaciones)
+    al_100 = backtest(obs, len(v["valores"]), op["capital"], op["coste_lado"], FRACCION_REF)
+    ref = motor.referencia(op["capital"], *al_100, FRACCION_REF, dataset.get("periodos_por_anio", 252))
     robustez = Robustez(**bateria(g, estadistico, unidad=bs["unidad"], bloque=bs["bloque"], motivo=bs["motivo"],
                                   pnl_costes_x2=m.pnl_neto - m.costes))
     valor = estadistico(list(g.values()))
@@ -80,14 +85,14 @@ def ejecutar(spec, plan, barras=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS, **
                          Componente(nombre=f"{nombre_periodo} resto", valor=n_r, unidad=nombre_periodo.lower()),
                          Componente(nombre=f"Retorno medio {ventana}", valor=s_v / n_v * catalogo.PB, unidad=unidad),
                          Componente(nombre="Retorno medio resto", valor=s_r / n_r * catalogo.PB, unidad=unidad)]),
-        robustez=robustez, metricas=m, no_calculables=motivos, operaciones_por_anio=por_anio,
+        robustez=robustez, metricas=m, referencia=ref, no_calculables=motivos, operaciones_por_anio=por_anio,
         conclusiones=Conclusiones(lectura=lectura, supuestos=cc["supuestos"], limites=cc["limites"],
                                   siguiente_comprobacion=cc["siguiente"]),
         procedencia=Procedencia(motor_sha256=motor.huella_motor(),
                                 datos_sha256=motor.digest(json.dumps([(str(x.ts), x.close, x.precio) for x in barras]).encode()),
                                 plan_sha256=motor.digest(Path(motor.RAIZ / plan).read_bytes()) if (motor.RAIZ / plan).exists() else "sin plan",
                                 periodos_por_anio=dataset.get("periodos_por_anio", 252)),
-        historial=historial(spec["hipotesis"], spec["id"], hoy, spec["cambio"])), sesiones, operaciones
+        historial=historial(spec["hipotesis"], spec["id"], hoy, spec["cambio"]), ficheros=FICHEROS_100), sesiones, operaciones, al_100
 
 
 def ejecutar_eventos(spec, plan, barras=None, serie=None, referencia=None, hoy=None, inicio=None, fin=None):
@@ -109,6 +114,8 @@ def ejecutar_eventos(spec, plan, barras=None, serie=None, referencia=None, hoy=N
     sesiones, operaciones, detalle = eventos.simular(barras, usados, *args, op["capital"], op["coste_pct"], op["fraccion"])
     abiertas = [t for t in usados if not eventos.salida(barras, t, *args)]
     m, motivos, por_anio = motor.metricas(op["capital"], sesiones, operaciones, dataset.get("periodos_por_anio", 252))
+    al_100 = eventos.simular(barras, usados, *args, op["capital"], op["coste_pct"], FRACCION_REF)[:2]
+    ref = motor.referencia(op["capital"], *al_100, FRACCION_REF, dataset.get("periodos_por_anio", 252))
     x2 = eventos.simular(barras, usados, *args, op["capital"], 2 * op["coste_pct"], op["fraccion"])[0][-1].equity - op["capital"]
     retornos = [r for _, _, r in detalle]
     if len(retornos) < 2:
@@ -157,7 +164,7 @@ def ejecutar_eventos(spec, plan, barras=None, serie=None, referencia=None, hoy=N
             fuente_datos=" + ".join([dataset["ruta"]] + [datos.SERIES[d[k]]["ruta"] for k in ("serie", "referencia") if d.get(k)])),
         evidencia=Evidencia(estadistico=f"Retorno neto medio por operación ({sn['nombre']})", unidad=es["unidad"], valor=valor,
                             componentes=componentes),
-        robustez=robustez, metricas=m, no_calculables=motivos, operaciones_por_anio=por_anio,
+        robustez=robustez, metricas=m, referencia=ref, no_calculables=motivos, operaciones_por_anio=por_anio,
         conclusiones=Conclusiones(lectura=lectura, supuestos=cc["supuestos"], limites=cc["limites"],
                                   siguiente_comprobacion=cc["siguiente"]),
         procedencia=Procedencia(motor_sha256=motor.huella_motor(),
@@ -165,14 +172,35 @@ def ejecutar_eventos(spec, plan, barras=None, serie=None, referencia=None, hoy=N
                                                                      + sorted((str(k), v) for k, v in serie.items())).encode()),
                                 plan_sha256=motor.digest(Path(motor.RAIZ / plan).read_bytes()) if (motor.RAIZ / plan).exists() else "sin plan",
                                 periodos_por_anio=dataset.get("periodos_por_anio", 252)),
-        historial=historial(h, spec["id"], hoy, spec["cambio"])), sesiones, operaciones
+        historial=historial(h, spec["id"], hoy, spec["cambio"]), ficheros=FICHEROS_100), sesiones, operaciones, al_100
+
+
+def anadir_referencia(directorio):
+    """Añade `referencia` y su simulación al 100 % a un experimento guardado. Reejecuta su plan y exige mismos datos,
+    mismo plan y la misma equity sesión a sesión; no cambia equity.csv ni operaciones.csv."""
+    directorio = Path(directorio)
+    resumen, sesiones, operaciones = motor.cargar(directorio)
+    e = resumen.experimento
+    nuevo, repetidas, _, al_100 = ejecutar(leer_plan(motor.RAIZ / e.plan), Path(e.plan), hoy=e.fecha)
+    p, q = resumen.procedencia, nuevo.procedencia
+    if (p.datos_sha256, p.plan_sha256) != (q.datos_sha256, q.plan_sha256):
+        raise ValueError(f"{e.id}: datos o plan distintos de los de la ejecución original")
+    if len(repetidas) != len(sesiones) or any(a.fecha != b.fecha or not math.isclose(a.equity, b.equity, rel_tol=1e-9)
+                                              for a, b in zip(sesiones, repetidas)):
+        raise ValueError(f"{e.id}: la reejecución no reproduce la equity guardada")
+    actualizado = Resumen.model_validate({**resumen.model_dump(mode="json"), "version_esquema": "2.1",
+                                          "referencia": nuevo.referencia.model_dump(mode="json"),
+                                          "ficheros": FICHEROS_100.model_dump(mode="json")})
+    motor.validar_referencia(actualizado, *al_100)
+    motor.escribir(directorio, actualizado, sesiones, operaciones, al_100)
+    return actualizado
 
 
 def main(plan):
     plan = Path(plan).resolve().relative_to(motor.RAIZ)
     spec = leer_plan(motor.RAIZ / plan)
-    resumen, sesiones, operaciones = ejecutar(spec, plan)
+    resumen, sesiones, operaciones, al_100 = ejecutar(spec, plan)
     salida = motor.RESULTADOS / spec["id"]
-    motor.guardar(salida, resumen, sesiones, operaciones)
+    motor.guardar(salida, resumen, sesiones, operaciones, al_100)
     motor.reconstruir_indice()
     return salida

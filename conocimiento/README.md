@@ -12,4 +12,4 @@ Lo que se va descubriendo al validar hipótesis: hallazgos, razonamientos, defin
 - [[H-007]] · Hora 2 (02:00–03:00 ET) en ES
 
 ## Conceptos
-- [[bruto-vs-neto]] · [[sizing-y-drawdown]] · [[volumen-firmado]] · [[desfase-horario]] · [[exploracion-y-oos]]
+- [[bruto-vs-neto]] · [[sizing-y-drawdown]] · [[volumen-firmado]] · [[desfase-horario]] · [[exploracion-y-oos]] · [[prima-de-liquidez]]

@@ -312,6 +312,34 @@
           "default": "ficha.md",
           "title": "Ficha",
           "type": "string"
+        },
+        "equity_100": {
+          "anyOf": [
+            {
+              "const": "equity_100.csv",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Equity de la referencia; presente si hay `referencia`",
+          "title": "Equity 100"
+        },
+        "operaciones_100": {
+          "anyOf": [
+            {
+              "const": "operaciones_100.csv",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Operaciones de la referencia",
+          "title": "Operaciones 100"
         }
       },
       "title": "Ficheros",
@@ -574,6 +602,102 @@
       "title": "Procedencia",
       "type": "object"
     },
+    "Referencia": {
+      "additionalProperties": false,
+      "description": "La misma operativa con el 99,9 % de la equity por operación (al 100 % no cabe la comisión de entrada),\nsin apalancamiento. Hace comparable el riesgo entre experimentos con tamaños distintos (1 unidad, 30 %…).",
+      "properties": {
+        "fraccion": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Fraccion",
+          "type": "number"
+        },
+        "rentabilidad_total": {
+          "description": "Equity final / inicial - 1",
+          "title": "Rentabilidad Total",
+          "type": "number"
+        },
+        "rentabilidad_anual": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Null con menos de un año de sesiones",
+          "title": "Rentabilidad Anual"
+        },
+        "sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Null con volatilidad cero",
+          "title": "Sharpe"
+        },
+        "max_drawdown": {
+          "description": "Máximo de 1 - equity / máximo acumulado",
+          "title": "Max Drawdown",
+          "type": "number"
+        },
+        "pico": {
+          "description": "Máximo previo al drawdown máximo",
+          "format": "date",
+          "title": "Pico",
+          "type": "string"
+        },
+        "valle": {
+          "description": "Mínimo del drawdown máximo",
+          "format": "date",
+          "title": "Valle",
+          "type": "string"
+        },
+        "recuperacion": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Primera sesión que vuelve al pico; null si no vuelve en la muestra",
+          "title": "Recuperacion"
+        },
+        "sesiones_bajo_agua": {
+          "description": "Del pico a la recuperación, o al final de la muestra si no vuelve",
+          "minimum": 0,
+          "title": "Sesiones Bajo Agua",
+          "type": "integer"
+        },
+        "motor_sha256": {
+          "description": "Motor con el que se calculó (puede añadirse después de la ejecución)",
+          "title": "Motor Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "fraccion",
+        "rentabilidad_total",
+        "rentabilidad_anual",
+        "sharpe",
+        "max_drawdown",
+        "pico",
+        "valle",
+        "recuperacion",
+        "sesiones_bajo_agua",
+        "motor_sha256"
+      ],
+      "title": "Referencia",
+      "type": "object"
+    },
     "Reglas": {
       "additionalProperties": false,
       "properties": {
@@ -646,8 +770,11 @@
   "description": "resumen.json: todo lo necesario para leer, comparar o graficar un experimento sin abrir el código.",
   "properties": {
     "version_esquema": {
-      "const": "2.0",
-      "default": "2.0",
+      "default": "2.1",
+      "enum": [
+        "2.0",
+        "2.1"
+      ],
       "title": "Version Esquema",
       "type": "string"
     },
@@ -662,6 +789,18 @@
     },
     "metricas": {
       "$ref": "#/$defs/Metricas"
+    },
+    "referencia": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Referencia"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Riesgo al 100 % del capital; null en experimentos previos al esquema 2.1 sin recalcular"
     },
     "no_calculables": {
       "additionalProperties": {
@@ -698,7 +837,9 @@
       "default": {
         "equity": "equity.csv",
         "operaciones": "operaciones.csv",
-        "ficha": "ficha.md"
+        "ficha": "ficha.md",
+        "equity_100": null,
+        "operaciones_100": null
       }
     }
   },

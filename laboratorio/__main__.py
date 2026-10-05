@@ -1,4 +1,5 @@
-"""`ejecutar <plan>` corre un experimento; `indice` reconstruye indice.csv; `ficha <dir>` valida y regenera ficha.md."""
+"""`ejecutar <plan>` corre un experimento; `indice` reconstruye indice.csv; `ficha <dir>` valida y regenera ficha.md;
+`referencia <dir>…` añade el riesgo al 100 % a experimentos guardados antes del esquema 2.1."""
 import argparse
 from pathlib import Path
 import sys
@@ -15,10 +16,17 @@ def main():
     sub.add_parser("indice", help="Reconstruye resultados/indice.csv validando cada experimento")
     ficha = sub.add_parser("ficha", help="Valida un experimento y regenera su ficha.md")
     ficha.add_argument("directorio", type=Path)
+    ref = sub.add_parser("referencia", help="Añade la referencia al 100 %% a experimentos guardados (reejecuta y verifica)")
+    ref.add_argument("directorios", type=Path, nargs="+")
     args = parser.parse_args()
     try:
         if args.comando == "ejecutar":
             print(f"Ficha: {ejecutar.main(args.plan) / 'ficha.md'}")
+        elif args.comando == "referencia":
+            for d in args.directorios:
+                r = ejecutar.anadir_referencia(d).referencia
+                print(f"{d.name}: DD al 100 % {r.max_drawdown:.2%} ({r.pico} → {r.valle})")
+            motor.reconstruir_indice()
         elif args.comando == "indice":
             print(f"{len(motor.reconstruir_indice())} experimento(s) en {motor.RESULTADOS / 'indice.csv'}")
         else:

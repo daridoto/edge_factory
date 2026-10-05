@@ -1,5 +1,5 @@
 {
-  "version_esquema": "2.0",
+  "version_esquema": "2.1",
   "experimento": {
     "id": "HPROPIA001-IS-REAL-001",
     "hipotesis": "H-PROPIA-001",
@@ -133,6 +133,18 @@
     "concentracion_anual": 0.4375,
     "autocorrelacion": 0.018212950839697227
   },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": 36.64842263654163,
+    "rentabilidad_anual": 1.4079678338096113,
+    "sharpe": 1.3437042807226098,
+    "max_drawdown": 0.5411390338874209,
+    "pico": "2024-07-21",
+    "valle": "2024-08-05",
+    "recuperacion": "2024-11-07",
+    "sesiones_bajo_agua": 109,
+    "motor_sha256": "261ac136f79324930a786115cc7e97533daa2a245fe375c5e71740d7b8caf44d"
+  },
   "no_calculables": {
     "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
   },
@@ -176,6 +188,8 @@
   "ficheros": {
     "equity": "equity.csv",
     "operaciones": "operaciones.csv",
-    "ficha": "ficha.md"
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv"
   }
 }

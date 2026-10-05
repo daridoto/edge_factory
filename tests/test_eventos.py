@@ -85,7 +85,7 @@ class PlanRay(unittest.TestCase):
         bs = [Barra(datetime(2022, 8, 15) + timedelta(i), p[3], p[3], p[0], p[1] * 1.01, p[2] * .99) for i, p in enumerate(precios)]
         serie = {date(2022, 8, 15) + timedelta(i): (5.0 if i % 60 < 5 and i > 100 else 1.0) for i in range(n)}
         btc = {k: 100.0 for k in serie}
-        r, sesiones, ops = ejecutar.ejecutar(spec, plan, barras=bs, serie=serie, referencia=btc, hoy=date(2026, 9, 30))
+        r, sesiones, ops, _ = ejecutar.ejecutar(spec, plan, barras=bs, serie=serie, referencia=btc, hoy=date(2026, 9, 30))
         self.assertTrue(r.experimento.sintetico)
         self.assertEqual(r.experimento.mercado, "cripto")
         self.assertEqual(r.procedencia.periodos_por_anio, 365)

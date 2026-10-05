@@ -1,5 +1,5 @@
 {
-  "version_esquema": "2.0",
+  "version_esquema": "2.1",
   "experimento": {
     "id": "H001-IS-REAL-005",
     "hipotesis": "H-001",
@@ -8,6 +8,7 @@
     "sintetico": false,
     "pregunta": "¿Rinde más SPY en el cambio de mes que el resto de sesiones?",
     "muestra": "IS",
+    "mercado": "clasica",
     "inicio": "2009-10-01",
     "fin": "2020-12-31",
     "instrumento": "SPY",
@@ -116,6 +117,18 @@
     "concentracion_anual": 0.08955223880597014,
     "autocorrelacion": -0.03037365546794468
   },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": 0.4682787276451481,
+    "rentabilidad_anual": 0.03475585025546367,
+    "sharpe": 0.5073809097837553,
+    "max_drawdown": 0.13860193670845655,
+    "pico": "2011-04-29",
+    "valle": "2011-11-01",
+    "recuperacion": "2012-11-01",
+    "sesiones_bajo_agua": 380,
+    "motor_sha256": "261ac136f79324930a786115cc7e97533daa2a245fe375c5e71740d7b8caf44d"
+  },
   "no_calculables": {
     "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
   },
@@ -185,6 +198,8 @@
   "ficheros": {
     "equity": "equity.csv",
     "operaciones": "operaciones.csv",
-    "ficha": "ficha.md"
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv"
   }
 }

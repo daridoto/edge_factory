@@ -5,6 +5,8 @@ Un experimento produce en resultados/<ID>/:
 - equity.csv       -> una fila Sesion por sesión de la muestra.
 - operaciones.csv  -> una fila Operacion por operación cerrada.
 - ficha.md         -> lectura humana generada desde resumen.json.
+- equity_100.csv, operaciones_100.csv -> la misma operativa al 100 % del capital (resumida en `referencia`).
+`metricas` usa el tamaño del plan; `referencia`, el 100 % del capital (riesgo comparable entre experimentos).
 resultados/indice.csv tiene una fila por experimento (motor.reconstruir_indice).
 
 Garantías:
@@ -23,7 +25,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .proteccion import exigir_is
 
-VERSION = "2.0"
+VERSION = "2.1"  # 2.1: bloque `referencia` (riesgo al 100 % del capital)
 
 
 class Modelo(BaseModel):
@@ -151,6 +153,21 @@ class Metricas(Modelo):
     autocorrelacion: Optional[float] = Field(description="Correlación de r[t] con r[t-1]")
 
 
+class Referencia(Modelo):
+    """La misma operativa con el 99,9 % de la equity por operación (al 100 % no cabe la comisión de entrada),
+    sin apalancamiento. Hace comparable el riesgo entre experimentos con tamaños distintos (1 unidad, 30 %…)."""
+    fraccion: float = Field(gt=0, le=1)
+    rentabilidad_total: float = Field(description="Equity final / inicial - 1")
+    rentabilidad_anual: Optional[float] = Field(description="Null con menos de un año de sesiones")
+    sharpe: Optional[float] = Field(description="Null con volatilidad cero")
+    max_drawdown: float = Field(description="Máximo de 1 - equity / máximo acumulado")
+    pico: date = Field(description="Máximo previo al drawdown máximo")
+    valle: date = Field(description="Mínimo del drawdown máximo")
+    recuperacion: Optional[date] = Field(description="Primera sesión que vuelve al pico; null si no vuelve en la muestra")
+    sesiones_bajo_agua: int = Field(ge=0, description="Del pico a la recuperación, o al final de la muestra si no vuelve")
+    motor_sha256: str = Field(description="Motor con el que se calculó (puede añadirse después de la ejecución)")
+
+
 class Conclusiones(Modelo):
     estado: Literal["exploratoria"] = "exploratoria"
     lectura: str
@@ -176,15 +193,18 @@ class Ficheros(Modelo):
     equity: Literal["equity.csv"] = "equity.csv"
     operaciones: Literal["operaciones.csv"] = "operaciones.csv"
     ficha: Literal["ficha.md"] = "ficha.md"
+    equity_100: Optional[Literal["equity_100.csv"]] = Field(default=None, description="Equity de la referencia; presente si hay `referencia`")
+    operaciones_100: Optional[Literal["operaciones_100.csv"]] = Field(default=None, description="Operaciones de la referencia")
 
 
 class Resumen(Modelo):
     """resumen.json: todo lo necesario para leer, comparar o graficar un experimento sin abrir el código."""
-    version_esquema: Literal["2.0"] = VERSION
+    version_esquema: Literal["2.0", "2.1"] = VERSION
     experimento: Experimento
     evidencia: Evidencia
     robustez: Robustez
     metricas: Metricas
+    referencia: Optional[Referencia] = Field(default=None, description="Riesgo al 100 % del capital; null en experimentos previos al esquema 2.1 sin recalcular")
     no_calculables: dict[str, str] = Field(description="Métrica -> motivo por el que es null")
     operaciones_por_anio: dict[str, int]
     conclusiones: Conclusiones
@@ -194,6 +214,8 @@ class Resumen(Modelo):
 
     @model_validator(mode="after")
     def _coherente(self):
+        if (self.referencia is None) != (self.ficheros.equity_100 is None) or (self.ficheros.equity_100 is None) != (self.ficheros.operaciones_100 is None):
+            raise ValueError("`referencia` va siempre con equity_100.csv y operaciones_100.csv")
         if self.historial[-1].id != self.experimento.id:
             raise ValueError("El último intento debe ser este experimento")
         faltan = {k for k, v in self.metricas.model_dump().items() if v is None} - set(self.no_calculables)

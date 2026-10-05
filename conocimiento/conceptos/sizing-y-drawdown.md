@@ -5,5 +5,6 @@
 - **El sizing no cambia la ventaja** (efecto, IC, años). Solo escala la rentabilidad y el DD, casi en proporción.
 - **DD de referencia de la estrategia = al 100 % del capital, sin apalancamiento.** Al 30 % sale ≈ 0,3 × ese DD.
   - Con el 100 % exacto la comisión de entrada no cabe: se usa el 99,9 %.
-  - Guardarlo en `resumen.json` está aparcado por decisión del usuario (2026-09-25).
+  - ~~Guardarlo en `resumen.json` está aparcado por decisión del usuario (2026-09-25).~~
+  - **2026-10-05 · Hecho:** bloque `referencia` en `resumen.json` (esquema 2.1), columna `max_drawdown_100` en `indice.csv`, sección en la ficha y curvas `equity_100.csv` / `operaciones_100.csv`. El dashboard pinta y calcula todo al 100 %. Lo pidió el usuario a raíz del 1,93 % de [[H-007]].
 - En ES, el 30 % de 10.000 USD es una fracción de contrato: sirve para comparar, no es operable. Por eso [[H-007]] sigue con 1 punto.

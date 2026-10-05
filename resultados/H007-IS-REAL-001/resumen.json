@@ -1,5 +1,5 @@
 {
-  "version_esquema": "2.0",
+  "version_esquema": "2.1",
   "experimento": {
     "id": "H007-IS-REAL-001",
     "hipotesis": "H-007",
@@ -8,6 +8,7 @@
     "sintetico": false,
     "pregunta": "¿Rinde más el ES entre las 2:00 y las 3:00 ET que en cualquier otra hora?",
     "muestra": "IS",
+    "mercado": "clasica",
     "inicio": "2009-09-27",
     "fin": "2020-12-31",
     "instrumento": "ES",
@@ -140,6 +141,18 @@
     "concentracion_anual": 0.08921805029280055,
     "autocorrelacion": 0.011022000606370083
   },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": 0.07384923007189248,
+    "rentabilidad_anual": 0.005141679538290408,
+    "sharpe": 0.2321817426878955,
+    "max_drawdown": 0.06549477489447675,
+    "pico": "2018-04-15",
+    "valle": "2020-02-25",
+    "recuperacion": "2020-03-24",
+    "sesiones_bajo_agua": 607,
+    "motor_sha256": "261ac136f79324930a786115cc7e97533daa2a245fe375c5e71740d7b8caf44d"
+  },
   "no_calculables": {
     "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
   },
@@ -190,6 +203,8 @@
   "ficheros": {
     "equity": "equity.csv",
     "operaciones": "operaciones.csv",
-    "ficha": "ficha.md"
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv"
   }
 }

@@ -38,7 +38,7 @@ $('c-name').textContent = `${efecto} · ${items.map(i => i.name).join(' ')}`;
 document.title = `${hid} · ${efecto}`;
 $('c-q').textContent = first.r.question.replace(first.name, 'el índice');
 $('c-spec').innerHTML = [
-  ...Object.entries(first.e.reglas),
+  ...Object.entries(first.e.reglas).map(([k, v]) => k === 'Tamaño' && first.D.sizing ? [k, `${first.D.sizing} (plan: ${v})`] : [k, v]),
   ['Periodo', `${fdate(first.ph.start)} → ${fdate(first.ph.end)}`],
   ['Capital', `${nf(0).format(first.D.initialEquity)} USD`],
   ['Costes', first.e.costes],
@@ -49,7 +49,7 @@ document.documentElement.dataset.state = state;
 $('c-phases').innerHTML = `<button class="phase ${STATE[state][1]}" aria-pressed="true">IS · ${STATE[state][0]}</button>`
   + '<button class="phase" disabled>OOS · pendiente</button><button class="phase" disabled>Holdout · pendiente</button>';
 $('c-sub-ci').textContent = `${U} · ${first.r.bootstrap.replicas.toLocaleString('es-ES', { useGrouping: 'always' })} réplicas · bloques de ${first.r.bootstrap.bloque}`;
-$('c-sub-eq').textContent = `% sobre ${nf(0).format(first.D.initialEquity)} USD · ${first.e.reglas['Tamaño'] ?? ''} por entrada`;
+$('c-sub-eq').textContent = `% sobre ${nf(0).format(first.D.initialEquity)} USD · ${first.D.sizing ?? first.e.reglas['Tamaño'] ?? ''} por entrada`;
 $('c-foot').textContent = `${hid} · ${items.map(i => i.D.exp).join(' · ')}`;
 
 /* ---------- gráficos: base común (igual que la ficha) ---------- */
@@ -130,14 +130,14 @@ function renderYears() {
 
 /* ---------- tabla por instrumento ---------- */
 function renderTable() {
-  const th = ['', `Efecto ${efecto}`, 'IC 95 %', 'Años +', 'Rentab.', 'PnL', 'Max DD', 'Sharpe', 'Win rate', 'Peor sin 1 año'];
+  const th = ['', `Efecto ${efecto}`, 'IC 95 %', 'Años +', 'ROI', 'ROI anual', 'Max DD', 'Sharpe', 'Win rate', 'Peor sin 1 año'];
   const td = i => [
     `<i class="sw" style="--sc:var(${i.color})"></i><b>${i.name}</b>`,
     `<span class="${sign(i.effect)}">${sgn(i.effect)}</span>`,
     `${nf(2).format(i.ci[0])} a ${nf(2).format(i.ci[1])}${i.ci[0] < 0 && i.ci[1] > 0 ? ' <span class="warn">cruza 0</span>' : ''}`,
     `${i.up}/${i.nYears}`,
     `<span class="${sign(i.ret)}">${sgn(i.ret)} %</span>`,
-    `${nf(0).format(i.m.pnl)} USD`,
+    `<span class="${sign(i.m.cagr)}">${sgn(i.m.cagr * 100)} %</span>`,
     `${nf(2).format(-i.m.maxDD * 100)} %`,
     nf(2).format(i.m.sharpe),
     `${nf(0).format(i.m.winRate * 100)} %`,

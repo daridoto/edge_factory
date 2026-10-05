@@ -106,7 +106,7 @@ function groupRow(g, k) {
     ${kpi(`Efecto ${e.efecto ?? ''}`, range(effects, sgn) + `<span class="u">${u}</span>`, `mayor en ${best}`)}
     <div class="kpi"><span class="l">IC 95 %</span>${ciStack(rs)}<span class="d">${noZero ? `${noZero}/${rs.length} no cruzan 0` : '<span class="warn">todos cruzan 0</span>'}</span></div>
     ${kpi('Años +', range(ups, v => v) + `<span class="u">/ ${Object.keys(rs[0].by_year).length}</span>`)}
-    ${kpi('Rentab.', range(rets, sgn) + '<span class="u">%</span>', e.reglas['Tamaño'] ?? '')}
+    ${kpi('ROI', range(rets, sgn) + '<span class="u">%</span>', Ds[0].sizing ?? e.reglas['Tamaño'] ?? '')}
     ${sparkMany(Ds.map(D => D.phases.IS.equity), k)}
   </a>`;
 }
@@ -130,7 +130,7 @@ $('rows').innerHTML = groups.map((g, gi) => {
           `${e.efecto ?? 'ventana'} ${nf(2).format(pb(r.mean_tom))} · resto ${nf(2).format(pb(r.mean_rest))}`, sign(r.difference))}
     <div class="kpi"><span class="l">IC 95 %</span>${ciStrip(r)}<span class="d">${nf(2).format(lo)} a ${nf(2).format(hi)} · ${crosses ? '<span class="warn">cruza 0</span>' : 'no cruza 0'}</span></div>
     ${kpi('Años +', `${up}<span class="u">/ ${years.length}</span>`)}
-    ${kpi('PnL neto', nf(2).format(m.pnl) + '<span class="u">USD</span>', `costes 2×: ${nf(2).format(m.pnlCosts2x)}`, sign(m.pnl))}
+    ${kpi('ROI', sgn(m.roi * 100) + '<span class="u">%</span>', `anual ${nf(2).format(m.cagr * 100)} % · ${nf(0).format(m.pnl)} USD`, sign(m.roi))}
     ${spark(ph.equity, k)}
   </a>`;
 }).join('');

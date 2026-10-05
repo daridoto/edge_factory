@@ -20,10 +20,22 @@ export function computeMetrics(phase) {
   const avgWin = wins.length ? sum(wins) / wins.length : 0;
   const avgLoss = losses.length ? Math.abs(sum(losses) / losses.length) : 0;
   const costs = sum(phase.trades.map(t => t.cost));
+  // expectancy: retorno neto medio por operación (y mediana, menos sensible a operaciones extremas)
+  const rets = phase.trades.map(t => t.ret).sort((a, b) => a - b), mid = rets.length >> 1;
+  const expectancy = rets.length ? sum(rets) / rets.length : 0;
+  const medianRet = rets.length ? (rets.length % 2 ? rets[mid] : (rets[mid - 1] + rets[mid]) / 2) : 0;
   const pnl = eq[eq.length - 1] - eq[0];
+  // ROI sobre el capital inicial (eq[0] ya incluye la primera sesión; se usa el capital de la fase si existe)
+  const cap = phase.capital ?? eq[0];
+  const roi = eq[eq.length - 1] / cap - 1;
+  const cagr = (eq[eq.length - 1] / cap) ** (A / eq.length) - 1;   // anualizado con las sesiones del lab
 
   return {
     pnl,
+    roi,
+    expectancy,
+    medianRet,
+    cagr,
     pnlCosts2x: pnl - costs,
     trades: nets.length,
     exposure: phase.equity.reduce((a, e) => a + e[2], 0) / phase.equity.length,   // fracción media de cada sesión con posición

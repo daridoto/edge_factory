@@ -30,7 +30,10 @@ export const loadIndice = () => getCSV(`${LAB}/indice.csv`);
 export async function loadFicha(entry) {
   const dir = `${LAB}/${entry.experimentos.IS}`;
   const r = await getJSON(`${dir}/resumen.json`);
-  const [equity, trades] = await Promise.all([getCSV(`${dir}/${r.ficheros.equity}`), getCSV(`${dir}/${r.ficheros.operaciones}`)]);
+  // Con simulación al 100 % del capital (lab ≥ 2.1) se pinta esa: el riesgo es comparable entre tamaños.
+  const f = r.ficheros, al100 = !!f.equity_100;
+  const [equity, trades] = await Promise.all([getCSV(`${dir}/${al100 ? f.equity_100 : f.equity}`),
+                                              getCSV(`${dir}/${al100 ? f.operaciones_100 : f.operaciones}`)]);
   return toView(r, equity, trades, entry);
 }
 
@@ -38,6 +41,12 @@ export async function loadFicha(entry) {
 const frac = v => v / 1e4;
 const fracMap = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, frac(v)]));
 const PLURAL = { mes: 'meses', 'día': 'días', semana: 'semanas', hora: 'horas' };
+
+// Retorno neto de cada operación sobre la equity de la sesión anterior a la entrada (el capital disponible al entrar).
+function tradesWithReturn(trades, equity, capital) {
+  const before = new Map(equity.map((e, i) => [e.fecha, i ? +equity[i - 1].equity : capital]));
+  return trades.map(t => ({ net: +t.pnl_neto, cost: +t.coste_entrada + +t.coste_salida, ret: +t.pnl_neto / before.get(t.entrada) }));
+}
 
 function toView(r, equity, trades, entry) {
   const x = r.experimento, ev = r.evidencia, boot = r.robustez.bootstrap;
@@ -52,6 +61,8 @@ function toView(r, equity, trades, entry) {
     identity: { instrument: x.instrumento, frequency: x.frecuencia },
     repro: { seed: boot.semilla },
     initialEquity: x.capital_inicial,
+    // tamaño con el que está simulada la equity que se pinta
+    sizing: r.referencia ? '100 % del capital' : null,
     phases: {
       IS: {
         key: 'IS',
@@ -59,8 +70,9 @@ function toView(r, equity, trades, entry) {
         start: x.inicio,
         end: x.fin,
         periodsPerYear: r.procedencia.periodos_por_anio,
+        capital: x.capital_inicial,
         equity: equity.map(e => [e.fecha, +e.equity, +e.exposicion]),
-        trades: trades.map(t => ({ net: +t.pnl_neto, cost: +t.coste_entrada + +t.coste_salida })),
+        trades: tradesWithReturn(trades, equity, x.capital_inicial),
         research: {
           question: x.pregunta,
           statistic: ev.estadistico,

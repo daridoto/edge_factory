@@ -46,9 +46,21 @@ Bootstrap por bloques circulares (bloque = 3 × mes, 5.000 réplicas, semilla 73
 | Resultado medio por operación | 0,65 USD |
 | Tasa de acierto | 58,21 % |
 | Rentabilidad sobre 10.000 USD | 0,87 % |
-| Máximo drawdown | 0,18 % |
+| Máximo drawdown (tamaño del plan) | 0,18 % |
 | Sharpe | 0,58 |
 | Costes | 2,68 USD |
+
+**Referencia al 100 % del capital** (la misma operativa con el 99,9 % de la equity, sin apalancamiento):
+
+| Riesgo | Valor |
+|---|---:|
+| Máximo drawdown | **11,02 %** |
+| Pico → valle | 2014-07-29 → 2015-09-01 |
+| Recuperación | 2018-12-03 |
+| Sesiones bajo el agua | 1096 |
+| Rentabilidad total | 79,52 % |
+| Rentabilidad anual | 5,34 % |
+| Sharpe | 0,66 |
 
 Métricas completas y sus definiciones: `metricas` en resumen.json y [esquema](../../esquemas/resumen.schema.json).
 

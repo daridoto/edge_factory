@@ -3,7 +3,7 @@ import statistics
 import unittest
 
 from laboratorio.contratos import Sesion
-from laboratorio.motor import metricas, validar_contabilidad
+from laboratorio.motor import metricas, referencia, validar_contabilidad
 from fixtura import muestra_pequena
 
 
@@ -52,6 +52,24 @@ class Metricas(unittest.TestCase):
              for i in range(1, 253)]
         r, _, _ = metricas(100, s, [])
         self.assertAlmostEqual(r.rentabilidad_anual, 1.001**252-1)
+
+
+class Referencia(unittest.TestCase):
+    def test_episodio_abierto(self):
+        r = referencia(100, *muestra_pequena(), fraccion=.999)
+        self.assertAlmostEqual(r.max_drawdown, 6/108)
+        self.assertEqual((str(r.pico), str(r.valle), r.recuperacion, r.sesiones_bajo_agua), ("2019-01-02", "2019-01-04", None, 2))
+
+    def test_episodio_recuperado(self):
+        s, o = muestra_pequena()
+        s.append(Sesion(fecha="2019-01-05", equity=110, pnl_bruto=8, coste=0, nocional=0, exposicion=0))
+        r = referencia(100, s, o, fraccion=.999)
+        self.assertEqual((str(r.valle), str(r.recuperacion), r.sesiones_bajo_agua), ("2019-01-04", "2019-01-05", 3))
+
+    def test_sin_drawdown(self):
+        s = [Sesion(fecha=f"2019-01-0{i}", equity=100 + i, pnl_bruto=1, coste=0, nocional=0, exposicion=0) for i in (1, 2)]
+        r = referencia(100, s, [], fraccion=.999)
+        self.assertEqual((r.max_drawdown, r.sesiones_bajo_agua, r.recuperacion), (0, 0, None))
 
 
 class Contabilidad(unittest.TestCase):

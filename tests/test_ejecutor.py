@@ -122,8 +122,11 @@ class PlanH007(unittest.TestCase):
             ts += timedelta(minutes=15)
         plan = "experimentos/H007-IS-REAL-001.md"
         spec = ejecutar.leer_plan(ejecutar.motor.RAIZ / plan)
-        r, sesiones, operaciones = ejecutar.ejecutar(spec, plan, barras=bs, inicio=date(2018, 1, 1), fin=date(2018, 12, 31))
+        r, sesiones, operaciones, _ = ejecutar.ejecutar(spec, plan, barras=bs, inicio=date(2018, 1, 1), fin=date(2018, 12, 31))
         self.assertTrue(r.experimento.sintetico)
         self.assertEqual(len(r.evidencia.desglose), 23)
         self.assertEqual(len(operaciones), 40)  # 8 semanas × 5 días
         self.assertTrue(all(o.entrada == o.salida for o in operaciones))
+        # 1 punto a ~2.000 sobre 10.000 USD es ~20 % de la cuenta: al 99,9 % el drawdown es ~5 veces mayor
+        self.assertEqual(r.referencia.fraccion, .999)
+        self.assertAlmostEqual(r.referencia.max_drawdown / r.metricas.max_drawdown, 5, delta=.5)

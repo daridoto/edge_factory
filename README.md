@@ -41,13 +41,14 @@ flowchart LR
 | **Receta** | hipótesis → reglas en pseudocódigo con citas | [`estrategias/`](estrategias/) |
 | **Plan** | receta → experimento fijado antes de calcular (TOML) | [`experimentos/`](experimentos/) |
 | **Ejecución** | plan → backtest, métricas y batería de robustez | [`laboratorio/`](laboratorio/) |
-| **Resultados** | `resumen.json` · `equity.csv` · `operaciones.csv` · `ficha.md` | [`resultados/`](resultados/) |
+| **Resultados** | `resumen.json` · `equity.csv` · `operaciones.csv` · `ficha.md`, y la misma operativa al 100 % del capital (`equity_100.csv`, `operaciones_100.csv`) | [`resultados/`](resultados/) |
 
 ## Principios
 
 > 🔒 **Solo in-sample.** La muestra IS va de 2009-09-27 a 2020-12-31. OOS y holdout no se usan sin autorización explícita y concreta. Las fechas viven en un único sitio (`laboratorio/proteccion.py`) y el contrato rechaza cualquier otra muestra.
 
 - 🧩 **Sin código por hipótesis.** Una hipótesis es una especificación TOML. Si falta una pieza (dataset, ventana, estadístico) se añade de forma genérica al catálogo, con su test.
+- ⚖️ **Riesgo comparable.** Cada resultado incluye, además del tamaño del plan, la misma operativa al 100 % del capital (drawdown, duración, recuperación).
 - 📐 **Salida con contrato.** Los resultados se validan con pydantic y se exportan como JSON Schema en [`esquemas/`](esquemas/).
 - 🧪 **Exploratorio por defecto.** Ninguna ficha es una conclusión; la siguiente comprobación se propone, no se ejecuta sola.
 - 📚 **Conocimiento acumulado.** Hallazgos y definiciones en [`conocimiento/`](conocimiento/), una nota por hipótesis o concepto (compatible con Obsidian).
@@ -92,6 +93,9 @@ python3.11 -m venv .venv && .venv/bin/pip install -r requirements.txt
 
 # reconstruir el índice
 .venv/bin/python -m laboratorio indice
+
+# añadir el riesgo al 100 % del capital a resultados antiguos (reejecuta y verifica)
+.venv/bin/python -m laboratorio referencia resultados/<ID>
 
 # tests
 .venv/bin/python -m unittest discover -s tests

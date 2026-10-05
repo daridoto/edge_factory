@@ -1,5 +1,5 @@
 {
-  "version_esquema": "2.0",
+  "version_esquema": "2.1",
   "experimento": {
     "id": "H001-IS-REAL-006",
     "hipotesis": "H-001",
@@ -8,6 +8,7 @@
     "sintetico": false,
     "pregunta": "¿Rinde más QQQ en el cambio de mes que el resto de sesiones?",
     "muestra": "IS",
+    "mercado": "clasica",
     "inicio": "2009-10-01",
     "fin": "2020-12-31",
     "instrumento": "QQQ",
@@ -116,6 +117,18 @@
     "concentracion_anual": 0.08955223880597014,
     "autocorrelacion": -0.04765194490181089
   },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": 0.7952435598217988,
+    "rentabilidad_anual": 0.05342759700661798,
+    "sharpe": 0.6631926542517663,
+    "max_drawdown": 0.11015786943854555,
+    "pico": "2014-07-29",
+    "valle": "2015-09-01",
+    "recuperacion": "2018-12-03",
+    "sesiones_bajo_agua": 1096,
+    "motor_sha256": "261ac136f79324930a786115cc7e97533daa2a245fe375c5e71740d7b8caf44d"
+  },
   "no_calculables": {},
   "operaciones_por_anio": {
     "2009": 2,
@@ -188,6 +201,8 @@
   "ficheros": {
     "equity": "equity.csv",
     "operaciones": "operaciones.csv",
-    "ficha": "ficha.md"
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv"
   }
 }
