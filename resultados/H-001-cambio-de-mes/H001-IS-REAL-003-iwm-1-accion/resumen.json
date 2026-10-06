@@ -1,0 +1,200 @@
+{
+  "version_esquema": "2.1",
+  "experimento": {
+    "id": "H001-IS-REAL-003",
+    "hipotesis": "H-001",
+    "version": "real-is-v1",
+    "fecha": "2026-09-24",
+    "sintetico": false,
+    "pregunta": "¿Rinde más IWM en el cambio de mes que el resto de sesiones?",
+    "variante": "IWM · 1 acción",
+    "muestra": "IS",
+    "base": null,
+    "mercado": "clasica",
+    "inicio": "2009-10-01",
+    "fin": "2020-12-31",
+    "instrumento": "IWM",
+    "frecuencia": "1d",
+    "moneda": "USD",
+    "capital_inicial": 10000.0,
+    "reglas": {
+      "entrada": "Comprar al cierre de la penúltima sesión de cada mes completo en IS.",
+      "salida": "Vender al cierre de la tercera sesión del mes siguiente.",
+      "tamano": "1 acción por ventana (no el capital entero); dividendos reinvertidos implícitamente; sin apalancamiento.",
+      "costes": "0,01 USD por acción y lado; sin comisión adicional ni impacto."
+    },
+    "receta": "estrategias/H-001.md",
+    "plan": "experimentos/H-001-cambio-de-mes/H001-IS-REAL-003-iwm-1-accion.md",
+    "fuente_datos": "data/etf/indices/Russell 2000 IWM - Temp. 1d - Date 2006-07-17 a 2026-07-15 - Norgate.csv"
+  },
+  "evidencia": {
+    "estadistico": "Diferencia ventana − resto (TOM)",
+    "unidad": "pb/día",
+    "valor": -3.550369569663377,
+    "componentes": [
+      {
+        "nombre": "Sesiones TOM",
+        "valor": 540.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Sesiones resto",
+        "valor": 2293.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Retorno medio TOM",
+        "valor": 2.829645061650238,
+        "unidad": "pb/día"
+      },
+      {
+        "nombre": "Retorno medio resto",
+        "valor": 6.380014631313615,
+        "unidad": "pb/día"
+      }
+    ],
+    "desglose": {}
+  },
+  "robustez": {
+    "bootstrap": {
+      "metodo": "bloques circulares",
+      "unidad": "mes",
+      "bloque": 3,
+      "replicas": 5000,
+      "semilla": 7301,
+      "nivel": 0.95,
+      "ic_inf": -15.784337144663068,
+      "ic_sup": 8.591922361582874,
+      "incluye_cero": true,
+      "motivo": "La hipótesis es mensual; bloques de 3 meses conservan la dependencia entre meses vecinos."
+    },
+    "por_anio": {
+      "2009": -45.712326008641405,
+      "2010": 21.777910651788957,
+      "2011": -4.590505203849138,
+      "2012": 14.649068351275043,
+      "2013": -7.337952120040223,
+      "2014": -12.062014788834135,
+      "2015": -7.031286403628461,
+      "2016": -13.531848807609304,
+      "2017": -14.466958955304717,
+      "2018": 3.7980167870563215,
+      "2019": -4.1949318513369445,
+      "2020": -5.382692478116018
+    },
+    "sin_cada_anio": {
+      "2009": -2.587633858170066,
+      "2010": -6.0214087530152,
+      "2011": -3.4493839066179115,
+      "2012": -5.32355733705893,
+      "2013": -3.180062240761846,
+      "2014": -2.720116514237612,
+      "2015": -3.2113578523254427,
+      "2016": -2.5761358883273524,
+      "2017": -2.486238422717373,
+      "2018": -4.262465141978905,
+      "2019": -3.4871202393469054,
+      "2020": -3.36841604746689
+    },
+    "pnl_costes_x2": 5.652588387694072
+  },
+  "metricas": {
+    "operaciones": 134,
+    "pnl_neto": 8.33291028862368,
+    "esperanza": 0.0621858976766402,
+    "tasa_acierto": 0.5597014925373134,
+    "payoff": 0.8305496225402155,
+    "profit_factor": 1.055783418483325,
+    "rentabilidad_total": 0.0008332910288624262,
+    "rentabilidad_anual": 0.00007409448391130468,
+    "sharpe": 0.07139313731382248,
+    "sortino": 0.09703241923893606,
+    "max_drawdown": 0.0032198264099838614,
+    "max_recuperacion": null,
+    "drawdown_abierto": 1955,
+    "exposicion": 0.18919872926226614,
+    "rotacion": 3.0852515862892784,
+    "costes": 2.6803219009296075,
+    "peso_costes": 0.00871897800046726,
+    "concentracion_anual": 0.08955223880597014,
+    "autocorrelacion": -0.0046194640515119
+  },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": 0.1028742939118048,
+    "rentabilidad_anual": 0.008748167441845884,
+    "sharpe": 0.1393840077882311,
+    "max_drawdown": 0.2482835497651681,
+    "pico": "2013-03-28",
+    "valle": "2020-05-01",
+    "recuperacion": null,
+    "sesiones_bajo_agua": 1955,
+    "motor_sha256": "261ac136f79324930a786115cc7e97533daa2a245fe375c5e71740d7b8caf44d"
+  },
+  "variantes": null,
+  "sensibilidad": null,
+  "no_calculables": {
+    "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
+  },
+  "operaciones_por_anio": {
+    "2009": 2,
+    "2010": 12,
+    "2011": 12,
+    "2012": 12,
+    "2013": 12,
+    "2014": 12,
+    "2015": 12,
+    "2016": 12,
+    "2017": 12,
+    "2018": 12,
+    "2019": 12,
+    "2020": 12
+  },
+  "conclusiones": {
+    "estado": "exploratoria",
+    "lectura": "Diferencia ventana − resto (TOM): -3,55 pb/día. El intervalo incluye cero: en IS no se distingue de no tener efecto.",
+    "supuestos": [
+      "TOM = última sesión del mes y tres primeras del siguiente; resto = demás sesiones del mes.",
+      "Retornos close-to-close ajustados por dividendos, antes de costes.",
+      "Calendario observado conocido de antemano, incluidos cierres no programados (C5).",
+      "Septiembre de 2009 excluido por incompleto."
+    ],
+    "limites": [
+      "La simulación usa 1 acción: rentabilidad y drawdown de cuenta dependen de ese tamaño, no miden el edge.",
+      "El intervalo no corrige la exploración histórica previa de esta hipótesis.",
+      "Sin comisiones adicionales, impacto ni ejecución intradía."
+    ],
+    "siguiente_comprobacion": "En IS, sensibilidad al calendario y a bloques de 1 y 6 meses con la regla fija. OOS sigue bloqueado."
+  },
+  "procedencia": {
+    "motor_sha256": "ff46bc1b0b0d2490aa3ef88a204071839507c80bbb3f8091632505534212fa84",
+    "datos_sha256": "d175e2ece1b1ac5799eba267ae02bf961485e41a83f0dbc3a82fd321c7d33a30",
+    "plan_sha256": "849fe464ca18744d700d247e9e803835f8772f8e0178f08ce924daae9687d71e",
+    "periodos_por_anio": 252
+  },
+  "historial": [
+    {
+      "id": "H001-IS-REAL-001",
+      "fecha": "2026-09-24",
+      "cambio": "Primera ejecución real (2026-09-22); regenerada con el ejecutor único."
+    },
+    {
+      "id": "H001-IS-REAL-002",
+      "fecha": "2026-09-24",
+      "cambio": "Misma especificación que H001-IS-REAL-001 con QQQ en lugar de SPY."
+    },
+    {
+      "id": "H001-IS-REAL-003",
+      "fecha": "2026-09-24",
+      "cambio": "Misma especificación que H001-IS-REAL-001 con IWM en lugar de SPY."
+    }
+  ],
+  "ficheros": {
+    "equity": "equity.csv",
+    "operaciones": "operaciones.csv",
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv",
+    "variantes": null
+  }
+}

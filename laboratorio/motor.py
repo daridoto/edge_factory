@@ -1,21 +1,44 @@
-"""Validación contable, métricas descriptivas y entrada/salida de resultados/<ID>/."""
+"""Validación contable, métricas descriptivas y entrada/salida de resultados/<H-NNN-nombre>/<ID>-<variante>/."""
 from collections import Counter
 import csv
 from datetime import date
 import hashlib
+import json
 import math
 from pathlib import Path
 import statistics as st
 
 from .contratos import Metricas, Operacion, Referencia, Resumen, Sesion, Variante
-from .presentacion import render
+from .presentacion import render, render_indice
 from .proteccion import exigir_muestra
 
 RAIZ = Path(__file__).resolve().parent.parent
 RESULTADOS = RAIZ / "resultados"
-COLUMNAS_INDICE = ["id", "hipotesis", "fecha", "instrumento", "frecuencia", "inicio", "fin",
+COLUMNAS_INDICE = ["id", "ruta", "hipotesis", "variante", "muestra", "fecha", "instrumento", "frecuencia", "inicio", "fin",
                    "estadistico", "unidad", "valor", "ic_inf", "ic_sup", "incluye_cero",
                    "anios_positivos", "anios", "operaciones", "pnl_neto", "sharpe", "max_drawdown", "max_drawdown_100"]
+
+
+def ruta_resultado(plan):
+    """Carpeta espejo del plan: experimentos/<H>/<nombre>.md -> resultados/<H>/<nombre>/."""
+    plan = Path(plan)
+    if plan.parent.parent.name != "experimentos":
+        raise ValueError(f"El plan debe estar en experimentos/<H-NNN-nombre>/: {plan}")
+    return RESULTADOS / plan.parent.name / plan.stem
+
+
+def guardados(resultados=RESULTADOS):
+    """Directorios de experimentos guardados, en orden de ruta."""
+    return sorted(f.parent for f in Path(resultados).glob("*/*/resumen.json"))
+
+
+def buscar(id_experimento, resultados=RESULTADOS):
+    """Directorio del experimento con ese ID (la carpeta empieza por el ID)."""
+    hallados = [d for d in Path(resultados).glob(f"*/{id_experimento}*") if (d / "resumen.json").exists()
+                and json.loads((d / "resumen.json").read_text())["experimento"]["id"] == id_experimento]
+    if len(hallados) != 1:
+        raise ValueError(f"No existe (o está repetido) el experimento {id_experimento}")
+    return hallados[0]
 
 
 def digest(raw):
@@ -232,10 +255,11 @@ def cargar(directorio):
     return resumen, sesiones, operaciones
 
 
-def fila_indice(resumen):
+def fila_indice(resumen, directorio, resultados=RESULTADOS):
     e, ev, b, m = resumen.experimento, resumen.evidencia, resumen.robustez.bootstrap, resumen.metricas
     anios = resumen.robustez.por_anio
-    return dict(id=e.id, hipotesis=e.hipotesis, fecha=e.fecha.isoformat(), instrumento=e.instrumento,
+    return dict(id=e.id, ruta=Path(directorio).relative_to(resultados).as_posix(), hipotesis=e.hipotesis,
+                variante=e.variante or "", muestra=e.muestra, fecha=e.fecha.isoformat(), instrumento=e.instrumento,
                 frecuencia=e.frecuencia, inicio=e.inicio.isoformat(), fin=e.fin.isoformat(),
                 estadistico=ev.estadistico, unidad=ev.unidad, valor=ev.valor, ic_inf=b.ic_inf, ic_sup=b.ic_sup,
                 incluye_cero=b.incluye_cero, anios_positivos=sum(v > 0 for v in anios.values()), anios=len(anios),
@@ -243,10 +267,16 @@ def fila_indice(resumen):
                 max_drawdown_100=resumen.referencia.max_drawdown if resumen.referencia else None)
 
 
-def reconstruir_indice(resultados=RESULTADOS):
-    """resultados/indice.csv: una fila por experimento, con las cifras clave para comparar."""
+def reconstruir_indice(resultados=RESULTADOS, indice_md=None):
+    """resultados/indice.csv (para el dashboard) e INDICE.md (para leer): una fila por experimento, validándolos todos.
+    INDICE.md solo se escribe en la raíz si se reconstruye resultados/ del repo (o si se pasa `indice_md`)."""
     resultados = Path(resultados)
-    filas = [fila_indice(cargar(d)[0]) for d in sorted(resultados.iterdir()) if (d / "resumen.json").exists()]
+    if indice_md is None and resultados.resolve() == RESULTADOS.resolve():
+        indice_md = RAIZ / "INDICE.md"
+    guardados_ = [(d, cargar(d)[0]) for d in guardados(resultados)]
+    filas = [fila_indice(r, d, resultados) for d, r in guardados_]
+    if indice_md:
+        Path(indice_md).write_text(render_indice([(d.relative_to(resultados.parent).as_posix(), r) for d, r in guardados_], RAIZ))
     with (resultados / "indice.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=COLUMNAS_INDICE)
         w.writeheader()

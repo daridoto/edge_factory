@@ -1,0 +1,329 @@
+{
+  "version_esquema": "2.3",
+  "experimento": {
+    "id": "H007-OOS-REAL-002",
+    "hipotesis": "H-007",
+    "version": "real-oos-v1",
+    "fecha": "2026-10-06",
+    "sintetico": false,
+    "pregunta": "Dentro del núcleo OD+ · BtD, ¿rinde más el ES las noches con VIX previo > 20?",
+    "variante": "OD+ BtD VIX",
+    "muestra": "OOS",
+    "base": "H007-IS-REAL-004",
+    "mercado": "clasica",
+    "inicio": "2021-01-03",
+    "fin": "2026-05-28",
+    "instrumento": "ES",
+    "frecuencia": "15min",
+    "moneda": "USD",
+    "capital_inicial": 10000.0,
+    "reglas": {
+      "entrada": "Comprar al precio de las 01:30 ET, lun-vie, si el retorno 15:15-16:15 ET de la sesión previa es < 0.",
+      "salida": "Vender al precio de las 03:30 ET.",
+      "tamano": "1 unidad del índice; 2 unidades si el VIX al cierre de la sesión previa es > 20. Referencia al 100 % del capital (×2 = 200 %) aparte.",
+      "costes": "1 tick (0,25 puntos) por operación completa y unidad: 0,125 puntos por lado."
+    },
+    "receta": "estrategias/H-007.md",
+    "plan": "experimentos/H-007-deriva-nocturna-es/H007-OOS-REAL-002-odplus-btd-vix.md",
+    "fuente_datos": "data/indices/ES_15min_2009-2026.csv + data/macro/Indice de volatilidad VIX - Temp. 1d - Date 2006-07-17 a 2026-07-15 - Norgate.csv"
+  },
+  "evidencia": {
+    "estadistico": "Diferencia VIX > 20 − VIX ≤ 20 (OD+ · BtD · VIX>20 ×2)",
+    "unidad": "pb/operación",
+    "valor": 0.6212797597385022,
+    "componentes": [
+      {
+        "nombre": "Sesiones VIX > 20",
+        "valor": 256.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Sesiones VIX ≤ 20",
+        "valor": 407.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Retorno medio VIX > 20",
+        "valor": 0.7316724844895224,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Retorno medio VIX ≤ 20",
+        "valor": 0.11039272475102016,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Diferencia VIX > 20 − VIX ≤ 20",
+        "valor": 0.6212797597385022,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Mediana VIX > 20",
+        "valor": 2.55950924505588,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "t de la media VIX > 20 (sin bloques)",
+        "valor": 0.3156874990636875,
+        "unidad": "t"
+      }
+    ],
+    "desglose": {}
+  },
+  "robustez": {
+    "bootstrap": {
+      "metodo": "bloques circulares",
+      "unidad": "sesión",
+      "bloque": 5,
+      "replicas": 5000,
+      "semilla": 7301,
+      "nivel": 0.95,
+      "ic_inf": -4.402809641468323,
+      "ic_sup": 5.237802942446931,
+      "incluye_cero": true,
+      "motivo": "Una operación como máximo por sesión; bloques de 5 sesiones conservan la dependencia de corto plazo y los regímenes de VIX."
+    },
+    "por_anio": {
+      "2021": 3.2040163730603917,
+      "2022": 1.711149841607399,
+      "2023": -1.3529663945812764,
+      "2024": -10.238696478898532,
+      "2025": 10.7643960363155,
+      "2026": 1.578773798390039
+    },
+    "sin_cada_anio": {
+      "2021": -0.09462262264846802,
+      "2022": 2.8739488978040724,
+      "2023": 1.0335791838250172,
+      "2024": 1.2701226461386124,
+      "2025": -1.2153112580212655,
+      "2026": 0.5950884075179002
+    },
+    "pnl_costes_x2": -133.0
+  },
+  "metricas": {
+    "operaciones": 663,
+    "pnl_neto": 96.75,
+    "esperanza": 0.14592760180995476,
+    "tasa_acierto": 0.5173453996983409,
+    "payoff": 0.9237947909800583,
+    "profit_factor": 1.0254421142594174,
+    "rentabilidad_total": 0.0096750000000001,
+    "rentabilidad_anual": 0.0014427398185376473,
+    "sharpe": 0.07605143729854101,
+    "sortino": 0.11546442131161304,
+    "max_drawdown": 0.08791103211394802,
+    "max_recuperacion": null,
+    "drawdown_abierto": 1284,
+    "exposicion": 0.034255599472990776,
+    "rotacion": 904.5062832507695,
+    "costes": 229.75,
+    "peso_costes": 0.02976229030377615,
+    "concentracion_anual": 0.2066365007541478,
+    "autocorrelacion": 0.017292222159318735
+  },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": -0.014209609094310682,
+    "rentabilidad_anual": -0.0021406088492386915,
+    "sharpe": -0.022034582769048048,
+    "max_drawdown": 0.19396339635840576,
+    "pico": "2022-05-10",
+    "valle": "2025-04-07",
+    "recuperacion": null,
+    "sesiones_bajo_agua": 1262,
+    "motor_sha256": "f36b7c220cfca513cc39affd5988e25693311b211a349622aad9ed53f877f324"
+  },
+  "variantes": null,
+  "sensibilidad": [
+    {
+      "umbral": 15.0,
+      "multiplicador": 1.5,
+      "operaciones_sobre_umbral": 544,
+      "diferencia": 2.3130182744215877,
+      "rentabilidad_total": -0.009272239179381359,
+      "max_drawdown": 0.14601059393357108,
+      "sharpe": -0.01820605021545013
+    },
+    {
+      "umbral": 15.0,
+      "multiplicador": 2.0,
+      "operaciones_sobre_umbral": 544,
+      "diferencia": 2.3130182744215877,
+      "rentabilidad_total": -0.0063804055591774045,
+      "max_drawdown": 0.18624470134760984,
+      "sharpe": 0.005829970969991152
+    },
+    {
+      "umbral": 15.0,
+      "multiplicador": 3.0,
+      "operaciones_sobre_umbral": 544,
+      "diferencia": 2.3130182744215877,
+      "rentabilidad_total": -0.003655402015239839,
+      "max_drawdown": 0.2622257811062496,
+      "sharpe": 0.03000547766165145
+    },
+    {
+      "umbral": 20.0,
+      "multiplicador": 1.5,
+      "operaciones_sobre_umbral": 256,
+      "diferencia": 0.6212797597385022,
+      "rentabilidad_total": -0.013262942256244581,
+      "max_drawdown": 0.15010348050464528,
+      "sharpe": -0.037474534004334634
+    },
+    {
+      "umbral": 20.0,
+      "multiplicador": 2.0,
+      "operaciones_sobre_umbral": 256,
+      "diferencia": 0.6212797597385022,
+      "rentabilidad_total": -0.014209609094310682,
+      "max_drawdown": 0.19396339635840576,
+      "sharpe": -0.022034582769048048
+    },
+    {
+      "umbral": 20.0,
+      "multiplicador": 3.0,
+      "operaciones_sobre_umbral": 256,
+      "diferencia": 0.6212797597385022,
+      "rentabilidad_total": -0.018659938745314464,
+      "max_drawdown": 0.2759299822568021,
+      "sharpe": -0.0059072318469719845
+    },
+    {
+      "umbral": 25.0,
+      "multiplicador": 1.5,
+      "operaciones_sobre_umbral": 108,
+      "diferencia": -1.1157003559824015,
+      "rentabilidad_total": -0.020911375665082388,
+      "max_drawdown": 0.14196754623706054,
+      "sharpe": -0.07880971400193269
+    },
+    {
+      "umbral": 25.0,
+      "multiplicador": 2.0,
+      "operaciones_sobre_umbral": 108,
+      "diferencia": -1.1157003559824015,
+      "rentabilidad_total": -0.029176829463352094,
+      "max_drawdown": 0.17838186249658838,
+      "sharpe": -0.08545937346683863
+    },
+    {
+      "umbral": 25.0,
+      "multiplicador": 3.0,
+      "operaciones_sobre_umbral": 108,
+      "diferencia": -1.1157003559824015,
+      "rentabilidad_total": -0.047231274116687594,
+      "max_drawdown": 0.24731160815975595,
+      "sharpe": -0.09151131361239633
+    },
+    {
+      "umbral": 30.0,
+      "multiplicador": 1.5,
+      "operaciones_sobre_umbral": 37,
+      "diferencia": 8.95139656869155,
+      "rentabilidad_total": 0.0009077353650519537,
+      "max_drawdown": 0.12031226497771697,
+      "sharpe": 0.019714589893527732
+    },
+    {
+      "umbral": 30.0,
+      "multiplicador": 2.0,
+      "operaciones_sobre_umbral": 37,
+      "diferencia": 8.95139656869155,
+      "rentabilidad_total": 0.014794117569695953,
+      "max_drawdown": 0.136274289920423,
+      "sharpe": 0.07799223317305158
+    },
+    {
+      "umbral": 30.0,
+      "multiplicador": 3.0,
+      "operaciones_sobre_umbral": 37,
+      "diferencia": 8.95139656869155,
+      "rentabilidad_total": 0.041932819758125905,
+      "max_drawdown": 0.1677510285887629,
+      "sharpe": 0.14684630801487586
+    }
+  ],
+  "no_calculables": {
+    "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
+  },
+  "operaciones_por_anio": {
+    "2021": 137,
+    "2022": 124,
+    "2023": 111,
+    "2024": 115,
+    "2025": 127,
+    "2026": 49
+  },
+  "conclusiones": {
+    "estado": "exploratoria",
+    "lectura": "Diferencia VIX > 20 − VIX ≤ 20 (OD+ · BtD · VIX>20 ×2): 0,62 pb/operación (256 sesiones frente a 407); mediana VIX > 20 2,56 pb/operación. El intervalo incluye cero: en OOS no se distingue de no tener efecto.",
+    "supuestos": [
+      "Los de H007-IS-REAL-003.",
+      "VIX: cierre diario de la sesión previa (16:15 ET), conocido antes de la entrada.",
+      "Al 100 % con ×2 la exposición es del 200 % del capital (apalancamiento)."
+    ],
+    "limites": [
+      "Parámetros elegidos tras ver el IS: el OOS mide si sobreviven a esa elección.",
+      "Toda la muestra posterior a la IS se usa aquí: no queda holdout para el ES."
+    ],
+    "siguiente_comprobacion": "Decidir con el usuario a la vista del OOS; no queda holdout."
+  },
+  "procedencia": {
+    "motor_sha256": "f36b7c220cfca513cc39affd5988e25693311b211a349622aad9ed53f877f324",
+    "datos_sha256": "fd9838a2a6030bef53762aec81a96e9271e98071cc5bfd0f0c5204f8d5d8c1f8",
+    "plan_sha256": "9a0da3a52924b575dad39c554ae767cac3fb31068d8662959597cca650df3893",
+    "periodos_por_anio": 252
+  },
+  "historial": [
+    {
+      "id": "H007-IS-REAL-001",
+      "fecha": "2026-09-24",
+      "cambio": "Primera ejecución real."
+    },
+    {
+      "id": "H007-IS-REAL-002",
+      "fecha": "2026-10-05",
+      "cambio": "Misma evidencia que 001 y tabla de variantes por noche (OD+, BtD con proxy, VIX, desfase) para combinar en el dashboard."
+    },
+    {
+      "id": "H007-IS-REAL-003",
+      "fecha": "2026-10-06",
+      "cambio": "Núcleo congelado: ventana OD+ 01:30-03:30 y filtro BtD (proxy de precio); sin VIX."
+    },
+    {
+      "id": "H007-IS-REAL-004",
+      "fecha": "2026-10-06",
+      "cambio": "Núcleo de 003 con tamaño ×2 si el VIX de la sesión previa supera 20; sensibilidad de umbral y multiplicador."
+    },
+    {
+      "id": "H007-IS-REAL-005",
+      "fecha": "2026-10-06",
+      "cambio": "OD+ 01:30-03:30 sola: sin BtD ni VIX, todas las noches lun-vie."
+    },
+    {
+      "id": "H007-OOS-REAL-001",
+      "fecha": "2026-10-06",
+      "cambio": "OOS 2021-01-01 → 2026-05-28 del núcleo H007-IS-REAL-003, sin cambiar nada de su especificación."
+    },
+    {
+      "id": "H007-TOT-REAL-001",
+      "fecha": "2026-10-06",
+      "cambio": "Total (IS + OOS) 2009-09-27 → 2026-05-28 del núcleo H007-IS-REAL-003, sin cambiar nada de su especificación."
+    },
+    {
+      "id": "H007-OOS-REAL-002",
+      "fecha": "2026-10-06",
+      "cambio": "OOS 2021-01-01 → 2026-05-28 de H007-IS-REAL-004 (OD+ · BtD · VIX > 20 ×2), sin cambiar nada de su especificación."
+    }
+  ],
+  "ficheros": {
+    "equity": "equity.csv",
+    "operaciones": "operaciones.csv",
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv",
+    "variantes": null
+  }
+}

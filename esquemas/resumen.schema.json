@@ -210,6 +210,19 @@
           "title": "Pregunta",
           "type": "string"
         },
+        "variante": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Nombre corto de la variante (p. ej. 'OD+ BtD'); agrupa IS, OOS y Total en INDICE.md",
+          "title": "Variante"
+        },
         "muestra": {
           "enum": [
             "IS",
@@ -615,6 +628,7 @@
           "type": "string"
         },
         "plan_sha256": {
+          "description": "SHA-256 del bloque TOML del plan (desde el esquema 2.4; antes, del fichero entero, recalculado en la migración del 2026-10-06)",
           "title": "Plan Sha256",
           "type": "string"
         },
@@ -936,12 +950,13 @@
   "description": "resumen.json: todo lo necesario para leer, comparar o graficar un experimento sin abrir el código.",
   "properties": {
     "version_esquema": {
-      "default": "2.3",
+      "default": "2.4",
       "enum": [
         "2.0",
         "2.1",
         "2.2",
-        "2.3"
+        "2.3",
+        "2.4"
       ],
       "title": "Version Esquema",
       "type": "string"

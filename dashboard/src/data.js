@@ -15,23 +15,31 @@ const fetchOk = async url => {
 };
 const getJSON = async url => (await fetchOk(url)).json();
 
-// CSV del lab: cabecera + filas numéricas, sin comillas; líneas terminadas en CRLF.
+// CSV del lab (csv de Python): cabecera + filas; un campo con coma va entre comillas. Líneas en CRLF.
+const splitCSV = line => [...line.matchAll(/("(?:[^"]|"")*"|[^,]*)(?:,|$)/g)].slice(0, -1).map(m => m[1].startsWith('"') ? m[1].slice(1, -1).replace(/""/g, '"') : m[1]);
 async function getCSV(url) {
   const [head, ...rows] = (await (await fetchOk(url)).text()).trim().split(/\r?\n/);
-  const keys = head.split(',');
-  return rows.map(r => Object.fromEntries(r.split(',').map((v, i) => [keys[i], v])));
+  const keys = splitCSV(head);
+  return rows.map(r => Object.fromEntries(splitCSV(r).map((v, i) => [keys[i], v])));
 }
 
 // Registro de hipótesis: nombre, reglas, costes, estados y experimento de cada fase (public/data/hipotesis.json).
 export const loadRegistro = () => getJSON('/data/hipotesis.json');
 
-// Índice del lab: una fila por experimento (id, hipotesis, muestra…), en orden de ejecución.
-export const loadIndice = () => getCSV(`${LAB}/indice.csv`);
+// Índice del lab: una fila por experimento (id, ruta, hipotesis, variante, muestra…).
+let indice = null;
+export const loadIndice = () => (indice ??= getCSV(`${LAB}/indice.csv`));
+// Carpeta de un experimento dentro de resultados/ (<H-NNN-nombre>/<ID>-<variante>), según el índice.
+const rutaDe = async id => {
+  const fila = (await loadIndice()).find(r => r.id === id);
+  if (!fila) throw new Error(`${id} no está en resultados/indice.csv`);
+  return fila.ruta;
+};
 
 // Un experimento del lab: resumen y, con simulación al 100 % del capital (lab ≥ 2.1), esa equity y operaciones:
 // el riesgo es comparable entre tamaños.
 async function loadExp(id, withVariants = false) {
-  const dir = `${LAB}/${id}`;
+  const dir = `${LAB}/${await rutaDe(id)}`;
   const r = await getJSON(`${dir}/resumen.json`);
   const f = r.ficheros, al100 = !!f.equity_100;
   const [equity, trades, variantes] = await Promise.all([getCSV(`${dir}/${al100 ? f.equity_100 : f.equity}`),

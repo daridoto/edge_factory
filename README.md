@@ -61,7 +61,7 @@ flowchart LR
 | Recetas | H-001 · H-007 · H-008 · H-010 · H-PROPIA-001 |
 | Experimentos | H-001 en SPY, QQQ, IWM y DIA · H-007 en ES (IS y OOS 2021–2026 de tres variantes: sin ventaja fuera de muestra) · H-PROPIA-001 en RAY |
 
-Las cifras de cada experimento están en [`resultados/indice.csv`](resultados/indice.csv), una fila por experimento.
+Todas las hipótesis, sus variantes y sus cifras en [`INDICE.md`](INDICE.md) (y en [`resultados/indice.csv`](resultados/indice.csv) para máquinas).
 
 ## Estructura
 
@@ -69,9 +69,10 @@ Las cifras de cada experimento están en [`resultados/indice.csv`](resultados/in
 edge_factory/
 ├── triaje/          clasificación de hipótesis según los datos
 ├── estrategias/     recetas en pseudocódigo
-├── experimentos/    planes con su bloque TOML
+├── INDICE.md        índice legible: hipótesis → variantes → IS/OOS/Total (generado)
+├── experimentos/    planes: <H-NNN-nombre>/<ID>-<variante>.md
 ├── laboratorio/     motor: datos → backtest → robustez → métricas → ficha
-├── resultados/      una carpeta por experimento + indice.csv
+├── resultados/      espejo de experimentos/ (<H-NNN-nombre>/<ID>-<variante>/) + indice.csv
 ├── esquemas/        JSON Schema de la salida
 ├── conocimiento/    notas por hipótesis y conceptos
 ├── dashboard/       interfaz de lectura (Vite + ECharts)
@@ -85,17 +86,17 @@ edge_factory/
 # entorno
 python3.11 -m venv .venv && .venv/bin/pip install -r requirements.txt
 
-# ejecutar un plan → resultados/<ID>/ (no sobrescribe)
-.venv/bin/python -m laboratorio ejecutar experimentos/<ID>.md
+# ejecutar un plan → resultados/<H-NNN-nombre>/<ID>-<variante>/ (no sobrescribe)
+.venv/bin/python -m laboratorio ejecutar experimentos/<H-NNN-nombre>/<ID>-<variante>.md
 
 # validar y regenerar la ficha
-.venv/bin/python -m laboratorio ficha resultados/<ID>
+.venv/bin/python -m laboratorio ficha resultados/<H-NNN-nombre>/<ID>-<variante>
 
 # reconstruir el índice
 .venv/bin/python -m laboratorio indice
 
 # añadir el riesgo al 100 % del capital a resultados antiguos (reejecuta y verifica)
-.venv/bin/python -m laboratorio referencia resultados/<ID>
+.venv/bin/python -m laboratorio referencia resultados/<H-NNN-nombre>/<ID>-<variante>
 
 # tests
 .venv/bin/python -m unittest discover -s tests

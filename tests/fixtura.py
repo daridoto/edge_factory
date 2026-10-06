@@ -6,7 +6,7 @@ from laboratorio import ejecutar
 from laboratorio.contratos import Operacion, Sesion
 from laboratorio.datos import Barra
 
-PLAN_H001 = "experimentos/H001-IS-REAL-001.md"
+PLAN_H001 = "experimentos/H-001-cambio-de-mes/H001-IS-REAL-001-spy-1-accion.md"
 
 
 def precios_2018(semilla=7301):

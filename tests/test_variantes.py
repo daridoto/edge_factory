@@ -13,7 +13,7 @@ from laboratorio.contratos import Resumen
 from laboratorio.datos import Barra, cargar_serie
 from laboratorio.variantes import desfase, previa, tabla
 
-PLAN = "experimentos/H007-IS-REAL-002.md"
+PLAN = "experimentos/H-007-deriva-nocturna-es/H007-IS-REAL-002-od-tabla-variantes.md"
 
 
 def barras_es(inicio=datetime(2018, 1, 7, 18), fin=datetime(2018, 3, 3), semilla=1):

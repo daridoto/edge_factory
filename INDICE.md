@@ -1,0 +1,56 @@
+# Índice de hipótesis y experimentos
+
+Generado por `python -m laboratorio indice` desde `resultados/`; no se edita a mano. Cada hipótesis tiene su carpeta en `experimentos/` (planes) y otra igual en `resultados/` (salida). Estadístico y su IC tal como los da el lab; ROI y drawdown, con la operativa al 100 % del capital.
+
+| hipótesis | qué es | variantes | experimentos |
+|---|---|---:|---:|
+| [H-001](#h-001) | Cambio de mes (−1 a +3): rendimiento diario medio mayor que el resto del mes | 8 | 8 |
+| [H-007](#h-007) | Deriva nocturna del ES en la hora 2:00-3:00 ET | 5 | 11 |
+| [H-PROPIA-001](#h-propia-001) | RAY largo 28 días cuando el volumen de Raydium dobla su nivel normal | 1 | 1 |
+
+<a id="h-001"></a>
+
+## H-001 · Cambio de mes (−1 a +3): rendimiento diario medio mayor que el resto del mes
+
+[receta](estrategias/H-001.md) · [notas](conocimiento/H-001.md) · planes: `experimentos/H-001-cambio-de-mes/` · resultados: `resultados/H-001-cambio-de-mes/`
+
+| variante | muestra | experimento | periodo | mide | valor | IC 95 % | años + | ROI 100 % | DD 100 % |
+|---|---|---|---|---|---:|---|---:|---:|---:|
+| **SPY · 1 acción** | IS | [H001-IS-REAL-001](resultados/H-001-cambio-de-mes/H001-IS-REAL-001-spy-1-accion/ficha.md) | 2009–2020 | Diferencia ventana − resto | 2,37 pb/día | [-6,27; 11,50] · cruza 0 | 4/12 | 46,8 % | −13,9 % |
+| **QQQ · 1 acción** | IS | [H001-IS-REAL-002](resultados/H-001-cambio-de-mes/H001-IS-REAL-002-qqq-1-accion/ficha.md) | 2009–2020 | Diferencia ventana − resto | 4,30 pb/día | [-4,83; 13,86] · cruza 0 | 6/12 | 79,5 % | −11,0 % |
+| **IWM · 1 acción** | IS | [H001-IS-REAL-003](resultados/H-001-cambio-de-mes/H001-IS-REAL-003-iwm-1-accion/ficha.md) | 2009–2020 | Diferencia ventana − resto | -3,55 pb/día | [-15,78; 8,59] · cruza 0 | 3/12 | 10,3 % | −24,8 % |
+| **DIA · 1 acción** | IS | [H001-IS-REAL-004](resultados/H-001-cambio-de-mes/H001-IS-REAL-004-dia-1-accion/ficha.md) | 2009–2020 | Diferencia ventana − resto | 0,05 pb/día | [-8,55; 9,13] · cruza 0 | 4/12 | 30,3 % | −12,8 % |
+| **SPY · 30 %** | IS | [H001-IS-REAL-005](resultados/H-001-cambio-de-mes/H001-IS-REAL-005-spy-30pct/ficha.md) | 2009–2020 | Diferencia ventana − resto | 2,37 pb/día | [-6,27; 11,50] · cruza 0 | 4/12 | 46,8 % | −13,9 % |
+| **QQQ · 30 %** | IS | [H001-IS-REAL-006](resultados/H-001-cambio-de-mes/H001-IS-REAL-006-qqq-30pct/ficha.md) | 2009–2020 | Diferencia ventana − resto | 4,30 pb/día | [-4,83; 13,86] · cruza 0 | 6/12 | 79,5 % | −11,0 % |
+| **IWM · 30 %** | IS | [H001-IS-REAL-007](resultados/H-001-cambio-de-mes/H001-IS-REAL-007-iwm-30pct/ficha.md) | 2009–2020 | Diferencia ventana − resto | -3,55 pb/día | [-15,78; 8,59] · cruza 0 | 3/12 | 10,3 % | −24,8 % |
+| **DIA · 30 %** | IS | [H001-IS-REAL-008](resultados/H-001-cambio-de-mes/H001-IS-REAL-008-dia-30pct/ficha.md) | 2009–2020 | Diferencia ventana − resto | 0,05 pb/día | [-8,55; 9,13] · cruza 0 | 4/12 | 30,3 % | −12,8 % |
+
+<a id="h-007"></a>
+
+## H-007 · Deriva nocturna del ES en la hora 2:00-3:00 ET
+
+[receta](estrategias/H-007.md) · [notas](conocimiento/H-007.md) · planes: `experimentos/H-007-deriva-nocturna-es/` · resultados: `resultados/H-007-deriva-nocturna-es/`
+
+| variante | muestra | experimento | periodo | mide | valor | IC 95 % | años + | ROI 100 % | DD 100 % |
+|---|---|---|---|---|---:|---|---:|---:|---:|
+| **OD** | IS | [H007-IS-REAL-001](resultados/H-007-deriva-nocturna-es/H007-IS-REAL-001-od/ficha.md) | 2009–2020 | Retorno medio en la ventana | 1,63 pb/hora | [1,01; 2,29] | 11/12 | 7,4 % | −6,5 % |
+| **OD · tabla de variantes** | IS | [H007-IS-REAL-002](resultados/H-007-deriva-nocturna-es/H007-IS-REAL-002-od-tabla-variantes/ficha.md) | 2009–2020 | Retorno medio en la ventana | 1,63 pb/hora | [1,01; 2,29] | 11/12 | 7,4 % | −6,5 % |
+| **OD+ BtD** | IS | [H007-IS-REAL-003](resultados/H-007-deriva-nocturna-es/H007-IS-REAL-003-odplus-btd/ficha.md) | 2009–2020 | Retorno bruto medio por operación | 3,97 pb/operación | [2,42; 5,50] | 12/12 | 37,5 % | −3,9 % |
+|  | OOS | [H007-OOS-REAL-001](resultados/H-007-deriva-nocturna-es/H007-OOS-REAL-001-odplus-btd/ficha.md) | 2021–2026 | Retorno bruto medio por operación | 0,35 pb/operación | [-1,44; 2,25] · cruza 0 | 4/6 | -1,3 % | −10,4 % |
+|  | Total | [H007-TOT-REAL-001](resultados/H-007-deriva-nocturna-es/H007-TOT-REAL-001-odplus-btd/ficha.md) | 2009–2026 | Retorno bruto medio por operación | 2,71 pb/operación | [1,53; 3,94] | 16/18 | 35,7 % | −10,4 % |
+| **OD+ BtD VIX** | IS | [H007-IS-REAL-004](resultados/H-007-deriva-nocturna-es/H007-IS-REAL-004-odplus-btd-vix/ficha.md) | 2009–2020 | Diferencia VIX > 20 − VIX ≤ 20 | 7,35 pb/operación | [3,60; 11,38] | 10/11 | 81,8 % | −7,0 % |
+|  | OOS | [H007-OOS-REAL-002](resultados/H-007-deriva-nocturna-es/H007-OOS-REAL-002-odplus-btd-vix/ficha.md) | 2021–2026 | Diferencia VIX > 20 − VIX ≤ 20 | 0,62 pb/operación | [-4,40; 5,24] · cruza 0 | 4/6 | -1,4 % | −19,4 % |
+|  | Total | [H007-TOT-REAL-002](resultados/H-007-deriva-nocturna-es/H007-TOT-REAL-002-odplus-btd-vix/ficha.md) | 2009–2026 | Diferencia VIX > 20 − VIX ≤ 20 | 4,54 pb/operación | [1,58; 7,63] | 14/17 | 79,2 % | −19,4 % |
+| **OD+** | IS | [H007-IS-REAL-005](resultados/H-007-deriva-nocturna-es/H007-IS-REAL-005-odplus/ficha.md) | 2009–2020 | Retorno bruto medio por operación | 2,62 pb/operación | [1,60; 3,70] | 12/12 | 42,3 % | −8,2 % |
+|  | OOS | [H007-OOS-REAL-003](resultados/H-007-deriva-nocturna-es/H007-OOS-REAL-003-odplus/ficha.md) | 2021–2026 | Retorno bruto medio por operación | 0,03 pb/operación | [-1,08; 1,13] · cruza 0 | 3/6 | -6,8 % | −15,6 % |
+|  | Total | [H007-TOT-REAL-003](resultados/H-007-deriva-nocturna-es/H007-TOT-REAL-003-odplus/ficha.md) | 2009–2026 | Retorno bruto medio por operación | 1,78 pb/operación | [0,99; 2,65] | 15/18 | 32,6 % | −15,6 % |
+
+<a id="h-propia-001"></a>
+
+## H-PROPIA-001 · RAY largo 28 días cuando el volumen de Raydium dobla su nivel normal
+
+[receta](estrategias/H-PROPIA-001.md) · [notas](conocimiento/H-PROPIA-001.md) · planes: `experimentos/H-PROPIA-001-ray-volumen/` · resultados: `resultados/H-PROPIA-001-ray-volumen/`
+
+| variante | muestra | experimento | periodo | mide | valor | IC 95 % | años + | ROI 100 % | DD 100 % |
+|---|---|---|---|---|---:|---|---:|---:|---:|
+| **VOL×2** | IS | [HPROPIA001-IS-REAL-001](resultados/H-PROPIA-001-ray-volumen/HPROPIA001-IS-REAL-001-vol-x2/ficha.md) | 2022–2026 | Retorno neto medio por operación | 37,51 % / operación | [9,41; 68,22] | 3/5 | 3.664,8 % | −54,1 % |

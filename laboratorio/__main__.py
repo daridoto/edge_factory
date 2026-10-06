@@ -11,7 +11,7 @@ from .presentacion import render
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="comando", required=True)
-    ej = sub.add_parser("ejecutar", help="Ejecuta la especificación de un plan y guarda resultados/<ID>/")
+    ej = sub.add_parser("ejecutar", help="Ejecuta la especificación de un plan y guarda resultados/<H-NNN-nombre>/<ID>-<variante>/")
     ej.add_argument("plan", type=Path)
     sub.add_parser("indice", help="Reconstruye resultados/indice.csv validando cada experimento")
     ficha = sub.add_parser("ficha", help="Valida un experimento y regenera su ficha.md")

@@ -14,7 +14,7 @@ class Resultados(unittest.TestCase):
     def test_guardar_cargar_indice_y_ficha(self):
         resumen, sesiones, operaciones, al_100, _ = experimento()
         with tempfile.TemporaryDirectory() as tmp:
-            d = Path(tmp) / "X"
+            d = Path(tmp) / "H-001-x" / "H001-IS-REAL-001-y"
             with self.assertRaisesRegex(ValueError, "al 100"):
                 motor.guardar(d, resumen, sesiones, operaciones)
             motor.guardar(d, resumen, sesiones, operaciones, al_100)
@@ -24,8 +24,9 @@ class Resultados(unittest.TestCase):
             self.assertIn("DATOS SINTÉTICOS", (d / "ficha.md").read_text())
             with self.assertRaises(FileExistsError):
                 motor.guardar(d, resumen, sesiones, operaciones, al_100)
-            filas = motor.reconstruir_indice(tmp)
-            self.assertEqual([f["id"] for f in filas], [resumen.experimento.id])
+            filas = motor.reconstruir_indice(tmp, indice_md=Path(tmp) / "INDICE.md")
+            self.assertEqual([(f["id"], f["ruta"]) for f in filas], [(resumen.experimento.id, "H-001-x/H001-IS-REAL-001-y")])
+            self.assertIn("H001-IS-REAL-001", (Path(tmp) / "INDICE.md").read_text())
             original = (d / "ficha.md").read_text()
             (d / "ficha.md").write_text("")
             cli = subprocess.run([sys.executable, "-m", "laboratorio", "ficha", str(d)], cwd=RAIZ, capture_output=True, text=True)

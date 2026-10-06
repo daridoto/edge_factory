@@ -66,10 +66,10 @@ def render(resumen):
     lineas = [
         f"# {e.hipotesis} · {e.pregunta}", "",
         (f"**{e.muestra} de {e.base} · EXPLORATORIA**" if e.base else "**SOLO IS · EXPLORATORIA**") + (" · **DATOS SINTÉTICOS: no es evidencia**" if e.sintetico else ""), "",
-        f"**Recorrido:** [receta](../../{e.receta}) → [plan](../../{e.plan}) → esta ficha · "
+        f"**Recorrido:** [receta](../../../{e.receta}) → [plan](../../../{e.plan}) → esta ficha · "
         "datos: [resumen.json](resumen.json), [equity.csv](equity.csv), [operaciones.csv](operaciones.csv)", "",
         f"> {c.lectura}", "",
-        f"**Muestra:** {e.inicio} → {e.fin} · {e.instrumento} {e.frecuencia} · experimento {e.id}. " + (f"{e.muestra} autorizada; misma especificación que la base." if e.base else "OOS y holdout no utilizados."), "",
+        f"**Muestra:** {e.inicio} → {e.fin} · {e.instrumento} {e.frecuencia} · experimento {e.id}" + (f" · variante **{e.variante}**" if e.variante else "") + ". " + (f"{e.muestra} autorizada; misma especificación que la base." if e.base else "OOS y holdout no utilizados."), "",
         "## Evidencia", "",
         "| | Valor |", "|---|---:|",
         *[f"| {x.nombre} | {n(x.valor, 0 if x.valor.is_integer() else 2)} {x.unidad} |" for x in ev.componentes],
@@ -108,4 +108,58 @@ def render(resumen):
         "## Siguiente comprobación (propuesta, sin ejecutar)", "",
         c.siguiente_comprobacion, "",
     ]
+    return "\n".join(lineas)
+
+
+ORDEN_MUESTRA = {"IS": 0, "OOS": 1, "Total": 2}
+
+
+def render_indice(experimentos, raiz):
+    """INDICE.md: por hipótesis, sus variantes y, en cada una, IS → OOS → Total con las cifras clave.
+    `experimentos`: [(ruta del directorio desde la raíz, Resumen)]; `raiz`: raíz del repo (títulos de las recetas)."""
+    from pathlib import Path
+    por_h = {}
+    for ruta, r in experimentos:
+        por_h.setdefault(r.experimento.hipotesis, []).append((ruta, r))
+    lineas = ["# Índice de hipótesis y experimentos", "",
+              "Generado por `python -m laboratorio indice` desde `resultados/`; no se edita a mano. "
+              "Cada hipótesis tiene su carpeta en `experimentos/` (planes) y otra igual en `resultados/` (salida). "
+              "Estadístico y su IC tal como los da el lab; ROI y drawdown, con la operativa al 100 % del capital.", ""]
+    def titulo(h):
+        receta = Path(raiz) / por_h[h][0][1].experimento.receta
+        linea = next((x for x in receta.read_text().splitlines() if x.startswith("# ")), "") if receta.exists() else ""
+        return linea[2:].split(" · ", 1)[-1].strip() or h
+
+    def ancla(h):
+        return h.lower()
+    lineas += ["| hipótesis | qué es | variantes | experimentos |", "|---|---|---:|---:|"]
+    lineas += [f"| [{h}](#{ancla(h)}) | {titulo(h)} | {len({r.experimento.variante for _, r in fs})} | {len(fs)} |" for h, fs in por_h.items()]
+    lineas.append("")
+    for h, filas in por_h.items():
+        r0 = filas[0][1].experimento
+        carpeta = filas[0][0].split("/")[1]
+        notas = Path(raiz) / "conocimiento" / f"{h}.md"
+        lineas += [f'<a id="{ancla(h)}"></a>', "", f"## {h} · {titulo(h)}", "",
+                   f"[receta]({r0.receta})" + (f" · [notas](conocimiento/{h}.md)" if notas.exists() else "")
+                   + f" · planes: `experimentos/{carpeta}/` · resultados: `resultados/{carpeta}/`", ""]
+        primero = {}
+        for ruta, r in sorted(filas, key=lambda x: x[1].experimento.id):
+            primero.setdefault(r.experimento.variante or r.experimento.id, (ORDEN_MUESTRA[r.experimento.muestra], r.experimento.id))
+        filas = sorted(filas, key=lambda x: (primero[x[1].experimento.variante or x[1].experimento.id],
+                                             ORDEN_MUESTRA[x[1].experimento.muestra], x[1].experimento.id))
+        lineas += ["| variante | muestra | experimento | periodo | mide | valor | IC 95 % | años + | ROI 100 % | DD 100 % |",
+                   "|---|---|---|---|---|---:|---|---:|---:|---:|"]
+        previa = None
+        for ruta, r in filas:
+            e, ev, b, f = r.experimento, r.evidencia, r.robustez.bootstrap, r.referencia
+            v = e.variante or "—"
+            anios = r.robustez.por_anio
+            lineas.append(" | ".join([
+                "| " + (f"**{v}**" if v != previa else ""), e.muestra, f"[{e.id}]({ruta}/ficha.md)",
+                f"{e.inicio.year}–{e.fin.year}", ev.estadistico.split(" (")[0],
+                f"{n(ev.valor)} {ev.unidad}", f"[{n(b.ic_inf)}; {n(b.ic_sup)}]" + (" · cruza 0" if b.incluye_cero else ""),
+                f"{sum(x > 0 for x in anios.values())}/{len(anios)}",
+                f"{n(f.rentabilidad_total * 100, 1)} %" if f else "—", f"−{n(f.max_drawdown * 100, 1)} %" if f else "—"]) + " |")
+            previa = v
+        lineas.append("")
     return "\n".join(lineas)

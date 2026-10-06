@@ -1,6 +1,7 @@
 """Contratos de salida de un experimento. Los JSON Schema de esquemas/ se exportan desde aquí.
 
-Un experimento produce en resultados/<ID>/:
+Un plan vive en experimentos/<H-NNN-nombre>/<ID>-<variante>.md y su salida en la carpeta espejo
+resultados/<H-NNN-nombre>/<ID>-<variante>/ (motor.ruta_resultado):
 - resumen.json     -> Resumen: identidad, evidencia, robustez, métricas, conclusiones y procedencia.
 - equity.csv       -> una fila Sesion por sesión de la muestra.
 - operaciones.csv  -> una fila Operacion por operación cerrada.
@@ -10,7 +11,8 @@ Un experimento produce en resultados/<ID>/:
 - variantes.csv    -> opcional: una fila Variante por sesión y ventana alternativa, con las covariables para
                       filtrar o dimensionar en el dashboard (descrita en `variantes`; ver variantes.py).
 `metricas` usa el tamaño del plan; `referencia`, el 100 % del capital (riesgo comparable entre experimentos).
-resultados/indice.csv tiene una fila por experimento (motor.reconstruir_indice).
+resultados/indice.csv tiene una fila por experimento (con su `ruta`) e INDICE.md, en la raíz, lo mismo para leer
+(motor.reconstruir_indice).
 
 Garantías:
 - Solo IS: Experimento rechaza otra muestra y fechas fuera de la IS de su mercado (proteccion.MUESTRAS),
@@ -30,7 +32,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .proteccion import exigir_muestra
 
-VERSION = "2.3"  # 2.1: bloque `referencia` (riesgo al 100 % del capital); 2.2: `variantes` opcional; 2.3: `sensibilidad` opcional
+VERSION = "2.4"  # 2.1: `referencia` (riesgo al 100 %); 2.2: `variantes`; 2.3: `sensibilidad`; 2.4: `experimento.variante`
 
 
 class Modelo(BaseModel):
@@ -119,6 +121,7 @@ class Experimento(Modelo):
     fecha: date = Field(description="Fecha de ejecución")
     sintetico: bool = Field(description="True solo en tests: nunca es evidencia")
     pregunta: str
+    variante: Optional[str] = Field(default=None, description="Nombre corto de la variante (p. ej. 'OD+ BtD'); agrupa IS, OOS y Total en INDICE.md")
     muestra: Literal["IS", "OOS", "Total"]
     base: Optional[str] = Field(default=None, description="Experimento IS que se lleva a OOS o Total (misma especificación); solo en esas muestras")
     mercado: Literal["clasica", "cripto"] = Field(default="clasica", description="Qué IS aplica (proteccion.MUESTRAS)")
@@ -226,7 +229,7 @@ class Conclusiones(Modelo):
 class Procedencia(Modelo):
     motor_sha256: str
     datos_sha256: str
-    plan_sha256: str
+    plan_sha256: str = Field(description="SHA-256 del bloque TOML del plan (desde el esquema 2.4; antes, del fichero entero, recalculado en la migración del 2026-10-06)")
     periodos_por_anio: int = Field(ge=1)
 
 
@@ -247,7 +250,7 @@ class Ficheros(Modelo):
 
 class Resumen(Modelo):
     """resumen.json: todo lo necesario para leer, comparar o graficar un experimento sin abrir el código."""
-    version_esquema: Literal["2.0", "2.1", "2.2", "2.3"] = VERSION
+    version_esquema: Literal["2.0", "2.1", "2.2", "2.3", "2.4"] = VERSION
     experimento: Experimento
     evidencia: Evidencia
     robustez: Robustez

@@ -78,7 +78,7 @@ class Operacion(unittest.TestCase):
 
 class PlanRay(unittest.TestCase):
     def test_especificacion_corre_con_datos_sinteticos(self):
-        plan = "experimentos/HPROPIA001-IS-REAL-001.md"
+        plan = "experimentos/H-PROPIA-001-ray-volumen/HPROPIA001-IS-REAL-001-vol-x2.md"
         spec = ejecutar.leer_plan(ejecutar.motor.RAIZ / plan)
         n = 400
         precios = [(10 + i * .01,) * 4 for i in range(n)]

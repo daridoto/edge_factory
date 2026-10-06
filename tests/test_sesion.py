@@ -10,7 +10,7 @@ from laboratorio.contratos import Variante
 from laboratorio.presentacion import render
 from tests.test_variantes import barras_es
 
-PLAN_003, PLAN_004 = "experimentos/H007-IS-REAL-003.md", "experimentos/H007-IS-REAL-004.md"
+PLAN_003, PLAN_004 = "experimentos/H-007-deriva-nocturna-es/H007-IS-REAL-003-odplus-btd.md", "experimentos/H-007-deriva-nocturna-es/H007-IS-REAL-004-odplus-btd-vix.md"
 
 
 def fila(dia, entrada, salida, senal=None, serie=None):
@@ -94,7 +94,7 @@ class Ejecutor(unittest.TestCase):
         self.assertIn("Sensibilidad", render(resumen))
 
     def test_sin_filtro_no_hay_resto(self):
-        resumen, _, ops, _, _ = self.correr("experimentos/H007-IS-REAL-005.md")
+        resumen, _, ops, _, _ = self.correr("experimentos/H-007-deriva-nocturna-es/H007-IS-REAL-005-odplus.md")
         c = [x.valor for x in resumen.evidencia.componentes]
         self.assertEqual(c[:2], [len(ops), 0])
         self.assertAlmostEqual(c[2], resumen.evidencia.valor)
@@ -121,16 +121,16 @@ class MuestraOOS(unittest.TestCase):
                 exigir_muestra(*args)
 
     def test_plan_oos_identico_a_su_base(self):
-        spec = ejecutar.leer_plan(motor.RAIZ / "experimentos/H007-OOS-REAL-001.md")
+        spec = ejecutar.leer_plan(motor.RAIZ / "experimentos/H-007-deriva-nocturna-es/H007-OOS-REAL-001-odplus-btd.md")
         ejecutar.exigir_mismo_plan(spec)
         spec["sesion"] = {**spec["sesion"], "ventana": ["02:00", "03:00"]}
         with self.assertRaises(ValueError):
             ejecutar.exigir_mismo_plan(spec)
 
     def test_oos_sintetico_lleva_base_y_valida(self):
-        spec = ejecutar.leer_plan(motor.RAIZ / "experimentos/H007-OOS-REAL-001.md")
+        spec = ejecutar.leer_plan(motor.RAIZ / "experimentos/H-007-deriva-nocturna-es/H007-OOS-REAL-001-odplus-btd.md")
         bs = barras_es(inicio=datetime(2022, 1, 9, 18), fin=datetime(2022, 3, 5))
-        resumen, sesiones, ops, al_100, _ = ejecutar.ejecutar(spec, "experimentos/H007-OOS-REAL-001.md", barras=bs,
+        resumen, sesiones, ops, al_100, _ = ejecutar.ejecutar(spec, "experimentos/H-007-deriva-nocturna-es/H007-OOS-REAL-001-odplus-btd.md", barras=bs,
                                                                hoy=date(2026, 10, 6))
         self.assertEqual((resumen.experimento.muestra, resumen.experimento.base), ("OOS", "H007-IS-REAL-003"))
         with tempfile.TemporaryDirectory() as tmp:

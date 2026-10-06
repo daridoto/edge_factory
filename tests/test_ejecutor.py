@@ -120,7 +120,7 @@ class PlanH007(unittest.TestCase):
                 precio += rng.choice([-.25, 0, .25])
                 bs.append(Barra(ts, precio, precio))
             ts += timedelta(minutes=15)
-        plan = "experimentos/H007-IS-REAL-001.md"
+        plan = "experimentos/H-007-deriva-nocturna-es/H007-IS-REAL-001-od.md"
         spec = ejecutar.leer_plan(ejecutar.motor.RAIZ / plan)
         r, sesiones, operaciones, _, _ = ejecutar.ejecutar(spec, plan, barras=bs, inicio=date(2018, 1, 1), fin=date(2018, 12, 31))
         self.assertTrue(r.experimento.sintetico)

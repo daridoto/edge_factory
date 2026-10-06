@@ -1,6 +1,6 @@
-"""Ejecutor único: lee la especificación del plan (bloque ```toml) y produce resultados/<ID>/.
+"""Ejecutor único: lee la especificación del plan (bloque ```toml) y produce resultados/<H-NNN-nombre>/<ID>-<variante>/.
 
-    .venv/bin/python -m laboratorio ejecutar experimentos/<ID>.md
+    .venv/bin/python -m laboratorio ejecutar experimentos/<H-NNN-nombre>/<ID>-<variante>.md
 """
 from datetime import date
 import json
@@ -24,30 +24,38 @@ FRACCION_REF = 0.999  # referencia al 100 % del capital; al 100 % exacto no cabe
 FICHEROS_100 = Ficheros(equity_100="equity_100.csv", operaciones_100="operaciones_100.csv")
 
 
-def leer_plan(ruta):
+def bloque_toml(ruta):
     bloques = re.findall(r"```toml\n(.*?)```", Path(ruta).read_text(), re.S)
     if len(bloques) != 1:
         raise ValueError("El plan debe tener exactamente un bloque ```toml con la especificación")
-    return tomllib.loads(bloques[0])
+    return bloques[0]
+
+
+def huella_plan(plan):
+    """SHA-256 del bloque TOML del plan (la especificación): la prosa y los enlaces del plan pueden cambiar sin tocarla."""
+    ruta = motor.RAIZ / plan
+    return motor.digest(bloque_toml(ruta).encode()) if ruta.exists() else "sin plan"
+
+
+def leer_plan(ruta):
+    return tomllib.loads(bloque_toml(ruta))
 
 
 def historial(hipotesis, id_actual, fecha, cambio, resultados=motor.RESULTADOS):
     previos = []
-    for f in sorted(Path(resultados).glob("*/resumen.json")):
-        r = json.loads(f.read_text())
+    for d in motor.guardados(resultados):
+        r = json.loads((d / "resumen.json").read_text())
         if r["experimento"]["hipotesis"] == hipotesis and r["experimento"]["id"] != id_actual:
             previos.append(Intento(id=r["experimento"]["id"], fecha=r["experimento"]["fecha"], cambio=r["historial"][-1]["cambio"]))
     return sorted(previos, key=lambda i: i.fecha) + [Intento(id=id_actual, fecha=fecha, cambio=cambio)]
 
 
-IDENTIDAD = {"id", "version", "pregunta", "cambio", "muestra", "base", "conclusiones"}
+IDENTIDAD = {"id", "version", "pregunta", "cambio", "muestra", "base", "conclusiones", "variante"}
 
 
 def exigir_mismo_plan(spec, resultados=motor.RESULTADOS):
     """Un plan OOS repite la especificación de su experimento base: todo salvo identidad y conclusiones."""
-    base = Path(resultados) / spec["base"] / "resumen.json"
-    if not base.exists():
-        raise ValueError(f"No existe el experimento base {spec['base']}")
+    base = motor.buscar(spec["base"], resultados) / "resumen.json"
     original = leer_plan(motor.RAIZ / json.loads(base.read_text())["experimento"]["plan"])
     distinto = sorted(k for k in (set(spec) | set(original)) - IDENTIDAD if spec.get(k) != original.get(k))
     if distinto or spec["hipotesis"] != original["hipotesis"]:
@@ -112,7 +120,7 @@ def ejecutar(spec, plan, barras=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS, **
     return Resumen(
         experimento=Experimento(
             id=spec["id"], hipotesis=spec["hipotesis"], version=spec["version"], fecha=hoy, sintetico=sintetico,
-            pregunta=spec["pregunta"], muestra="IS", inicio=sesiones[0].fecha, fin=sesiones[-1].fecha,
+            pregunta=spec["pregunta"], variante=spec.get("variante"), muestra="IS", inicio=sesiones[0].fecha, fin=sesiones[-1].fecha,
             instrumento=dataset["instrumento"], frecuencia=dataset["frecuencia"], moneda="USD", capital_inicial=op["capital"],
             reglas=Reglas(entrada=op["entrada"], salida=op["salida"], tamano=op["tamano"], costes=op["costes"]),
             receta=spec["receta"], plan=str(plan), fuente_datos=" + ".join(fuentes)),
@@ -128,7 +136,7 @@ def ejecutar(spec, plan, barras=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS, **
         procedencia=Procedencia(motor_sha256=motor.huella_motor(),
                                 datos_sha256=motor.digest(json.dumps([(str(x.ts), x.close, x.precio) for x in barras]
                                                                      + [f.model_dump(mode="json") for f in filas or []]).encode()),
-                                plan_sha256=motor.digest(Path(motor.RAIZ / plan).read_bytes()) if (motor.RAIZ / plan).exists() else "sin plan",
+                                plan_sha256=huella_plan(plan),
                                 periodos_por_anio=dataset.get("periodos_por_anio", 252)),
         historial=historial(spec["hipotesis"], spec["id"], hoy, spec["cambio"]),
         ficheros=FICHEROS_100.model_copy(update={"variantes": "variantes.csv" if meta else None})), sesiones, operaciones, al_100, filas
@@ -194,7 +202,7 @@ def ejecutar_eventos(spec, plan, barras=None, serie=None, referencia=None, hoy=N
     mercado = dataset.get("mercado", "clasica")
     return Resumen(
         experimento=Experimento(
-            id=spec["id"], hipotesis=h, version=spec["version"], fecha=hoy, sintetico=sintetico, pregunta=spec["pregunta"],
+            id=spec["id"], hipotesis=h, version=spec["version"], fecha=hoy, sintetico=sintetico, pregunta=spec["pregunta"], variante=spec.get("variante"),
             muestra="IS", mercado=mercado, inicio=sesiones[0].fecha, fin=sesiones[-1].fecha,
             instrumento=dataset["instrumento"], frecuencia=dataset["frecuencia"], moneda=op.get("moneda", "USD"),
             capital_inicial=op["capital"],
@@ -209,7 +217,7 @@ def ejecutar_eventos(spec, plan, barras=None, serie=None, referencia=None, hoy=N
         procedencia=Procedencia(motor_sha256=motor.huella_motor(),
                                 datos_sha256=motor.digest(json.dumps([[str(x.ts), x.open, x.low, x.close] for x in barras]
                                                                      + sorted((str(k), v) for k, v in serie.items())).encode()),
-                                plan_sha256=motor.digest(Path(motor.RAIZ / plan).read_bytes()) if (motor.RAIZ / plan).exists() else "sin plan",
+                                plan_sha256=huella_plan(plan),
                                 periodos_por_anio=dataset.get("periodos_por_anio", 252)),
         historial=historial(h, spec["id"], hoy, spec["cambio"]), ficheros=FICHEROS_100), sesiones, operaciones, al_100, None
 
@@ -292,7 +300,7 @@ def ejecutar_sesion(spec, plan, barras=None, serie=None, hoy=None, inicio=INICIO
     return Resumen(
         experimento=Experimento(
             id=spec["id"], hipotesis=spec["hipotesis"], version=spec["version"], fecha=hoy, sintetico=sintetico,
-            pregunta=spec["pregunta"], muestra=muestra, base=base, inicio=sesiones[0].fecha, fin=sesiones[-1].fecha,
+            pregunta=spec["pregunta"], variante=spec.get("variante"), muestra=muestra, base=base, inicio=sesiones[0].fecha, fin=sesiones[-1].fecha,
             instrumento=dataset["instrumento"], frecuencia=dataset["frecuencia"], moneda="USD", capital_inicial=capital,
             reglas=Reglas(entrada=op["entrada"], salida=op["salida"], tamano=op["tamano"], costes=op["costes"]),
             receta=spec["receta"], plan=str(plan), fuente_datos=" + ".join(fuentes)),
@@ -304,7 +312,7 @@ def ejecutar_sesion(spec, plan, barras=None, serie=None, hoy=None, inicio=INICIO
         procedencia=Procedencia(motor_sha256=motor.huella_motor(),
                                 datos_sha256=motor.digest(json.dumps([(str(x.ts), x.close, x.precio) for x in barras]
                                                                      + [f.model_dump(mode="json") for f in filas]).encode()),
-                                plan_sha256=motor.digest(Path(motor.RAIZ / plan).read_bytes()) if (motor.RAIZ / plan).exists() else "sin plan",
+                                plan_sha256=huella_plan(plan),
                                 periodos_por_anio=periodos_anio),
         historial=historial(spec["hipotesis"], spec["id"], hoy, spec["cambio"]), ficheros=FICHEROS_100), sesiones, operaciones, al_100, None
 
@@ -334,7 +342,9 @@ def main(plan):
     plan = Path(plan).resolve().relative_to(motor.RAIZ)
     spec = leer_plan(motor.RAIZ / plan)
     resumen, sesiones, operaciones, al_100, filas = ejecutar(spec, plan)
-    salida = motor.RESULTADOS / spec["id"]
+    if not plan.stem.startswith(spec["id"]) or not (plan.parent.name == spec["hipotesis"] or plan.parent.name.startswith(spec["hipotesis"] + "-")):
+        raise ValueError(f"El plan debe llamarse experimentos/{spec['hipotesis']}-<nombre>/{spec['id']}-<variante>.md")
+    salida = motor.ruta_resultado(plan)
     motor.guardar(salida, resumen, sesiones, operaciones, al_100, filas)
     motor.reconstruir_indice()
     return salida
