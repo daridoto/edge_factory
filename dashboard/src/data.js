@@ -23,6 +23,10 @@ async function getCSV(url) {
   return rows.map(r => Object.fromEntries(splitCSV(r).map((v, i) => [keys[i], v])));
 }
 
+// Grupo de una entrada en la portada y en la comparativa (#<clave>): su `grupo` (en minúsculas y con guiones) si lo
+// tiene; si no, su `hipotesis`. Así una hipótesis puede tener varios grupos (p. ej. HORA 2 · ES y HORA 2 · NQ).
+export const clave = e => e.grupo ? e.grupo.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : e.hipotesis;
+
 // Registro de hipótesis: nombre, reglas, costes, estados y experimento de cada fase (public/data/hipotesis.json).
 export const loadRegistro = () => getJSON('/data/hipotesis.json');
 
@@ -60,6 +64,12 @@ export async function loadFicha(entry) {
     view.phases[key] = toPhase(key, e.r, e.equity, e.trades, entry);
   }
   if (is.variantes) view.variants = toVariants(is.r, is.variantes, is.al100);
+  // `control` en el registro: experimento del lab cuyo bloque `control` se muestra en la ficha (p. ej. por tendencia)
+  if (entry.control) {
+    const c = (await getJSON(`${LAB}/${await rutaDe(entry.control)}/resumen.json`)).control;
+    if (!c) throw new Error(`${entry.control} no tiene bloque control`);
+    view.control = { ...c, exp: entry.control };
+  }
   return view;
 }
 

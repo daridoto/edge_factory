@@ -92,7 +92,8 @@
     "costes": "1 tick (0,25 pt) por operación",
     "estados": {
       "IS": "inconclusive"
-    }
+    },
+    "grupo": "HORA 2 · ES"
   },
   {
     "id": "H-007-ODP",
@@ -113,7 +114,8 @@
     "costes": "1 tick (0,25 pt) por operación",
     "estados": {
       "IS": "inconclusive"
-    }
+    },
+    "grupo": "HORA 2 · ES"
   },
   {
     "id": "H-007-NUCLEO",
@@ -134,7 +136,8 @@
     "costes": "1 tick (0,25 pt) por operación",
     "estados": {
       "IS": "inconclusive"
-    }
+    },
+    "grupo": "HORA 2 · ES"
   },
   {
     "id": "H-007-VIX",
@@ -153,6 +156,52 @@
       "Tamaño": "1 punto; ×2 si VIX previo > 20"
     },
     "costes": "1 tick (0,25 pt) por operación y unidad",
+    "estados": {
+      "IS": "inconclusive"
+    },
+    "grupo": "HORA 2 · ES"
+  },
+  {
+    "id": "H-007-NQ",
+    "hipotesis": "H-007",
+    "grupo": "HORA 2 · NQ",
+    "etiqueta": "OD+ BtD",
+    "nombre": "HORA 2 · NQ BtD",
+    "efecto": "BtD",
+    "experimentos": {
+      "IS": "H007-IS-REAL-006",
+      "OOS": "H007-OOS-REAL-004",
+      "Total": "H007-TOT-REAL-004"
+    },
+    "reglas": {
+      "Entrada": "01:30 ET, lun–vie, si 15:15–16:15 previo < 0",
+      "Salida": "03:30 ET",
+      "Tamaño": "1 punto del índice"
+    },
+    "costes": "1 tick (0,25 pt) por operación",
+    "estados": {
+      "IS": "inconclusive"
+    },
+    "control": "H007-IS-REAL-007"
+  },
+  {
+    "id": "H-007-NQ-BAJ",
+    "hipotesis": "H-007",
+    "grupo": "HORA 2 · NQ",
+    "etiqueta": "OD+ bajista",
+    "nombre": "HORA 2 · NQ bajista",
+    "efecto": "bajista",
+    "experimentos": {
+      "IS": "H007-IS-REAL-008",
+      "OOS": "H007-OOS-REAL-005",
+      "Total": "H007-TOT-REAL-005"
+    },
+    "reglas": {
+      "Entrada": "01:30 ET, lun–vie, si 16:15 previo ≤ media 200 sesiones",
+      "Salida": "03:30 ET",
+      "Tamaño": "1 punto del índice"
+    },
+    "costes": "1 tick (0,25 pt) por operación",
     "estados": {
       "IS": "inconclusive"
     }

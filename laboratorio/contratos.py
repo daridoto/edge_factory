@@ -32,7 +32,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .proteccion import exigir_muestra
 
-VERSION = "2.4"  # 2.1: `referencia` (riesgo al 100 %); 2.2: `variantes`; 2.3: `sensibilidad`; 2.4: `experimento.variante`
+VERSION = "2.5"  # 2.1: `referencia` (riesgo al 100 %); 2.2: `variantes`; 2.3: `sensibilidad`; 2.4: `experimento.variante`; 2.5: `control`
 
 
 class Modelo(BaseModel):
@@ -105,6 +105,25 @@ class Sensibilidad(Modelo):
     rentabilidad_total: float = Field(description="Al 100 % del capital por unidad de tamaño")
     max_drawdown: float = Field(description="Al 100 % del capital por unidad de tamaño")
     sharpe: Optional[float]
+
+
+class Lados(Modelo):
+    """Retorno bruto medio por operación (pb) de las sesiones operadas y de las descartadas por el filtro, en cada lado."""
+    operadas: list[float] = Field(min_length=2, max_length=2)
+    descartadas: list[float] = Field(min_length=2, max_length=2)
+
+
+class Control(Modelo):
+    """Partición por serie con control (operativa por sesión, particion "serie"): la misma partición en las sesiones
+    que el filtro descarta. Responde si la serie afecta solo a lo que el filtro selecciona o a todas las sesiones."""
+    lados: list[str] = Field(min_length=2, max_length=2, description="Nombre de cada lado (serie > umbral, serie ≤ umbral)")
+    n_operadas: list[int] = Field(min_length=2, max_length=2)
+    n_descartadas: list[int] = Field(min_length=2, max_length=2)
+    medias: Lados = Field(description="Toda la muestra")
+    diferencia_descartadas: float = Field(description="Lado 1 − lado 2 en las descartadas (pb/operación)")
+    ic_inf: float = Field(description="IC 95 % de diferencia_descartadas (mismo bootstrap que la evidencia)")
+    ic_sup: float
+    sin_cada_anio: dict[str, Lados] = Field(description="Las mismas medias excluyendo cada año (años con los cuatro grupos no vacíos)")
 
 
 class Reglas(Modelo):
@@ -250,7 +269,7 @@ class Ficheros(Modelo):
 
 class Resumen(Modelo):
     """resumen.json: todo lo necesario para leer, comparar o graficar un experimento sin abrir el código."""
-    version_esquema: Literal["2.0", "2.1", "2.2", "2.3", "2.4"] = VERSION
+    version_esquema: Literal["2.0", "2.1", "2.2", "2.3", "2.4", "2.5"] = VERSION
     experimento: Experimento
     evidencia: Evidencia
     robustez: Robustez
@@ -258,6 +277,7 @@ class Resumen(Modelo):
     referencia: Optional[Referencia] = Field(default=None, description="Riesgo al 100 % del capital; null en experimentos previos al esquema 2.1 sin recalcular")
     variantes: Optional[Variantes] = Field(default=None, description="Tabla de variantes para el dashboard; null si el plan no la pide")
     sensibilidad: Optional[list[Sensibilidad]] = Field(default=None, description="Rejilla umbral × multiplicador del tamaño por serie; null si el plan no la pide")
+    control: Optional[Control] = Field(default=None, description="Partición por serie con control en las sesiones descartadas; null si el plan no la pide")
     no_calculables: dict[str, str] = Field(description="Métrica -> motivo por el que es null")
     operaciones_por_anio: dict[str, int]
     conclusiones: Conclusiones

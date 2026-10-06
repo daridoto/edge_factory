@@ -5,7 +5,7 @@ Generado por `python -m laboratorio indice` desde `resultados/`; no se edita a m
 | hipótesis | qué es | variantes | experimentos |
 |---|---|---:|---:|
 | [H-001](#h-001) | Cambio de mes (−1 a +3): rendimiento diario medio mayor que el resto del mes | 8 | 8 |
-| [H-007](#h-007) | Deriva nocturna del ES en la hora 2:00-3:00 ET | 5 | 11 |
+| [H-007](#h-007) | Deriva nocturna del ES en la hora 2:00-3:00 ET | 8 | 18 |
 | [H-PROPIA-001](#h-propia-001) | RAY largo 28 días cuando el volumen de Raydium dobla su nivel normal | 1 | 1 |
 
 <a id="h-001"></a>
@@ -44,6 +44,13 @@ Generado por `python -m laboratorio indice` desde `resultados/`; no se edita a m
 | **OD+** | IS | [H007-IS-REAL-005](resultados/H-007-deriva-nocturna-es/H007-IS-REAL-005-odplus/ficha.md) | 2009–2020 | Retorno bruto medio por operación | 2,62 pb/operación | [1,60; 3,70] | 12/12 | 42,3 % | −8,2 % |
 |  | OOS | [H007-OOS-REAL-003](resultados/H-007-deriva-nocturna-es/H007-OOS-REAL-003-odplus/ficha.md) | 2021–2026 | Retorno bruto medio por operación | 0,03 pb/operación | [-1,08; 1,13] · cruza 0 | 3/6 | -6,8 % | −15,6 % |
 |  | Total | [H007-TOT-REAL-003](resultados/H-007-deriva-nocturna-es/H007-TOT-REAL-003-odplus/ficha.md) | 2009–2026 | Retorno bruto medio por operación | 1,78 pb/operación | [0,99; 2,65] | 15/18 | 32,6 % | −15,6 % |
+| **NQ · OD+ BtD** | IS | [H007-IS-REAL-006](resultados/H-007-deriva-nocturna-nq/H007-IS-REAL-006-nq-odplus-btd/ficha.md) | 2009–2020 | Retorno bruto medio por operación | 3,66 pb/operación | [2,17; 5,25] | 12/12 | 44,7 % | −3,5 % |
+|  | OOS | [H007-OOS-REAL-004](resultados/H-007-deriva-nocturna-nq/H007-OOS-REAL-004-nq-odplus-btd/ficha.md) | 2021–2026 | Retorno bruto medio por operación | 0,99 pb/operación | [-1,30; 3,29] · cruza 0 | 5/6 | 5,2 % | −10,0 % |
+|  | Total | [H007-TOT-REAL-004](resultados/H-007-deriva-nocturna-nq/H007-TOT-REAL-004-nq-odplus-btd/ficha.md) | 2009–2026 | Retorno bruto medio por operación | 2,76 pb/operación | [1,48; 4,03] | 17/18 | 52,3 % | −10,0 % |
+| **NQ · OD+ BtD × tendencia** | IS | [H007-IS-REAL-007](resultados/H-007-deriva-nocturna-nq/H007-IS-REAL-007-nq-btd-tendencia/ficha.md) | 2009–2020 | Diferencia alcista − bajista | -5,04 pb/operación | [-13,79; 2,45] · cruza 0 | 4/9 | 44,7 % | −3,5 % |
+| **NQ · OD+ bajista** | IS | [H007-IS-REAL-008](resultados/H-007-deriva-nocturna-nq/H007-IS-REAL-008-nq-odplus-bajista/ficha.md) | 2009–2020 | Retorno bruto medio por operación | 8,49 pb/operación | [2,46; 16,05] | 7/9 | 29,8 % | −2,9 % |
+|  | OOS | [H007-OOS-REAL-005](resultados/H-007-deriva-nocturna-nq/H007-OOS-REAL-005-nq-odplus-bajista/ficha.md) | 2021–2026 | Retorno bruto medio por operación | 1,13 pb/operación | [-3,28; 5,73] · cruza 0 | 2/4 | 2,6 % | −10,7 % |
+|  | Total | [H007-TOT-REAL-005](resultados/H-007-deriva-nocturna-nq/H007-TOT-REAL-005-nq-odplus-bajista/ficha.md) | 2009–2026 | Retorno bruto medio por operación | 5,01 pb/operación | [1,07; 9,47] | 9/13 | 33,2 % | −10,7 % |
 
 <a id="h-propia-001"></a>
 

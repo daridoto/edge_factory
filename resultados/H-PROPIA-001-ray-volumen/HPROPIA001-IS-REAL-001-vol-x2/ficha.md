@@ -68,7 +68,7 @@ Bootstrap por bloques circulares (bloque = 1 × operación, 5.000 réplicas, sem
 | Rentabilidad anual | 140,80 % |
 | Sharpe | 1,34 |
 
-Métricas completas y sus definiciones: `metricas` en resumen.json y [esquema](../../esquemas/resumen.schema.json).
+Métricas completas y sus definiciones: `metricas` en resumen.json y [esquema](../../../esquemas/resumen.schema.json).
 
 ## Supuestos y límites
 

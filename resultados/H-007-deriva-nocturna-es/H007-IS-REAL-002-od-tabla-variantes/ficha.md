@@ -70,7 +70,7 @@ Bootstrap por bloques circulares (bloque = 5 × día, 5.000 réplicas, semilla 7
 
 [variantes.csv](variantes.csv): 5806 filas, una por sesión y ventana (OD 02:00–03:00 (base), OD+ 01:30–03:30). Con cada una: retorno de la sesión previa 15:15–16:15, VIX 1d de la sesión previa y si es semana de desfase horario EE. UU.–Europa. La ventana base reproduce el libro de operaciones. Las combinaciones se calculan en el dashboard y no pasan por la batería: son exploratorias.
 
-Métricas completas y sus definiciones: `metricas` en resumen.json y [esquema](../../esquemas/resumen.schema.json).
+Métricas completas y sus definiciones: `metricas` en resumen.json y [esquema](../../../esquemas/resumen.schema.json).
 
 ## Supuestos y límites
 

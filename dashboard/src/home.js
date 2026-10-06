@@ -1,6 +1,6 @@
 // Portada: una fila por hipótesis con lo justo para decidir cuál abrir.
 // Fila = nombre y pregunta · fases · efecto · IC frente a 0 · años positivos · PnL · equity.
-import { loadRegistro, loadIndice, loadFicha } from './data.js';
+import { clave, loadRegistro, loadIndice, loadFicha } from './data.js';
 import { computeMetrics } from './metrics.js';
 
 const $ = id => document.getElementById(id);
@@ -23,11 +23,11 @@ const extra = Object.values(Object.fromEntries(indice.filter(r => !known.has(r.h
 const entries = [...registro, ...extra];
 const fichas = await Promise.all(entries.map(loadFicha));
 
-// Entradas con el mismo `hipotesis` (una hipótesis en varios instrumentos) se agrupan en una fila.
+// Entradas con la misma clave (`grupo` o `hipotesis`: varios instrumentos o variantes) se agrupan en una fila.
 const groups = [];
 entries.forEach((e, k) => {
-  const g = e.hipotesis && groups.find(g => g.id === e.hipotesis);
-  if (g) g.ks.push(k); else groups.push({ id: e.hipotesis ?? e.id, ks: [k] });
+  const g = clave(e) && groups.find(g => g.id === clave(e));
+  if (g) g.ks.push(k); else groups.push({ id: clave(e) ?? e.id, ks: [k] });
 });
 $('home-sub').textContent = `${groups.length} hipótesis · ${entries.length} pruebas en IS`;
 
@@ -99,9 +99,9 @@ function groupRow(g, k) {
   const best = label(effects.indexOf(Math.max(...effects)));
   return `<a class="row" href="#${g.id}" style="--row-state:var(--${STATE[state]?.[1] ?? 'faint'})">
     <div class="row-id">
-      <h2>${new Set(es.map(x => x.efecto)).size === 1 ? e.efecto : g.id} · ${Ds.map((_, i) => label(i)).join(variantes ? ' · ' : ' ')}</h2>
-      <p class="question">${rs[0].question.replace(Ds[0].identity.instrument, 'el índice')}</p>
-      <p class="row-spec">${g.id} · ${Ds.length} ${variantes ? 'variantes' : 'instrumentos'} · ${Ds[0].identity.frequency} · ${fdate(ph.start)} → ${fdate(ph.end)}</p>
+      <h2>${e.grupo ?? `${new Set(es.map(x => x.efecto)).size === 1 ? e.efecto : g.id} · ${Ds.map((_, i) => label(i)).join(variantes ? ' · ' : ' ')}`}</h2>
+      <p class="question">${rs[0].question.replace(new RegExp(`(el )?${Ds[0].identity.instrument}`), 'el índice')}</p>
+      <p class="row-spec">${e.hipotesis ?? g.id} · ${Ds.length} ${variantes ? 'variantes' : 'instrumentos'} · ${Ds[0].identity.frequency} · ${fdate(ph.start)} → ${fdate(ph.end)}</p>
     </div>
     <div class="phases">${phaseChip('IS', state)}${phaseChip('OOS', null)}${phaseChip('Holdout', null)}</div>
     ${kpi(`Efecto ${e.efecto ?? ''}`, range(effects, sgn) + `<span class="u">${u}</span>`, `mayor en ${best}`)}

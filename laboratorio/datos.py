@@ -38,6 +38,9 @@ DATASETS = {
     "DIA 1d": _norgate_etf("Dow Jones DIA", "DIA"),
     "ES 15min": dict(ruta="data/indices/ES_15min_2009-2026.csv",
                      ts="ts", close="close", precio="close", instrumento="ES", frecuencia="15min", mercado="clasica"),
+    # Mismas horas que el ES; `close` sin ajustar por roll (las ventanas intradía no cruzan el domingo 18:00).
+    "NQ 15min": dict(ruta="data/indices/nq/nq_15m_ohlcv.csv",
+                     ts="ts", close="close", precio="close", instrumento="NQ", frecuencia="15min", mercado="clasica"),
     # Binance spot, velas diarias UTC; sin dividendos, así que close = precio negociado.
     "RAY 1d": dict(ruta="data/cripto/RAY_diario.csv", ts="fecha", close="binance_close", precio="binance_close",
                    open="binance_open", high="binance_high", low="binance_low",

@@ -1,5 +1,5 @@
 import * as echarts from 'echarts';
-import { loadRegistro, loadFicha } from './data.js';
+import { clave, loadRegistro, loadFicha } from './data.js';
 import { computeMetrics } from './metrics.js';
 import { BUCKETS, DEFAULTS, byBucket, isBase, simulate } from './variantes.js';
 
@@ -49,8 +49,8 @@ const B = P.IS.research.bootstrap;
 $('sub-boot').textContent = `${B.replicas.toLocaleString('es-ES', { useGrouping: 'always' })} réplicas · bloques de ${B.bloque} · ${U}`;
 $('sub-eq').textContent = `USD · ${D.sizing ?? entry.reglas['Tamaño'] ?? ''} por entrada`;
 // si la hipótesis se probó en varios instrumentos, «volver» lleva a su comparativa
-if (registro.filter(e => entry.hipotesis && e.hipotesis === entry.hipotesis).length > 1)
-  Object.assign(document.querySelector('.dash .back'), { href: `#${entry.hipotesis}`, textContent: `← ${entry.hipotesis} · todos` });
+if (clave(entry) && registro.filter(e => clave(e) === clave(entry)).length > 1)
+  Object.assign(document.querySelector('.dash .back'), { href: `#${clave(entry)}`, textContent: `← ${entry.grupo ?? entry.hipotesis} · todos` });
 $('foot').textContent = `${D.id} · ${D.exp} · ${fdate(D.frozen)}`;
 
 function renderPhases() {
@@ -152,6 +152,7 @@ const anim = { animation: !reduced, animationDuration: DUR, animationDurationUpd
 
 // la equity usa canvas: dibuja miles de puntos
 const cEq = mk('ch-eq', 'canvas'), cBoot = mk('ch-boot'), cYear = mk('ch-year'), cVix = V ? mk('ch-vix') : null;
+const C = D.control;
 
 /* ---------- equity y drawdown ---------- */
 // Nube de puntos (estética depth map): cada día se rellena con puntos entre la curva y la base.
@@ -390,6 +391,26 @@ function renderVix() {
   });
 }
 
+/* ---------- control (bloque `control` del lab): partición por serie en operadas y descartadas, quitando un año ---------- */
+let ctlSin = '';
+function renderCtl() {
+  if (!C) return;
+  const v = ctlSin ? C.sin_cada_anio[ctlSin] : C.medias, ef = entry.efecto;
+  const f = x => `<span class="${sign(x)}">${x >= 0 ? '+' : ''}${nf(2).format(x)}</span>`;
+  $('ctl-tabla').innerHTML = `<div class="tr th"><span></span><span>${ef}</span><span>sin ${ef}</span><span>${ef} aporta</span><span>n</span></div>`
+    + C.lados.map((l, i) => `<div class="tr"><span>${l}</span><span>${f(v.operadas[i])}</span><span>${f(v.descartadas[i])}</span>`
+      + `<span><b>${f(v.operadas[i] - v.descartadas[i])}</b></span><span class="muted">${ctlSin ? '—' : `${C.n_operadas[i]} / ${C.n_descartadas[i]}`}</span></div>`).join('');
+}
+function initCtl() {
+  $('p-ctl').hidden = false;
+  document.querySelector('.dash-main').classList.add('has-var');
+  $('h-ctl').textContent = `${entry.efecto} por ${C.lados.join(' / ')}`;
+  $('ctl-sin').innerHTML = '<option value="">toda la muestra</option>' + Object.keys(C.sin_cada_anio).map(a => `<option value="${a}">sin ${a}</option>`).join('');
+  $('ctl-sin').addEventListener('change', e => { ctlSin = e.target.value; renderCtl(); });
+  $('ctl-sin').title = `Control del lab: ${C.exp}`;
+  $('sub-ctl').textContent = `pb/operación, bruto · n: con / sin ${entry.efecto}`;
+}
+
 /* ---------- variantes: barra de toggles ---------- */
 function initVariants() {
   const m = V.meta, L = V.label;
@@ -451,14 +472,15 @@ function setView(v) {
   view = v; hlYear = null;
   document.documentElement.dataset.state = P[v].state;   // color de la línea superior
   renderPhases(); renderSpec(); updateKPIs();
-  renderEq(); renderBoot(); renderYear(); renderVix();
+  renderEq(); renderBoot(); renderYear(); renderVix(); renderCtl();
 }
 
 /* ---------- arranque + tema ---------- */
 if (V) initVariants();
+if (C) initCtl();
 setView('IS');
 new ResizeObserver(() => charts.forEach(c => c.resize())).observe(document.querySelector('.dash-main'));
-const retheme = () => { hlYear = null; renderEq(); renderBoot(); renderYear(); renderVix(); };
+const retheme = () => { hlYear = null; renderEq(); renderBoot(); renderYear(); renderVix(); renderCtl(); };
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', retheme);
 new MutationObserver(retheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(retheme);

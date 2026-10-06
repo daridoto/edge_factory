@@ -12,11 +12,11 @@ import tomllib
 
 from . import catalogo, datos, eventos, motor, sesion, variantes
 from .backtest import backtest
-from .contratos import (Componente, Conclusiones, Evidencia, Experimento, Ficheros, Intento, Procedencia, Reglas,
-                        Resumen, Robustez, Sensibilidad, Variantes)
+from .contratos import (Componente, Conclusiones, Control, Evidencia, Experimento, Ficheros, Intento, Lados, Procedencia,
+                        Reglas, Resumen, Robustez, Sensibilidad, Variantes)
 from .presentacion import n
 from .proteccion import FIN_IS, INICIO_IS, limites_muestra
-from .robustez import bateria
+from .robustez import bateria, bootstrap as bootstrap_ic
 
 NOMBRES = {"media_ventana": "Retorno medio en la ventana", "media_vs_resto": "Diferencia ventana − resto"}
 PERIODOS = {"1d": ("Sesiones", "pb/día"), "1h": ("Horas", "pb/hora")}
@@ -226,18 +226,26 @@ def ejecutar_sesion(spec, plan, barras=None, serie=None, hoy=None, inicio=INICIO
     """Operativa por sesión (sesion.py): ventana intradía, filtro por la señal previa y tamaño por una serie previa.
     La evidencia es el retorno bruto de precio por sesión, partido según [estadistico].particion."""
     d, ss, es, op, bs, cc = (spec[k] for k in ("datos", "sesion", "estadistico", "operativa", "bootstrap", "conclusiones"))
-    tamano, sens = spec.get("tamano"), spec.get("sensibilidad")
-    if (tamano or sens or es["particion"] == "tamano") and not d.get("serie"):
-        raise ValueError("El tamaño por serie necesita [datos].serie")
+    tamano, sens, tend = spec.get("tamano"), spec.get("sensibilidad"), spec.get("tendencia")
+    if (tamano or sens or es["particion"] in ("tamano", "serie")) and not (d.get("serie") or tend):
+        raise ValueError("El tamaño o la partición por serie necesitan [datos].serie o [tendencia]")
     dataset = datos.DATASETS[d["dataset"]]
     sintetico = barras is not None
     muestra, base = spec.get("muestra", "IS"), spec.get("base")
     if not sintetico:
         barras = datos.cargar(d["dataset"], inicio, fin, muestra=muestra, base=base)
         serie = datos.cargar_serie(d["serie"], inicio, fin, muestra=muestra, base=base) if d.get("serie") else None
+    if tend:  # serie derivada del propio dataset: precio frente a su media de N sesiones
+        # fuera de IS, la media arranca con los precios IS previos (información pasada, siempre permitida)
+        previas = datos.cargar(d["dataset"]) if muestra == "OOS" and not sintetico else []
+        serie = sesion.tendencia(previas + barras, dataset["frecuencia"], tend["hora"], tend["sesiones"])
+    nombre_serie = f"precio/media {tend['sesiones']} − 1" if tend else (d["serie"].split()[0] if d.get("serie") else None)
     filas = variantes.tabla(barras, dataset["frecuencia"], {ss["nombre"]: ss["ventana"]}, ss.get("senal"), serie)
     fechas = sorted({b.ts.date() for b in barras})
-    filtro, coste, capital = ss.get("filtro_senal"), op["coste_lado"], op["capital"]
+    filtro = ss.get("filtro_senal")
+    if ss.get("filtro_serie"):
+        filtro = {"senal": filtro, **ss["filtro_serie"]}
+    coste, capital = op["coste_lado"], op["capital"]
     periodos_anio = dataset.get("periodos_por_anio", 252)
 
     def sim(c=coste, t=tamano, fraccion=op.get("fraccion")):
@@ -249,7 +257,8 @@ def ejecutar_sesion(spec, plan, barras=None, serie=None, hoy=None, inicio=INICIO
     al_100 = sim(fraccion=FRACCION_REF)
     ref = motor.referencia(capital, *al_100, FRACCION_REF, periodos_anio)
     x2 = sim(c=2 * coste)[0][-1].equity - capital
-    g = sesion.grupos(filas, es["particion"], filtro, tamano)
+    corte = {"umbral": es["umbral"]} if es["particion"] == "serie" else tamano
+    g = sesion.grupos(filas, es["particion"], filtro, corte)
     estadistico = catalogo.ESTADISTICOS[es["tipo"]]
     robustez = Robustez(**bateria(g, estadistico, unidad=bs["unidad"], bloque=bs["bloque"], motivo=bs["motivo"], pnl_costes_x2=x2))
     valor = estadistico(list(g.values()))
@@ -257,7 +266,7 @@ def ejecutar_sesion(spec, plan, barras=None, serie=None, hoy=None, inicio=INICIO
     if es["particion"] == "filtro":
         lados = ("operadas", "descartadas por el filtro")
     else:
-        lados = (f"{d['serie'].split()[0]} > {n(tamano['umbral'], 0)}", f"{d['serie'].split()[0]} ≤ {n(tamano['umbral'], 0)}")
+        lados = tuple(es["lados"]) if es.get("lados") else (f"{nombre_serie} > {n(corte['umbral'], 0)}", f"{nombre_serie} ≤ {n(corte['umbral'], 0)}")
     rs = [(f.salida / f.entrada - 1) * catalogo.PB for f in filas if g.get(f.fecha.isoformat(), [0])[0]]  # una fila por día
     t_stat = st.mean(rs) / (st.stdev(rs) / len(rs) ** .5)
     unidad = es.get("unidad", "pb/operación")
@@ -272,6 +281,27 @@ def ejecutar_sesion(spec, plan, barras=None, serie=None, hoy=None, inicio=INICIO
         Componente(nombre=f"Mediana {lados[0]}", valor=st.median(rs), unidad=unidad),
         Componente(nombre=f"t de la media {lados[0]} (sin bloques)", valor=t_stat, unidad="t"),
     ]
+    control = None
+    if es["particion"] == "serie" and filtro:
+        # control: la misma partición en las sesiones que el filtro descarta (¿la serie afecta solo a las operadas?)
+        def medias(fs):
+            out = []
+            for lado in ("operadas", "descartadas"):
+                g_ = sesion.grupos(fs, "serie", filtro, corte, lado_filtro=lado)
+                a, sa, b, sb = (sum(x[i] for x in g_.values()) for i in range(4))
+                out.append((a, b, sa / a * catalogo.PB if a else None, sb / b * catalogo.PB if b else None))
+            return out
+        (o_a, o_b, o_ma, o_mb), (d_a, d_b, d_ma, d_mb) = medias(filas)
+        gc = sesion.grupos(filas, "serie", filtro, corte, lado_filtro="descartadas")
+        lo, hi = bootstrap_ic(list(gc.values()), catalogo.media_vs_resto, bs["bloque"])
+        sin = {}
+        for a in sorted({f.fecha.year for f in filas}):
+            (_, _, x1, x2), (_, _, y1, y2) = medias([f for f in filas if f.fecha.year != a])
+            if None not in (x1, x2, y1, y2):
+                sin[str(a)] = Lados(operadas=[x1, x2], descartadas=[y1, y2])
+        control = Control(lados=list(lados), n_operadas=[o_a, o_b], n_descartadas=[d_a, d_b],
+                          medias=Lados(operadas=[o_ma, o_mb], descartadas=[d_ma, d_mb]),
+                          diferencia_descartadas=d_ma - d_mb, ic_inf=lo, ic_sup=hi, sin_cada_anio=sin)
     anios_sin = len({k[:4] for k in g}) - len(robustez.por_anio)
     if anios_sin:
         componentes.append(Componente(nombre="Años sin comparación posible (un lado vacío)", valor=anios_sin, unidad="años"))
@@ -305,7 +335,7 @@ def ejecutar_sesion(spec, plan, barras=None, serie=None, hoy=None, inicio=INICIO
             reglas=Reglas(entrada=op["entrada"], salida=op["salida"], tamano=op["tamano"], costes=op["costes"]),
             receta=spec["receta"], plan=str(plan), fuente_datos=" + ".join(fuentes)),
         evidencia=Evidencia(estadistico=nombre_est, unidad=unidad, valor=valor, componentes=componentes),
-        robustez=robustez, metricas=m, referencia=ref, sensibilidad=sensibilidad, no_calculables=motivos,
+        robustez=robustez, metricas=m, referencia=ref, sensibilidad=sensibilidad, control=control, no_calculables=motivos,
         operaciones_por_anio=por_anio,
         conclusiones=Conclusiones(lectura=lectura, supuestos=cc["supuestos"], limites=cc["limites"],
                                   siguiente_comprobacion=cc["siguiente"]),

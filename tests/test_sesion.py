@@ -58,6 +58,29 @@ class Grupos(unittest.TestCase):
         self.assertEqual([[round(x, 12) for x in v] for v in g.values()], [[1, .02, 0, 0], [0, 0, 1, .01]])
 
 
+class Tendencia(unittest.TestCase):
+    def test_precio_frente_a_su_media(self):
+        from laboratorio.datos import Barra
+        bs = [Barra(datetime(2018, 1, d, 16), c, c) for d, c in [(2, 10), (3, 20), (4, 30), (5, 60)]]   # barras de 16:00 = precio 16:15
+        t = sesion.tendencia(bs, "15min", "16:15", 3)
+        self.assertEqual(list(t), [date(2018, 1, 4), date(2018, 1, 5)])
+        self.assertAlmostEqual(t[date(2018, 1, 4)], 30 / 20 - 1)
+        self.assertAlmostEqual(t[date(2018, 1, 5)], 60 / (110 / 3) - 1)
+
+    def test_filtro_por_rango_de_serie(self):
+        f = {"senal": None, "serie_max": 20}
+        self.assertEqual([sesion.opera(x, f) for x in FILAS], [False, False, True, False])     # serie 25, 25, 15, 30
+        self.assertFalse(sesion.opera(fila("2018-01-08", 100, 101, senal=-.01), f))         # sin dato: no opera
+        g = sesion.grupos(FILAS + [fila("2018-01-08", 100, 101)], "filtro", f)
+        self.assertNotIn("2018-01-08", g)                                                  # sin dato: fuera de la evidencia
+
+    def test_particion_serie_y_control(self):
+        g = sesion.grupos(FILAS, "serie", "negativa", {"umbral": 20})
+        self.assertEqual(sorted(g), ["2018-01-02", "2018-01-04"])           # operadas con dato
+        c = sesion.grupos(FILAS, "serie", "negativa", {"umbral": 20}, lado_filtro="descartadas")
+        self.assertEqual(list(c), ["2018-01-03"])                           # descartada con señal; la de señal vacía, fuera
+
+
 def vix(barras, semilla=3):
     rng = random.Random(semilla)
     return {d: rng.uniform(10, 30) for d in sorted({b.ts.date() for b in barras})}
@@ -99,6 +122,21 @@ class Ejecutor(unittest.TestCase):
         self.assertEqual(c[:2], [len(ops), 0])
         self.assertAlmostEqual(c[2], resumen.evidencia.valor)
         self.assertNotIn("Diferencia", " ".join(x.nombre for x in resumen.evidencia.componentes))
+
+    def test_control_por_tendencia(self):
+        plan = "experimentos/H-007-deriva-nocturna-nq/H007-IS-REAL-007-nq-btd-tendencia.md"
+        spec = ejecutar.leer_plan(motor.RAIZ / plan)
+        bs = barras_es(inicio=datetime(2017, 1, 1, 18), fin=datetime(2018, 12, 29), semilla=4)
+        resumen, sesiones, ops, al_100, _ = ejecutar.ejecutar(spec, plan, barras=bs, hoy=date(2026, 10, 6))
+        c = resumen.control
+        self.assertEqual(c.lados, ["alcista", "bajista"])
+        self.assertAlmostEqual(c.medias.operadas[0] - c.medias.operadas[1], resumen.evidencia.valor)
+        self.assertAlmostEqual(c.medias.descartadas[0] - c.medias.descartadas[1], c.diferencia_descartadas)
+        self.assertLessEqual(c.ic_inf, c.ic_sup)
+        self.assertTrue(set(c.sin_cada_anio) <= {"2017", "2018"})
+        self.assertIn("Control", render(resumen))
+        with tempfile.TemporaryDirectory() as tmp:
+            motor.guardar(Path(tmp) / "H-007-x" / "H007-IS-REAL-007-y", resumen, sesiones, ops, al_100)
 
     def test_tamano_sin_serie_falla(self):
         spec = ejecutar.leer_plan(motor.RAIZ / PLAN_004)

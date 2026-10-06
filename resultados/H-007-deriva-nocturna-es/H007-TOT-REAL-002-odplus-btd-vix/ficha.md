@@ -85,7 +85,7 @@ Al 100 % del capital por unidad de tamaño (multiplicador > 1 = apalancamiento).
 | 30 | 127 | 11,37 | 2,0 | 56,70 % | 13,63 % | 0,58 |
 | 30 | 127 | 11,37 | 3,0 | 79,91 % | 16,78 % | 0,55 |
 
-Métricas completas y sus definiciones: `metricas` en resumen.json y [esquema](../../esquemas/resumen.schema.json).
+Métricas completas y sus definiciones: `metricas` en resumen.json y [esquema](../../../esquemas/resumen.schema.json).
 
 ## Supuestos y límites
 

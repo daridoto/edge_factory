@@ -1,0 +1,257 @@
+{
+  "version_esquema": "2.5",
+  "experimento": {
+    "id": "H007-OOS-REAL-004",
+    "hipotesis": "H-007",
+    "version": "real-oos-v1",
+    "fecha": "2026-10-06",
+    "sintetico": false,
+    "pregunta": "¿Rinde el NQ entre las 01:30 y las 03:30 ET tras una última hora vendedora en la sesión previa?",
+    "variante": "NQ · OD+ BtD",
+    "muestra": "OOS",
+    "base": "H007-IS-REAL-006",
+    "mercado": "clasica",
+    "inicio": "2021-01-03",
+    "fin": "2026-05-28",
+    "instrumento": "NQ",
+    "frecuencia": "15min",
+    "moneda": "USD",
+    "capital_inicial": 10000.0,
+    "reglas": {
+      "entrada": "Comprar al precio de las 01:30 ET (cierre de la barra de 01:15), lun-vie, si el retorno 15:15-16:15 ET de la sesión previa es < 0.",
+      "salida": "Vender al precio de las 03:30 ET (cierre de la barra de 03:15).",
+      "tamano": "1 unidad del índice (1 USD por punto); referencia al 100 % del capital aparte.",
+      "costes": "1 tick (0,25 puntos) por operación completa: 0,125 puntos por lado."
+    },
+    "receta": "estrategias/H-007.md",
+    "plan": "experimentos/H-007-deriva-nocturna-nq/H007-OOS-REAL-004-nq-odplus-btd.md",
+    "fuente_datos": "data/indices/nq/nq_15m_ohlcv.csv"
+  },
+  "evidencia": {
+    "estadistico": "Retorno bruto medio por operación (OD+ · BtD)",
+    "unidad": "pb/operación",
+    "valor": 0.9892898164801075,
+    "componentes": [
+      {
+        "nombre": "Sesiones operadas",
+        "valor": 646.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Sesiones descartadas por el filtro",
+        "valor": 750.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Retorno medio operadas",
+        "valor": 0.9892898164801075,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Retorno medio descartadas por el filtro",
+        "valor": 0.02997415762372816,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Diferencia operadas − descartadas por el filtro",
+        "valor": 0.9593156588563794,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Mediana operadas",
+        "valor": 2.5493414847066465,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "t de la media operadas (sin bloques)",
+        "valor": 0.8610577363596803,
+        "unidad": "t"
+      }
+    ],
+    "desglose": {}
+  },
+  "robustez": {
+    "bootstrap": {
+      "metodo": "bloques circulares",
+      "unidad": "sesión",
+      "bloque": 5,
+      "replicas": 5000,
+      "semilla": 7301,
+      "nivel": 0.95,
+      "ic_inf": -1.2986563544921206,
+      "ic_sup": 3.2857947344822644,
+      "incluye_cero": true,
+      "motivo": "Una operación como máximo por sesión; bloques de 5 sesiones (una semana) conservan la dependencia de corto plazo."
+    },
+    "por_anio": {
+      "2021": 3.9572722586174907,
+      "2022": -4.000668342456921,
+      "2023": 0.7822975756168942,
+      "2024": 1.1173155578436285,
+      "2025": 1.4666013064508705,
+      "2026": 5.7925036145351445
+    },
+    "sin_cada_anio": {
+      "2021": 0.27012484011604915,
+      "2022": 2.210339308166047,
+      "2023": 1.0341186445389956,
+      "2024": 0.9621473985174848,
+      "2025": 0.8792808826011316,
+      "2026": 0.6382243561571479
+    },
+    "pnl_costes_x2": 1212.25
+  },
+  "metricas": {
+    "operaciones": 646,
+    "pnl_neto": 1373.75,
+    "esperanza": 2.126547987616099,
+    "tasa_acierto": 0.5541795665634675,
+    "payoff": 0.9099087655622106,
+    "profit_factor": 1.138976706542907,
+    "rentabilidad_total": 0.13737500000000002,
+    "rentabilidad_anual": 0.019460971650523892,
+    "sharpe": 0.45128315024126386,
+    "sortino": 0.6870385084634234,
+    "max_drawdown": 0.11758308978454424,
+    "max_recuperacion": null,
+    "drawdown_abierto": 4,
+    "exposicion": 0.03337725076855511,
+    "rotacion": 2133.3383526305515,
+    "costes": 161.5,
+    "peso_costes": 0.007631693976159816,
+    "concentracion_anual": 0.19659442724458204,
+    "autocorrelacion": -0.00011673213991661273
+  },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": 0.05244026338714147,
+    "rentabilidad_anual": 0.007682422564911747,
+    "sharpe": 0.2811104326891511,
+    "max_drawdown": 0.09972474751111127,
+    "pico": "2022-04-21",
+    "valle": "2023-07-20",
+    "recuperacion": null,
+    "sesiones_bajo_agua": 1278,
+    "motor_sha256": "58a716e681e4040b6dfcd78cf577e026617c1f7ccd813097068dd6c527a445cd"
+  },
+  "variantes": null,
+  "sensibilidad": null,
+  "control": null,
+  "no_calculables": {
+    "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
+  },
+  "operaciones_por_anio": {
+    "2021": 126,
+    "2022": 127,
+    "2023": 115,
+    "2024": 113,
+    "2025": 121,
+    "2026": 44
+  },
+  "conclusiones": {
+    "estado": "exploratoria",
+    "lectura": "Retorno bruto medio por operación (OD+ · BtD): 0,99 pb/operación (646 sesiones frente a 750); mediana operadas 2,55 pb/operación. El intervalo incluye cero: en OOS no se distingue de no tener efecto.",
+    "supuestos": [
+      "Hora ET con horario de verano ya aplicado; ts marca el inicio de la barra.",
+      "Retorno simple con precios de operación, no mid quotes: hay rebote bid-ask.",
+      "BtD es un proxy de precio (retorno 15:15-16:15), no el volumen firmado (RSV) del paper.",
+      "Si falta una barra necesaria (ventana o señal), no se opera esa noche."
+    ],
+    "limites": [
+      "Parámetros elegidos tras ver el IS (y conociendo el OOS del ES): el OOS mide si sobreviven a esa elección.",
+      "Toda la muestra posterior a la IS se usa aquí: no queda holdout del NQ."
+    ],
+    "siguiente_comprobacion": "Decidir con el usuario a la vista del OOS; no queda holdout del NQ."
+  },
+  "procedencia": {
+    "motor_sha256": "58a716e681e4040b6dfcd78cf577e026617c1f7ccd813097068dd6c527a445cd",
+    "datos_sha256": "d4dd86aca3ca167aa5376c8383b3c66454597492498403d1a56488fc7fa01860",
+    "plan_sha256": "627959aa98a89d4d928f71b74270f9a49b06957138c6f918291fe85cb433d597",
+    "periodos_por_anio": 252
+  },
+  "historial": [
+    {
+      "id": "H007-IS-REAL-001",
+      "fecha": "2026-09-24",
+      "cambio": "Primera ejecución real."
+    },
+    {
+      "id": "H007-IS-REAL-002",
+      "fecha": "2026-10-05",
+      "cambio": "Misma evidencia que 001 y tabla de variantes por noche (OD+, BtD con proxy, VIX, desfase) para combinar en el dashboard."
+    },
+    {
+      "id": "H007-IS-REAL-003",
+      "fecha": "2026-10-06",
+      "cambio": "Núcleo congelado: ventana OD+ 01:30-03:30 y filtro BtD (proxy de precio); sin VIX."
+    },
+    {
+      "id": "H007-IS-REAL-004",
+      "fecha": "2026-10-06",
+      "cambio": "Núcleo de 003 con tamaño ×2 si el VIX de la sesión previa supera 20; sensibilidad de umbral y multiplicador."
+    },
+    {
+      "id": "H007-IS-REAL-005",
+      "fecha": "2026-10-06",
+      "cambio": "OD+ 01:30-03:30 sola: sin BtD ni VIX, todas las noches lun-vie."
+    },
+    {
+      "id": "H007-OOS-REAL-001",
+      "fecha": "2026-10-06",
+      "cambio": "OOS 2021-01-01 → 2026-05-28 del núcleo H007-IS-REAL-003, sin cambiar nada de su especificación."
+    },
+    {
+      "id": "H007-OOS-REAL-002",
+      "fecha": "2026-10-06",
+      "cambio": "OOS 2021-01-01 → 2026-05-28 de H007-IS-REAL-004 (OD+ · BtD · VIX > 20 ×2), sin cambiar nada de su especificación."
+    },
+    {
+      "id": "H007-OOS-REAL-003",
+      "fecha": "2026-10-06",
+      "cambio": "OOS 2021-01-01 → 2026-05-28 de H007-IS-REAL-005 (OD+ sola), sin cambiar nada de su especificación."
+    },
+    {
+      "id": "H007-TOT-REAL-001",
+      "fecha": "2026-10-06",
+      "cambio": "Total (IS + OOS) 2009-09-27 → 2026-05-28 del núcleo H007-IS-REAL-003, sin cambiar nada de su especificación."
+    },
+    {
+      "id": "H007-TOT-REAL-002",
+      "fecha": "2026-10-06",
+      "cambio": "Total 2009-09-27 → 2026-05-28 de H007-IS-REAL-004 (OD+ · BtD · VIX > 20 ×2), sin cambiar nada de su especificación."
+    },
+    {
+      "id": "H007-TOT-REAL-003",
+      "fecha": "2026-10-06",
+      "cambio": "Total 2009-09-27 → 2026-05-28 de H007-IS-REAL-005 (OD+ sola), sin cambiar nada de su especificación."
+    },
+    {
+      "id": "H007-IS-REAL-006",
+      "fecha": "2026-10-06",
+      "cambio": "Núcleo de H007-IS-REAL-003 copiado sin cambios en el NQ: réplica en otro mercado, solo IS."
+    },
+    {
+      "id": "H007-IS-REAL-007",
+      "fecha": "2026-10-06",
+      "cambio": "Misma operativa que 006; la evidencia parte las noches BtD por tendencia (precio 16:15 frente a su media de 200 sesiones), con control en las noches sin BtD."
+    },
+    {
+      "id": "H007-IS-REAL-008",
+      "fecha": "2026-10-06",
+      "cambio": "OD+ todas las noches con tendencia bajista (precio 16:15 de la sesión previa ≤ su media de 200 sesiones), sin BtD; congelada en IS antes de su OOS."
+    },
+    {
+      "id": "H007-OOS-REAL-004",
+      "fecha": "2026-10-06",
+      "cambio": "OOS 2021-01-01 → 2026-05-28 de H007-IS-REAL-006 (NQ · OD+ BtD), sin cambiar nada de su especificación."
+    }
+  ],
+  "ficheros": {
+    "equity": "equity.csv",
+    "operaciones": "operaciones.csv",
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv",
+    "variantes": null
+  }
+}

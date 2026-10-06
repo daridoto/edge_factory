@@ -50,6 +50,25 @@ def _sensibilidad(filas):
     ]
 
 
+def _control(c):
+    if c is None:
+        return []
+    a, b = c.lados
+    m = c.medias
+    filas = [("toda la muestra", m)] + [(f"sin {k}", v) for k, v in c.sin_cada_anio.items()]
+    return [
+        "## Control: la misma partición en las sesiones que el filtro descarta", "",
+        f"Retorno bruto medio por operación (pb). Operadas: {c.n_operadas[0]} {a} · {c.n_operadas[1]} {b}; "
+        f"descartadas: {c.n_descartadas[0]} {a} · {c.n_descartadas[1]} {b}. Diferencia {a} − {b} en las descartadas: "
+        f"**{n(c.diferencia_descartadas)}** [{n(c.ic_inf)}; {n(c.ic_sup)}]. "
+        f"«Filtro aporta» = operadas − descartadas en cada lado.", "",
+        f"| muestra | operadas {a} | operadas {b} | descartadas {a} | descartadas {b} | filtro aporta ({a}) | filtro aporta ({b}) |",
+        "|---|---:|---:|---:|---:|---:|---:|",
+        *[f"| {k} | {n(v.operadas[0])} | {n(v.operadas[1])} | {n(v.descartadas[0])} | {n(v.descartadas[1])} | "
+          f"{n(v.operadas[0] - v.descartadas[0])} | {n(v.operadas[1] - v.descartadas[1])} |" for k, v in filas], "",
+    ]
+
+
 def render(resumen):
     e, ev, rb, m, c = (resumen.experimento, resumen.evidencia, resumen.robustez,
                        resumen.metricas, resumen.conclusiones)
@@ -102,7 +121,8 @@ def render(resumen):
         *_referencia(resumen.referencia),
         *_variantes(resumen.variantes),
         *_sensibilidad(resumen.sensibilidad),
-        "Métricas completas y sus definiciones: `metricas` en resumen.json y [esquema](../../esquemas/resumen.schema.json).", "",
+        *_control(resumen.control),
+        "Métricas completas y sus definiciones: `metricas` en resumen.json y [esquema](../../../esquemas/resumen.schema.json).", "",
         "## Supuestos y límites", "",
         *[f"- {x}" for x in c.supuestos + c.limites], "",
         "## Siguiente comprobación (propuesta, sin ejecutar)", "",

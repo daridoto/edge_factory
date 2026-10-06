@@ -134,6 +134,78 @@
       "title": "Conclusiones",
       "type": "object"
     },
+    "Control": {
+      "additionalProperties": false,
+      "description": "Partición por serie con control (operativa por sesión, particion \"serie\"): la misma partición en las sesiones\nque el filtro descarta. Responde si la serie afecta solo a lo que el filtro selecciona o a todas las sesiones.",
+      "properties": {
+        "lados": {
+          "description": "Nombre de cada lado (serie > umbral, serie ≤ umbral)",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "title": "Lados",
+          "type": "array"
+        },
+        "n_operadas": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "title": "N Operadas",
+          "type": "array"
+        },
+        "n_descartadas": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "title": "N Descartadas",
+          "type": "array"
+        },
+        "medias": {
+          "$ref": "#/$defs/Lados",
+          "description": "Toda la muestra"
+        },
+        "diferencia_descartadas": {
+          "description": "Lado 1 − lado 2 en las descartadas (pb/operación)",
+          "title": "Diferencia Descartadas",
+          "type": "number"
+        },
+        "ic_inf": {
+          "description": "IC 95 % de diferencia_descartadas (mismo bootstrap que la evidencia)",
+          "title": "Ic Inf",
+          "type": "number"
+        },
+        "ic_sup": {
+          "title": "Ic Sup",
+          "type": "number"
+        },
+        "sin_cada_anio": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Lados"
+          },
+          "description": "Las mismas medias excluyendo cada año (años con los cuatro grupos no vacíos)",
+          "title": "Sin Cada Anio",
+          "type": "object"
+        }
+      },
+      "required": [
+        "lados",
+        "n_operadas",
+        "n_descartadas",
+        "medias",
+        "diferencia_descartadas",
+        "ic_inf",
+        "ic_sup",
+        "sin_cada_anio"
+      ],
+      "title": "Control",
+      "type": "object"
+    },
     "Evidencia": {
       "additionalProperties": false,
       "description": "El contraste de la hipótesis: un estadístico y sus componentes descriptivos.",
@@ -412,6 +484,36 @@
         "cambio"
       ],
       "title": "Intento",
+      "type": "object"
+    },
+    "Lados": {
+      "additionalProperties": false,
+      "description": "Retorno bruto medio por operación (pb) de las sesiones operadas y de las descartadas por el filtro, en cada lado.",
+      "properties": {
+        "operadas": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "title": "Operadas",
+          "type": "array"
+        },
+        "descartadas": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "title": "Descartadas",
+          "type": "array"
+        }
+      },
+      "required": [
+        "operadas",
+        "descartadas"
+      ],
+      "title": "Lados",
       "type": "object"
     },
     "Metricas": {
@@ -950,13 +1052,14 @@
   "description": "resumen.json: todo lo necesario para leer, comparar o graficar un experimento sin abrir el código.",
   "properties": {
     "version_esquema": {
-      "default": "2.4",
+      "default": "2.5",
       "enum": [
         "2.0",
         "2.1",
         "2.2",
         "2.3",
-        "2.4"
+        "2.4",
+        "2.5"
       ],
       "title": "Version Esquema",
       "type": "string"
@@ -1012,6 +1115,18 @@
       "default": null,
       "description": "Rejilla umbral × multiplicador del tamaño por serie; null si el plan no la pide",
       "title": "Sensibilidad"
+    },
+    "control": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Control"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Partición por serie con control en las sesiones descartadas; null si el plan no la pide"
     },
     "no_calculables": {
       "additionalProperties": {
