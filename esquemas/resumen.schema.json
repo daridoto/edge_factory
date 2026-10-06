@@ -182,7 +182,7 @@
       "additionalProperties": false,
       "properties": {
         "id": {
-          "description": "HNNN-IS-REAL-NNN",
+          "description": "HNNN-IS-REAL-NNN, HNNN-OOS-REAL-NNN o HNNN-TOT-REAL-NNN",
           "title": "Id",
           "type": "string"
         },
@@ -211,9 +211,26 @@
           "type": "string"
         },
         "muestra": {
-          "const": "IS",
+          "enum": [
+            "IS",
+            "OOS",
+            "Total"
+          ],
           "title": "Muestra",
           "type": "string"
+        },
+        "base": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Experimento IS que se lleva a OOS o Total (misma especificación); solo en esas muestras",
+          "title": "Base"
         },
         "mercado": {
           "default": "clasica",
@@ -779,6 +796,71 @@
       "title": "Robustez",
       "type": "object"
     },
+    "Sensibilidad": {
+      "additionalProperties": false,
+      "description": "Una combinación de umbral y multiplicador del tamaño por serie (operativa por sesión). Se informa, no se elige.",
+      "properties": {
+        "umbral": {
+          "title": "Umbral",
+          "type": "number"
+        },
+        "multiplicador": {
+          "exclusiveMinimum": 0,
+          "title": "Multiplicador",
+          "type": "number"
+        },
+        "operaciones_sobre_umbral": {
+          "description": "Operaciones con la serie por encima del umbral",
+          "minimum": 0,
+          "title": "Operaciones Sobre Umbral",
+          "type": "integer"
+        },
+        "diferencia": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Retorno bruto medio por operación sobre el umbral menos el resto (pb); null si un lado está vacío",
+          "title": "Diferencia"
+        },
+        "rentabilidad_total": {
+          "description": "Al 100 % del capital por unidad de tamaño",
+          "title": "Rentabilidad Total",
+          "type": "number"
+        },
+        "max_drawdown": {
+          "description": "Al 100 % del capital por unidad de tamaño",
+          "title": "Max Drawdown",
+          "type": "number"
+        },
+        "sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Sharpe"
+        }
+      },
+      "required": [
+        "umbral",
+        "multiplicador",
+        "operaciones_sobre_umbral",
+        "diferencia",
+        "rentabilidad_total",
+        "max_drawdown",
+        "sharpe"
+      ],
+      "title": "Sensibilidad",
+      "type": "object"
+    },
     "Variantes": {
       "additionalProperties": false,
       "description": "Describe variantes.csv. El dashboard combina en vivo filtros (senal < 0, serie > umbral, sin desfase) y tamaño.",
@@ -854,11 +936,12 @@
   "description": "resumen.json: todo lo necesario para leer, comparar o graficar un experimento sin abrir el código.",
   "properties": {
     "version_esquema": {
-      "default": "2.2",
+      "default": "2.3",
       "enum": [
         "2.0",
         "2.1",
-        "2.2"
+        "2.2",
+        "2.3"
       ],
       "title": "Version Esquema",
       "type": "string"
@@ -898,6 +981,22 @@
       ],
       "default": null,
       "description": "Tabla de variantes para el dashboard; null si el plan no la pide"
+    },
+    "sensibilidad": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/Sensibilidad"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Rejilla umbral × multiplicador del tamaño por serie; null si el plan no la pide",
+      "title": "Sensibilidad"
     },
     "no_calculables": {
       "additionalProperties": {

@@ -28,16 +28,30 @@ export const loadRegistro = () => getJSON('/data/hipotesis.json');
 // Índice del lab: una fila por experimento (id, hipotesis, muestra…), en orden de ejecución.
 export const loadIndice = () => getCSV(`${LAB}/indice.csv`);
 
-export async function loadFicha(entry) {
-  const dir = `${LAB}/${entry.experimentos.IS}`;
+// Un experimento del lab: resumen y, con simulación al 100 % del capital (lab ≥ 2.1), esa equity y operaciones:
+// el riesgo es comparable entre tamaños.
+async function loadExp(id, withVariants = false) {
+  const dir = `${LAB}/${id}`;
   const r = await getJSON(`${dir}/resumen.json`);
-  // Con simulación al 100 % del capital (lab ≥ 2.1) se pinta esa: el riesgo es comparable entre tamaños.
   const f = r.ficheros, al100 = !!f.equity_100;
   const [equity, trades, variantes] = await Promise.all([getCSV(`${dir}/${al100 ? f.equity_100 : f.equity}`),
                                               getCSV(`${dir}/${al100 ? f.operaciones_100 : f.operaciones}`),
-                                              f.variantes ? getCSV(`${dir}/${f.variantes}`) : null]);
-  const view = toView(r, equity, trades, entry);
-  if (variantes) view.variants = toVariants(r, variantes, al100);
+                                              withVariants && f.variantes ? getCSV(`${dir}/${f.variantes}`) : null]);
+  return { r, equity, trades, variantes, al100 };
+}
+
+// Fases: IS siempre; OOS y Total si el registro las nombra (experimentos del lab con muestra OOS / Total).
+export async function loadFicha(entry) {
+  const is = await loadExp(entry.experimentos.IS, true);
+  const view = toView(is.r, is.equity, is.trades, entry);
+  for (const key of ['OOS', 'Total']) {
+    const id = entry.experimentos[key];
+    if (!id) continue;
+    const e = await loadExp(id);
+    if (e.r.experimento.muestra !== key) throw new Error(`${id} no es un experimento ${key}`);
+    view.phases[key] = toPhase(key, e.r, e.equity, e.trades, entry);
+  }
+  if (is.variantes) view.variants = toVariants(is.r, is.variantes, is.al100);
   return view;
 }
 
@@ -63,9 +77,7 @@ function tradesWithReturn(trades, equity, capital) {
 }
 
 function toView(r, equity, trades, entry) {
-  const x = r.experimento, ev = r.evidencia, boot = r.robustez.bootstrap;
-  // componentes: [n ventana, n resto, media ventana, media resto], en ese orden
-  const [nWin, nRest, meanWin, meanRest] = ev.componentes.map(c => c.valor);
+  const x = r.experimento, boot = r.robustez.bootstrap;
   return {
     id: x.hipotesis,
     name: entry.nombre ?? x.hipotesis,
@@ -77,30 +89,35 @@ function toView(r, equity, trades, entry) {
     initialEquity: x.capital_inicial,
     // tamaño con el que está simulada la equity que se pinta
     sizing: r.referencia ? '100 % del capital' : null,
-    phases: {
-      IS: {
-        key: 'IS',
-        state: entry.estados?.IS ?? 'inconclusive',
-        start: x.inicio,
-        end: x.fin,
-        periodsPerYear: r.procedencia.periodos_por_anio,
-        capital: x.capital_inicial,
-        equity: equity.map(e => [e.fecha, +e.equity, +e.exposicion]),
-        trades: tradesWithReturn(trades, equity, x.capital_inicial),
-        research: {
-          question: x.pregunta,
-          statistic: ev.estadistico,
-          unit: ev.unidad,
-          bootstrap: { replicas: boot.replicas, bloque: `${boot.bloque} ${boot.bloque > 1 ? PLURAL[boot.unidad] ?? boot.unidad : boot.unidad}` },
-          n_tom: nWin, n_rest: nRest,
-          mean_tom: frac(meanWin), mean_rest: frac(meanRest),
-          difference: frac(ev.valor),
-          ci95: [frac(boot.ic_inf), frac(boot.ic_sup)],
-          by_year: fracMap(r.robustez.por_anio),
-          leave_one_year_out: fracMap(r.robustez.sin_cada_anio),
-          cost_stress_net: r.robustez.pnl_costes_x2,
-        },
-      },
+    phases: { IS: toPhase('IS', r, equity, trades, entry) },
+  };
+}
+
+function toPhase(key, r, equity, trades, entry) {
+  const x = r.experimento, ev = r.evidencia, boot = r.robustez.bootstrap;
+  // componentes: [n ventana, n resto, media ventana, media resto], en ese orden; sin resto (n resto = 0), sin su media
+  const [nWin, nRest, meanWin, meanRest] = ev.componentes.map(c => c.valor);
+  return {
+    key,
+    state: entry.estados?.[key] ?? 'inconclusive',
+    start: x.inicio,
+    end: x.fin,
+    periodsPerYear: r.procedencia.periodos_por_anio,
+    capital: x.capital_inicial,
+    equity: equity.map(e => [e.fecha, +e.equity, +e.exposicion]),
+    trades: tradesWithReturn(trades, equity, x.capital_inicial),
+    research: {
+      question: x.pregunta,
+      statistic: ev.estadistico,
+      unit: ev.unidad,
+      bootstrap: { replicas: boot.replicas, bloque: `${boot.bloque} ${boot.bloque > 1 ? PLURAL[boot.unidad] ?? boot.unidad : boot.unidad}` },
+      n_tom: nWin, n_rest: nRest,
+      mean_tom: frac(meanWin), mean_rest: nRest ? frac(meanRest) : null,
+      difference: frac(ev.valor),
+      ci95: [frac(boot.ic_inf), frac(boot.ic_sup)],
+      by_year: fracMap(r.robustez.por_anio),
+      leave_one_year_out: fracMap(r.robustez.sin_cada_anio),
+      cost_stress_net: r.robustez.pnl_costes_x2,
     },
   };
 }

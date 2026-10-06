@@ -104,7 +104,7 @@ const binsOf = ph => { const n = Array(nBins).fill(0); ph.boot.forEach(v => n[Ma
 const KPIS = {
   'kpi-ev': [
     { l: `Efecto ${entry.efecto}`, v: ph => [pb(ph.research.difference)], f: ([v]) => (v >= 0 ? '+' : '') + nf(2).format(v) + unit(U),
-      d: ph => `${entry.efecto} ${fpb(ph.research.mean_tom)} · resto ${fpb(ph.research.mean_rest)}`, cls: ph => sign(ph.research.difference), t: P.IS.research.statistic },
+      d: ph => `${entry.efecto} ${fpb(ph.research.mean_tom)}` + (ph.research.mean_rest == null ? ' · sin resto' : ` · resto ${fpb(ph.research.mean_rest)}`), cls: ph => sign(ph.research.difference), t: P.IS.research.statistic },
     { l: 'IC 95 %', v: ph => ph.research.ci95.map(pb), f: ([a, b]) => `(${a.toFixed(2)}, ${b.toFixed(2)})`,
       d: ph => ph.research.ci95[0] < 0 && ph.research.ci95[1] > 0 ? '<span class="warn">cruza 0</span>' : 'no cruza 0', t: 'Tramo central del 95 % de las réplicas' },
     { l: 'Réplicas < 0', v: ph => [ph.bootNeg * 100], f: ([v]) => nf(0).format(v) + unit('%'), d: () => 'por debajo de 0', t: 'Porcentaje de réplicas con el estadístico negativo' },

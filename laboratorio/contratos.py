@@ -6,13 +6,15 @@ Un experimento produce en resultados/<ID>/:
 - operaciones.csv  -> una fila Operacion por operación cerrada.
 - ficha.md         -> lectura humana generada desde resumen.json.
 - equity_100.csv, operaciones_100.csv -> la misma operativa al 100 % del capital (resumida en `referencia`).
+- `sensibilidad`   -> opcional: rejilla de umbral y multiplicador del tamaño por serie (operativa por sesión, sesion.py).
 - variantes.csv    -> opcional: una fila Variante por sesión y ventana alternativa, con las covariables para
                       filtrar o dimensionar en el dashboard (descrita en `variantes`; ver variantes.py).
 `metricas` usa el tamaño del plan; `referencia`, el 100 % del capital (riesgo comparable entre experimentos).
 resultados/indice.csv tiene una fila por experimento (motor.reconstruir_indice).
 
 Garantías:
-- Solo IS: Experimento rechaza otra muestra y fechas fuera de la IS de su mercado (proteccion.MUESTRAS).
+- Solo IS: Experimento rechaza otra muestra y fechas fuera de la IS de su mercado (proteccion.MUESTRAS),
+  salvo OOS de un experimento base autorizado (proteccion.AUTORIZADAS_OOS) con su misma especificación.
 - Contabilidad (motor.validar_contabilidad, al guardar y al cargar): la equity cubre la muestra,
   concilia sesión a sesión (anterior + pnl_bruto - coste) y cuadra con operaciones y costes por lado.
 - Variantes (motor.validar_variantes): la ventana base reproduce, operación a operación, los precios del libro.
@@ -26,9 +28,9 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from .proteccion import exigir_is
+from .proteccion import exigir_muestra
 
-VERSION = "2.2"  # 2.1: bloque `referencia` (riesgo al 100 % del capital); 2.2: `variantes` opcional
+VERSION = "2.3"  # 2.1: bloque `referencia` (riesgo al 100 % del capital); 2.2: `variantes` opcional; 2.3: `sensibilidad` opcional
 
 
 class Modelo(BaseModel):
@@ -92,6 +94,17 @@ class Variantes(Modelo):
         return self
 
 
+class Sensibilidad(Modelo):
+    """Una combinación de umbral y multiplicador del tamaño por serie (operativa por sesión). Se informa, no se elige."""
+    umbral: float
+    multiplicador: float = Field(gt=0)
+    operaciones_sobre_umbral: int = Field(ge=0, description="Operaciones con la serie por encima del umbral")
+    diferencia: Optional[float] = Field(description="Retorno bruto medio por operación sobre el umbral menos el resto (pb); null si un lado está vacío")
+    rentabilidad_total: float = Field(description="Al 100 % del capital por unidad de tamaño")
+    max_drawdown: float = Field(description="Al 100 % del capital por unidad de tamaño")
+    sharpe: Optional[float]
+
+
 class Reglas(Modelo):
     entrada: str
     salida: str
@@ -100,13 +113,14 @@ class Reglas(Modelo):
 
 
 class Experimento(Modelo):
-    id: str = Field(description="HNNN-IS-REAL-NNN")
+    id: str = Field(description="HNNN-IS-REAL-NNN, HNNN-OOS-REAL-NNN o HNNN-TOT-REAL-NNN")
     hipotesis: str = Field(description="H-NNN")
     version: str
     fecha: date = Field(description="Fecha de ejecución")
     sintetico: bool = Field(description="True solo en tests: nunca es evidencia")
     pregunta: str
-    muestra: Literal["IS"]
+    muestra: Literal["IS", "OOS", "Total"]
+    base: Optional[str] = Field(default=None, description="Experimento IS que se lleva a OOS o Total (misma especificación); solo en esas muestras")
     mercado: Literal["clasica", "cripto"] = Field(default="clasica", description="Qué IS aplica (proteccion.MUESTRAS)")
     inicio: date
     fin: date
@@ -120,8 +134,10 @@ class Experimento(Modelo):
     fuente_datos: str
 
     @model_validator(mode="after")
-    def _solo_is(self):
-        exigir_is(self.inicio, self.fin, self.mercado, self.hipotesis)
+    def _muestra_autorizada(self):
+        if (self.muestra != "IS") != (self.base is not None):
+            raise ValueError("`base` va solo y siempre con muestra OOS o Total")
+        exigir_muestra(self.inicio, self.fin, self.muestra, self.mercado, self.hipotesis, self.base)
         return self
 
 
@@ -231,13 +247,14 @@ class Ficheros(Modelo):
 
 class Resumen(Modelo):
     """resumen.json: todo lo necesario para leer, comparar o graficar un experimento sin abrir el código."""
-    version_esquema: Literal["2.0", "2.1", "2.2"] = VERSION
+    version_esquema: Literal["2.0", "2.1", "2.2", "2.3"] = VERSION
     experimento: Experimento
     evidencia: Evidencia
     robustez: Robustez
     metricas: Metricas
     referencia: Optional[Referencia] = Field(default=None, description="Riesgo al 100 % del capital; null en experimentos previos al esquema 2.1 sin recalcular")
     variantes: Optional[Variantes] = Field(default=None, description="Tabla de variantes para el dashboard; null si el plan no la pide")
+    sensibilidad: Optional[list[Sensibilidad]] = Field(default=None, description="Rejilla umbral × multiplicador del tamaño por serie; null si el plan no la pide")
     no_calculables: dict[str, str] = Field(description="Métrica -> motivo por el que es null")
     operaciones_por_anio: dict[str, int]
     conclusiones: Conclusiones

@@ -9,7 +9,7 @@ import statistics as st
 
 from .contratos import Metricas, Operacion, Referencia, Resumen, Sesion, Variante
 from .presentacion import render
-from .proteccion import exigir_is
+from .proteccion import exigir_muestra
 
 RAIZ = Path(__file__).resolve().parent.parent
 RESULTADOS = RAIZ / "resultados"
@@ -27,9 +27,9 @@ def huella_motor():
     return digest(b"".join(p.name.encode() + b"\0" + p.read_bytes() for p in ficheros))
 
 
-def validar_contabilidad(capital, inicio, fin, sesiones, operaciones, mercado="clasica", hipotesis=None):
+def validar_contabilidad(capital, inicio, fin, sesiones, operaciones, mercado="clasica", hipotesis=None, muestra="IS", base=None):
     """La equity debe cubrir la muestra, conciliar sesión a sesión y cuadrar con el libro de operaciones."""
-    exigir_is(inicio, fin, mercado, hipotesis)
+    exigir_muestra(inicio, fin, muestra, mercado, hipotesis, base)
     inicio, fin = (d if isinstance(d, date) else date.fromisoformat(d) for d in (inicio, fin))
     fechas = [s.fecha for s in sesiones]
     if not fechas or fechas != sorted(set(fechas)) or fechas[0] != inicio or fechas[-1] != fin:
@@ -155,7 +155,7 @@ def _leer_csv(ruta, modelo):
 def validar_referencia(resumen, sesiones, operaciones):
     """La simulación al 100 % concilia como cualquier otra y su resumen sale de ella."""
     e, r = resumen.experimento, resumen.referencia
-    validar_contabilidad(e.capital_inicial, e.inicio, e.fin, sesiones, operaciones, e.mercado, e.hipotesis)
+    validar_contabilidad(e.capital_inicial, e.inicio, e.fin, sesiones, operaciones, e.mercado, e.hipotesis, e.muestra, e.base)
     calculada = referencia(e.capital_inicial, sesiones, operaciones, r.fraccion, resumen.procedencia.periodos_por_anio)
     if calculada.model_dump(exclude={"motor_sha256"}) != r.model_dump(exclude={"motor_sha256"}):
         raise ValueError("`referencia` no coincide con equity_100.csv y operaciones_100.csv")
@@ -188,7 +188,7 @@ def guardar(directorio, resumen, sesiones, operaciones, referencia_100=None, var
     también equity_100.csv y operaciones_100.csv (`referencia_100` = (sesiones, operaciones) al 100 %);
     con `variantes` (filas Variante), variantes.csv."""
     e = resumen.experimento
-    validar_contabilidad(e.capital_inicial, e.inicio, e.fin, sesiones, operaciones, e.mercado, e.hipotesis)
+    validar_contabilidad(e.capital_inicial, e.inicio, e.fin, sesiones, operaciones, e.mercado, e.hipotesis, e.muestra, e.base)
     if (resumen.referencia is None) != (referencia_100 is None):
         raise ValueError("`referencia` necesita su simulación al 100 %, y viceversa")
     if referencia_100:
@@ -223,7 +223,7 @@ def cargar(directorio):
     sesiones = _leer_csv(directorio / "equity.csv", Sesion)
     operaciones = _leer_csv(directorio / "operaciones.csv", Operacion)
     e = resumen.experimento
-    validar_contabilidad(e.capital_inicial, e.inicio, e.fin, sesiones, operaciones, e.mercado, e.hipotesis)
+    validar_contabilidad(e.capital_inicial, e.inicio, e.fin, sesiones, operaciones, e.mercado, e.hipotesis, e.muestra, e.base)
     if resumen.ficheros.equity_100:
         validar_referencia(resumen, _leer_csv(directorio / resumen.ficheros.equity_100, Sesion),
                            _leer_csv(directorio / resumen.ficheros.operaciones_100, Operacion))

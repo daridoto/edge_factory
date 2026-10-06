@@ -1,4 +1,5 @@
-// Comparativa: una hipótesis probada en varios instrumentos (entradas del registro con el mismo `hipotesis`).
+// Comparativa: una hipótesis probada en varios instrumentos o variantes (entradas del registro con el mismo `hipotesis`;
+// cada una se nombra por su `etiqueta` o, sin ella, por su instrumento).
 // Responde, de arriba abajo: ¿en qué instrumentos aparece el efecto? · ¿cómo se habría vivido operándolo?
 // · ¿qué años lo sostienen en todos? · cifras por instrumento. Clic en una fila → su ficha.
 import * as echarts from 'echarts';
@@ -21,33 +22,55 @@ $('cmp').hidden = false;
 const hid = location.hash.slice(1);
 const group = (await loadRegistro()).filter(e => e.hipotesis === hid);
 const fichas = await Promise.all(group.map(loadFicha));
-// una fila por instrumento, de mayor a menor efecto
-// color por instrumento en orden del registro (sigue a la entidad, no al puesto)
-const items = fichas.map((D, k) => {
-  const e = group[k], ph = D.phases.IS, r = ph.research, m = computeMetrics(ph);
-  const years = Object.values(r.by_year);
-  return { e, D, ph, r, m, name: D.identity.instrument, color: `--series-${k + 1}`, effect: pb(r.difference), ci: r.ci95.map(pb),
-    up: years.filter(v => v > 0).length, nYears: years.length, worstLoyo: Math.min(...Object.values(r.leave_one_year_out).map(pb)),
-    ret: m.pnl / D.initialEquity * 100 };
-}).sort((a, b) => b.effect - a.effect);
+// Cifras de una entrada en una fase (IS, OOS o Total); null si esa entrada no la tiene.
+function stats(D, key) {
+  const ph = D.phases[key];
+  if (!ph) return null;
+  const r = ph.research, m = computeMetrics(ph), years = Object.values(r.by_year);
+  return { ph, r, m, effect: pb(r.difference), ci: r.ci95.map(pb), up: years.filter(v => v > 0).length, nYears: years.length,
+    worstLoyo: Math.min(...Object.values(r.leave_one_year_out).map(pb)), ret: m.pnl / D.initialEquity * 100 };
+}
+// una fila por instrumento o variante, de mayor a menor efecto en IS (el orden no cambia con la fase)
+// color por entrada en orden del registro (sigue a la entidad, no al puesto)
+const entradas = fichas.map((D, k) => {
+  const e = group[k];
+  return { e, D, name: e.etiqueta ?? D.identity.instrument, color: `--series-${k + 1}`, st: Object.fromEntries(['IS', 'OOS', 'Total'].map(f => [f, stats(D, f)])) };
+}).sort((a, b) => b.st.IS.effect - a.st.IS.effect);
+// fase que se ve: todos los bloques muestran solo las entradas que la tienen
+let phase = 'IS', items = [];
+const setItems = () => { items = entradas.filter(i => i.st[phase]).map(i => ({ ...i, ...i.st[phase] })); };
+setItems();
 const first = items[0], U = first.r.unit;
 
 /* ---------- cabecera ---------- */
-const efecto = first.e.efecto;
-$('c-name').textContent = `${efecto} · ${items.map(i => i.name).join(' ')}`;
+// con efectos distintos (variantes de una hipótesis), la cabecera nombra la hipótesis
+const efectos = new Set(items.map(i => i.e.efecto)), efecto = efectos.size === 1 ? first.e.efecto : hid;
+$('c-name').textContent = `${efecto} · ${items.map(i => i.name).join(' · ')}`;
 document.title = `${hid} · ${efecto}`;
-$('c-q').textContent = first.r.question.replace(first.name, 'el índice');
+// pregunta: la de la primera entrada del registro (con variantes, la de la hipótesis base)
+const q0 = items.find(i => i.e === group[0]);
+$('c-q').textContent = q0.r.question.replace(q0.name, 'el índice');
 $('c-spec').innerHTML = [
   ...Object.entries(first.e.reglas).map(([k, v]) => k === 'Tamaño' && first.D.sizing ? [k, `${first.D.sizing} (plan: ${v})`] : [k, v]),
-  ['Periodo', `${fdate(first.ph.start)} → ${fdate(first.ph.end)}`],
+  ['Periodo', `<span id="c-period">${fdate(first.ph.start)} → ${fdate(first.ph.end)}</span>`],
   ['Capital', `${nf(0).format(first.D.initialEquity)} USD`],
   ['Costes', first.e.costes],
 ].map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
 const states = [...new Set(items.map(i => i.e.estados?.IS ?? i.ph.state))];
 const state = states.length === 1 ? states[0] : 'inconclusive';
 document.documentElement.dataset.state = state;
-$('c-phases').innerHTML = `<button class="phase ${STATE[state][1]}" aria-pressed="true">IS · ${STATE[state][0]}</button>`
-  + '<button class="phase" disabled>OOS · pendiente</button><button class="phase" disabled>Holdout · pendiente</button>';
+const hasPhase = f => entradas.some(i => i.st[f]);
+function renderPhases() {
+  const btn = (f, label) => `<button class="phase ${f === 'IS' ? STATE[state][1] : ''}" data-phase="${f}" aria-pressed="${phase === f}" ${hasPhase(f) ? '' : 'disabled'}>${label}</button>`;
+  $('c-phases').innerHTML = btn('IS', `IS · ${STATE[state][0]}`) + btn('OOS', hasPhase('OOS') ? 'OOS' : 'OOS · pendiente')
+    + (hasPhase('Total') ? btn('Total', 'Total') : '') + '<button class="phase" disabled>Holdout · pendiente</button>';
+}
+$('c-phases').addEventListener('click', e => {
+  const b = e.target.closest('.phase'); if (!b || b.disabled || b.dataset.phase === phase) return;
+  phase = b.dataset.phase; setItems();
+  for (const n of [...off]) if (!items.some(i => i.name === n)) off.delete(n);
+  render();
+});
 $('c-sub-ci').textContent = `${U} · ${first.r.bootstrap.replicas.toLocaleString('es-ES', { useGrouping: 'always' })} réplicas · bloques de ${first.r.bootstrap.bloque}`;
 $('c-sub-eq').textContent = `% sobre ${nf(0).format(first.D.initialEquity)} USD · ${first.D.sizing ?? first.e.reglas['Tamaño'] ?? ''} por entrada`;
 $('c-foot').textContent = `${hid} · ${items.map(i => i.D.exp).join(' · ')}`;
@@ -70,9 +93,9 @@ function renderCI() {
   const dim = i => hl && hl !== i.name;
   cCI.setOption({
     ...anim(),
-    grid: { left: 44, right: 12, top: 8, bottom: 22 },
+    grid: { left: 8, right: 12, top: 8, bottom: 22, containLabel: true },
     tooltip: { ...tip(), trigger: 'item', formatter: p => { const i = items.find(x => x.name === p.data.name);
-      return `<b>${i.name}</b> ${sgn(i.effect)} ${U}<br>IC ${nf(2).format(i.ci[0])} a ${nf(2).format(i.ci[1])} · ${i.up}/${i.nYears} años +`; } },
+      return `<b>${i.name}</b> ${sgn(i.effect)} ${i.r.unit}<br>${i.r.statistic}<br>IC ${nf(2).format(i.ci[0])} a ${nf(2).format(i.ci[1])} · ${i.up}/${i.nYears} años +`; } },
     xAxis: { type: 'value', min: Math.floor(lo - pad), max: Math.ceil(hi + pad), ...axisBase() },
     yAxis: { type: 'category', data: names, ...axisBase(), axisLine: { show: false }, splitLine: { show: false },
       axisLabel: { ...axisBase().axisLabel, color: css('--ink') } },
@@ -91,7 +114,8 @@ function renderCI() {
 function renderEq() {
   cEq.setOption({
     ...anim(),
-    grid: { left: 44, right: 44, top: 8, bottom: 22 },
+    // a la derecha cabe la etiqueta más larga al final de cada curva
+    grid: { left: 44, right: 16 + 7 * Math.max(...items.map(i => i.name.length)), top: 8, bottom: 22 },
     tooltip: { ...tip(), trigger: 'axis', axisPointer: { lineStyle: { color: css('--faint'), type: [1, 3] } },
       // en eje temporal axisValue es un número: la fecha se toma del dato ('AAAA-MM-DD')
       formatter: ps => `${fdate(ps[0].data[0])}<br>` + [...ps].sort((a, b) => b.value[1] - a.value[1])
@@ -113,19 +137,23 @@ function renderEq() {
 
 /* ---------- por año: efecto dentro del año; color por signo, intensidad por magnitud ---------- */
 function renderYears() {
-  const years = Object.keys(first.r.by_year);
-  const vals = items.map(i => years.map(y => pb(i.r.by_year[y])));
-  const max = Math.max(...vals.flat().map(Math.abs));
+  // años de todas las entradas; un año sin dato en una entrada (p. ej. sin noches con VIX > 20) queda vacío
+  const years = [...new Set(items.flatMap(i => Object.keys(i.r.by_year)))].sort();
+  const vals = items.map(i => years.map(y => y in i.r.by_year ? pb(i.r.by_year[y]) : null));
+  const max = Math.max(...vals.flat().filter(v => v != null).map(Math.abs));
   const yl = y => (y === years[0] ? `'${y.slice(2)}*` : `'${y.slice(2)}`);
-  const cell = (v, name) => `<span class="yc" data-name="${name}" style="--c:var(--${v > 0 ? 'pos' : 'neg'});--a:${Math.round(12 + 70 * Math.abs(v) / max)}%" title="${nf(2).format(v)} ${U}">${sgn(v, 1)}</span>`;
+  const cell = (v, name) => v == null ? `<span class="yc" data-name="${name}" title="sin dato">—</span>` : `<span class="yc" data-name="${name}" style="--c:var(--${v > 0 ? 'pos' : 'neg'});--a:${Math.round(12 + 70 * Math.abs(v) / max)}%" title="${nf(2).format(v)} ${U}">${sgn(v, 1)}</span>`;
   const all = years.map((_, j) => { const col = vals.map(r => r[j]);
-    return col.every(v => v > 0) ? '<span class="ya pos" title="positivo en todos">▲</span>'
+    return col.some(v => v == null) ? '<span class="ya">·</span>' : col.every(v => v > 0) ? '<span class="ya pos" title="positivo en todos">▲</span>'
       : col.every(v => v < 0) ? '<span class="ya neg" title="negativo en todos">▼</span>' : '<span class="ya">·</span>'; });
   $('c-years').style.setProperty('--ny', years.length);
   $('c-years').innerHTML = `<span></span>${years.map(y => `<span class="yh">${yl(y)}</span>`).join('')}`
     + items.map((i, k) => `<span class="yn" data-name="${i.name}"><i class="sw" style="--sc:var(${i.color})"></i>${i.name}</span>${vals[k].map(v => cell(v, i.name)).join('')}`).join('')
     + `<span class="yn yt">todos</span>${all.join('')}`;
-  $('c-years-sub').textContent = `${U} · * ${years[0]} desde ${fdate(first.ph.start).slice(3)}`;
+  const start = items.map(i => i.ph.start).sort()[0], end = items.map(i => i.ph.end).sort().at(-1);
+  const sin = entradas.filter(i => !i.st[phase]).map(i => i.name);
+  $('c-years-sub').textContent = `${U} · * ${years[0]} desde ${fdate(start).slice(3)}` + (sin.length ? ` · sin ${phase}: ${sin.join(', ')}` : '');
+  $('c-period').textContent = `${fdate(start)} → ${fdate(end)}`;
 }
 
 /* ---------- tabla por instrumento ---------- */
@@ -174,7 +202,7 @@ cEq.on('mouseover', p => highlight(p.seriesName)); cEq.on('mouseout', () => high
 cCI.on('mouseover', p => highlight(p.data?.name ?? null)); cCI.on('mouseout', () => highlight(null));
 
 /* ---------- arranque + tema ---------- */
-const render = () => { renderCI(); renderEq(); renderYears(); renderTable(); renderFilter(); };
+const render = () => { renderPhases(); renderCI(); renderEq(); renderYears(); renderTable(); renderFilter(); };
 render();
 booted = true;
 new ResizeObserver(() => { cCI.resize(); cEq.resize(); }).observe($('cmp'));

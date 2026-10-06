@@ -1,0 +1,373 @@
+{
+  "version_esquema": "2.3",
+  "experimento": {
+    "id": "H007-TOT-REAL-002",
+    "hipotesis": "H-007",
+    "version": "real-tot-v1",
+    "fecha": "2026-10-06",
+    "sintetico": false,
+    "pregunta": "Dentro del núcleo OD+ · BtD, ¿rinde más el ES las noches con VIX previo > 20?",
+    "muestra": "Total",
+    "base": "H007-IS-REAL-004",
+    "mercado": "clasica",
+    "inicio": "2009-09-27",
+    "fin": "2026-05-28",
+    "instrumento": "ES",
+    "frecuencia": "15min",
+    "moneda": "USD",
+    "capital_inicial": 10000.0,
+    "reglas": {
+      "entrada": "Comprar al precio de las 01:30 ET, lun-vie, si el retorno 15:15-16:15 ET de la sesión previa es < 0.",
+      "salida": "Vender al precio de las 03:30 ET.",
+      "tamano": "1 unidad del índice; 2 unidades si el VIX al cierre de la sesión previa es > 20. Referencia al 100 % del capital (×2 = 200 %) aparte.",
+      "costes": "1 tick (0,25 puntos) por operación completa y unidad: 0,125 puntos por lado."
+    },
+    "receta": "estrategias/H-007.md",
+    "plan": "experimentos/H007-TOT-REAL-002.md",
+    "fuente_datos": "data/indices/ES_15min_2009-2026.csv + data/macro/Indice de volatilidad VIX - Temp. 1d - Date 2006-07-17 a 2026-07-15 - Norgate.csv"
+  },
+  "evidencia": {
+    "estadistico": "Diferencia VIX > 20 − VIX ≤ 20 (OD+ · BtD · VIX>20 ×2)",
+    "unidad": "pb/operación",
+    "valor": 4.536606210879977,
+    "componentes": [
+      {
+        "nombre": "Sesiones VIX > 20",
+        "valor": 641.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Sesiones VIX ≤ 20",
+        "valor": 1268.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Retorno medio VIX > 20",
+        "valor": 5.723679387119404,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Retorno medio VIX ≤ 20",
+        "valor": 1.1870731762394262,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Diferencia VIX > 20 − VIX ≤ 20",
+        "valor": 4.536606210879977,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Mediana VIX > 20",
+        "valor": 5.3145552381583805,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "t de la media VIX > 20 (sin bloques)",
+        "valor": 3.612077230082045,
+        "unidad": "t"
+      },
+      {
+        "nombre": "Años sin comparación posible (un lado vacío)",
+        "valor": 1.0,
+        "unidad": "años"
+      }
+    ],
+    "desglose": {}
+  },
+  "robustez": {
+    "bootstrap": {
+      "metodo": "bloques circulares",
+      "unidad": "sesión",
+      "bloque": 5,
+      "replicas": 5000,
+      "semilla": 7301,
+      "nivel": 0.95,
+      "ic_inf": 1.5787355271694374,
+      "ic_sup": 7.631166701849272,
+      "incluye_cero": false,
+      "motivo": "Una operación como máximo por sesión; bloques de 5 sesiones conservan la dependencia de corto plazo y los regímenes de VIX."
+    },
+    "por_anio": {
+      "2009": 13.470446595610232,
+      "2010": -1.436219993284913,
+      "2011": 6.373260973794005,
+      "2012": 11.92417485881661,
+      "2013": 32.900303619590645,
+      "2014": 10.381178601738892,
+      "2015": 12.38761154839881,
+      "2016": 1.4173082134027526,
+      "2018": 13.466051574230082,
+      "2019": 13.09266064890096,
+      "2020": 6.967224461035884,
+      "2021": 3.2040163730603917,
+      "2022": 1.711149841607399,
+      "2023": -1.3529663945812764,
+      "2024": -10.238696478898532,
+      "2025": 10.7643960363155,
+      "2026": 1.578773798390039
+    },
+    "sin_cada_anio": {
+      "2009": 4.310258639519341,
+      "2010": 4.973091326809343,
+      "2011": 4.251333880525321,
+      "2012": 4.25784516122518,
+      "2013": 4.74144410119378,
+      "2014": 4.477035539266496,
+      "2015": 4.409251319786301,
+      "2016": 4.708463038059384,
+      "2017": 4.487550319542702,
+      "2018": 4.013911616893362,
+      "2019": 4.317434555605216,
+      "2020": 3.688915312863066,
+      "2021": 4.716546788032839,
+      "2022": 6.210219968432091,
+      "2023": 4.741864950472149,
+      "2024": 4.771305583544828,
+      "2025": 4.119611450333639,
+      "2026": 4.614651061629452
+    },
+    "pnl_costes_x2": 714.5
+  },
+  "metricas": {
+    "operaciones": 1909,
+    "pnl_neto": 1352.0,
+    "esperanza": 0.7082242011524358,
+    "tasa_acierto": 0.5191199580932425,
+    "payoff": 1.0737852050896823,
+    "profit_factor": 1.216138443707286,
+    "rentabilidad_total": 0.1352,
+    "rentabilidad_anual": 0.006182161232579518,
+    "sharpe": 0.4639772279491126,
+    "sortino": 0.7501120236332732,
+    "max_drawdown": 0.07844986496334716,
+    "max_recuperacion": null,
+    "drawdown_abierto": 1284,
+    "exposicion": 0.03201542912246866,
+    "rotacion": 1437.3951062589954,
+    "costes": 637.5,
+    "peso_costes": 0.04576946548443838,
+    "concentracion_anual": 0.071765322158198,
+    "autocorrelacion": 0.015343213447814256
+  },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": 0.7917828531257993,
+    "rentabilidad_anual": 0.028750617564747668,
+    "sharpe": 0.6317409201149723,
+    "max_drawdown": 0.19396339635840565,
+    "pico": "2022-05-10",
+    "valle": "2025-04-07",
+    "recuperacion": null,
+    "sesiones_bajo_agua": 1262,
+    "motor_sha256": "f36b7c220cfca513cc39affd5988e25693311b211a349622aad9ed53f877f324"
+  },
+  "variantes": null,
+  "sensibilidad": [
+    {
+      "umbral": 15.0,
+      "multiplicador": 1.5,
+      "operaciones_sobre_umbral": 1314,
+      "diferencia": 3.216833498368314,
+      "rentabilidad_total": 0.5984483446109634,
+      "max_drawdown": 0.14601059393357108,
+      "sharpe": 0.6226885929226464
+    },
+    {
+      "umbral": 15.0,
+      "multiplicador": 2.0,
+      "operaciones_sobre_umbral": 1314,
+      "diferencia": 3.216833498368314,
+      "rentabilidad_total": 0.8769756565439326,
+      "max_drawdown": 0.18624470134760984,
+      "sharpe": 0.6365037482654066
+    },
+    {
+      "umbral": 15.0,
+      "multiplicador": 3.0,
+      "operaciones_sobre_umbral": 1314,
+      "diferencia": 3.216833498368314,
+      "rentabilidad_total": 1.564367786808626,
+      "max_drawdown": 0.26222578110625183,
+      "sharpe": 0.6493867639917656
+    },
+    {
+      "umbral": 20.0,
+      "multiplicador": 1.5,
+      "operaciones_sobre_umbral": 641,
+      "diferencia": 4.536606210879977,
+      "rentabilidad_total": 0.5613092317987762,
+      "max_drawdown": 0.15010348050464595,
+      "sharpe": 0.6217505343551893
+    },
+    {
+      "umbral": 20.0,
+      "multiplicador": 2.0,
+      "operaciones_sobre_umbral": 641,
+      "diferencia": 4.536606210879977,
+      "rentabilidad_total": 0.7917828531257993,
+      "max_drawdown": 0.19396339635840565,
+      "sharpe": 0.6317409201149723
+    },
+    {
+      "umbral": 20.0,
+      "multiplicador": 3.0,
+      "operaciones_sobre_umbral": 641,
+      "diferencia": 4.536606210879977,
+      "rentabilidad_total": 1.3421477276618163,
+      "max_drawdown": 0.2759299822568032,
+      "sharpe": 0.6375933671333863
+    },
+    {
+      "umbral": 25.0,
+      "multiplicador": 1.5,
+      "operaciones_sobre_umbral": 301,
+      "diferencia": 5.34434320146405,
+      "rentabilidad_total": 0.4784694030089076,
+      "max_drawdown": 0.14196754623706065,
+      "sharpe": 0.5788121801844288
+    },
+    {
+      "umbral": 25.0,
+      "multiplicador": 2.0,
+      "operaciones_sobre_umbral": 301,
+      "diferencia": 5.34434320146405,
+      "rentabilidad_total": 0.6076279038542733,
+      "max_drawdown": 0.17838186249658827,
+      "sharpe": 0.5608967036666085
+    },
+    {
+      "umbral": 25.0,
+      "multiplicador": 3.0,
+      "operaciones_sobre_umbral": 301,
+      "diferencia": 5.34434320146405,
+      "rentabilidad_total": 0.8898445064387128,
+      "max_drawdown": 0.24731160815975473,
+      "sharpe": 0.5331697514363339
+    },
+    {
+      "umbral": 30.0,
+      "multiplicador": 1.5,
+      "operaciones_sobre_umbral": 127,
+      "diferencia": 11.374064385890431,
+      "rentabilidad_total": 0.4593094295160556,
+      "max_drawdown": 0.12031226497771841,
+      "sharpe": 0.5899320113899374
+    },
+    {
+      "umbral": 30.0,
+      "multiplicador": 2.0,
+      "operaciones_sobre_umbral": 127,
+      "diferencia": 11.374064385890431,
+      "rentabilidad_total": 0.5670009020501907,
+      "max_drawdown": 0.136274289920423,
+      "sharpe": 0.5754548390735337
+    },
+    {
+      "umbral": 30.0,
+      "multiplicador": 3.0,
+      "operaciones_sobre_umbral": 127,
+      "diferencia": 11.374064385890431,
+      "rentabilidad_total": 0.7990713334860782,
+      "max_drawdown": 0.16775102858876467,
+      "sharpe": 0.5463127334892472
+    }
+  ],
+  "no_calculables": {
+    "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
+  },
+  "operaciones_por_anio": {
+    "2009": 26,
+    "2010": 105,
+    "2011": 119,
+    "2012": 108,
+    "2013": 125,
+    "2014": 97,
+    "2015": 111,
+    "2016": 103,
+    "2017": 109,
+    "2018": 114,
+    "2019": 106,
+    "2020": 123,
+    "2021": 137,
+    "2022": 124,
+    "2023": 111,
+    "2024": 115,
+    "2025": 127,
+    "2026": 49
+  },
+  "conclusiones": {
+    "estado": "exploratoria",
+    "lectura": "Diferencia VIX > 20 − VIX ≤ 20 (OD+ · BtD · VIX>20 ×2): 4,54 pb/operación (641 sesiones frente a 1268); mediana VIX > 20 5,31 pb/operación. El intervalo no incluye cero bajo los supuestos del remuestreo; no prueba estabilidad futura.",
+    "supuestos": [
+      "Los de H007-IS-REAL-003.",
+      "VIX: cierre diario de la sesión previa (16:15 ET), conocido antes de la entrada.",
+      "Al 100 % con ×2 la exposición es del 200 % del capital (apalancamiento)."
+    ],
+    "limites": [
+      "Parámetros elegidos tras ver el IS: el OOS mide si sobreviven a esa elección.",
+      "Toda la muestra posterior a la IS se usa aquí: no queda holdout para el ES."
+    ],
+    "siguiente_comprobacion": "Decidir con el usuario a la vista del OOS; no queda holdout."
+  },
+  "procedencia": {
+    "motor_sha256": "f36b7c220cfca513cc39affd5988e25693311b211a349622aad9ed53f877f324",
+    "datos_sha256": "2a469e8db77c52dcd6e86a934e25fea62b78dd2117c4db7620cb50a3ed5ac0e3",
+    "plan_sha256": "3a0fb7639efaa039a70d67cf7fc28aef085c097aa181cb04ba70c3c71b9150e8",
+    "periodos_por_anio": 252
+  },
+  "historial": [
+    {
+      "id": "H007-IS-REAL-001",
+      "fecha": "2026-09-24",
+      "cambio": "Primera ejecución real."
+    },
+    {
+      "id": "H007-IS-REAL-002",
+      "fecha": "2026-10-05",
+      "cambio": "Misma evidencia que 001 y tabla de variantes por noche (OD+, BtD con proxy, VIX, desfase) para combinar en el dashboard."
+    },
+    {
+      "id": "H007-IS-REAL-003",
+      "fecha": "2026-10-06",
+      "cambio": "Núcleo congelado: ventana OD+ 01:30-03:30 y filtro BtD (proxy de precio); sin VIX."
+    },
+    {
+      "id": "H007-IS-REAL-004",
+      "fecha": "2026-10-06",
+      "cambio": "Núcleo de 003 con tamaño ×2 si el VIX de la sesión previa supera 20; sensibilidad de umbral y multiplicador."
+    },
+    {
+      "id": "H007-IS-REAL-005",
+      "fecha": "2026-10-06",
+      "cambio": "OD+ 01:30-03:30 sola: sin BtD ni VIX, todas las noches lun-vie."
+    },
+    {
+      "id": "H007-OOS-REAL-001",
+      "fecha": "2026-10-06",
+      "cambio": "OOS 2021-01-01 → 2026-05-28 del núcleo H007-IS-REAL-003, sin cambiar nada de su especificación."
+    },
+    {
+      "id": "H007-OOS-REAL-002",
+      "fecha": "2026-10-06",
+      "cambio": "OOS 2021-01-01 → 2026-05-28 de H007-IS-REAL-004 (OD+ · BtD · VIX > 20 ×2), sin cambiar nada de su especificación."
+    },
+    {
+      "id": "H007-TOT-REAL-001",
+      "fecha": "2026-10-06",
+      "cambio": "Total (IS + OOS) 2009-09-27 → 2026-05-28 del núcleo H007-IS-REAL-003, sin cambiar nada de su especificación."
+    },
+    {
+      "id": "H007-TOT-REAL-002",
+      "fecha": "2026-10-06",
+      "cambio": "Total 2009-09-27 → 2026-05-28 de H007-IS-REAL-004 (OD+ · BtD · VIX > 20 ×2), sin cambiar nada de su especificación."
+    }
+  ],
+  "ficheros": {
+    "equity": "equity.csv",
+    "operaciones": "operaciones.csv",
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv",
+    "variantes": null
+  }
+}

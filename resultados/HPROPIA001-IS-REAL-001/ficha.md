@@ -56,7 +56,7 @@ Bootstrap por bloques circulares (bloque = 1 × operación, 5.000 réplicas, sem
 | Sharpe | 1,34 |
 | Costes | 7.734,11 USDT |
 
-**Referencia al 100 % del capital** (la misma operativa con el 99,9 % de la equity, sin apalancamiento):
+**Referencia al 100 % del capital** (la misma operativa con el 99,9 % de la equity por unidad de tamaño; con multiplicador > 1 hay apalancamiento):
 
 | Riesgo | Valor |
 |---|---:|

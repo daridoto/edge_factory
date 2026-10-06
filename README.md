@@ -10,7 +10,7 @@ De la idea al resultado medido, solo con datos in-sample.
 ![pydantic](https://img.shields.io/badge/pydantic-v2-E92063?logo=pydantic&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-dashboard-646CFF?logo=vite&logoColor=white)
 ![ECharts](https://img.shields.io/badge/ECharts-6-AA344D?logo=apacheecharts&logoColor=white)
-![Muestra](https://img.shields.io/badge/muestra-solo%20IS-555)
+![Muestra](https://img.shields.io/badge/muestra-IS%20%2B%20OOS%20autorizado-555)
 
 </div>
 
@@ -45,7 +45,7 @@ flowchart LR
 
 ## Principios
 
-> 🔒 **Solo in-sample.** La muestra IS va de 2009-09-27 a 2020-12-31. OOS y holdout no se usan sin autorización explícita y concreta. Las fechas viven en un único sitio (`laboratorio/proteccion.py`) y el contrato rechaza cualquier otra muestra.
+> 🔒 **In-sample por defecto.** La muestra IS va de 2009-09-27 a 2020-12-31. OOS y holdout no se usan sin autorización explícita y concreta, que se registra por experimento; el plan OOS debe repetir sin cambios la especificación IS. Las fechas viven en un único sitio (`laboratorio/proteccion.py`) y el contrato rechaza cualquier otra muestra.
 
 - 🧩 **Sin código por hipótesis.** Una hipótesis es una especificación TOML. Si falta una pieza (dataset, ventana, estadístico) se añade de forma genérica al catálogo, con su test.
 - ⚖️ **Riesgo comparable.** Cada resultado incluye, además del tamaño del plan, la misma operativa al 100 % del capital (drawdown, duración, recuperación).
@@ -59,7 +59,7 @@ flowchart LR
 |---|---|
 | Hipótesis triadas | **36** · 11 compatibles · 5 proxy · 20 bloqueadas |
 | Recetas | H-001 · H-007 · H-008 · H-010 · H-PROPIA-001 |
-| Experimentos | H-001 en SPY, QQQ, IWM y DIA · H-007 en ES · H-PROPIA-001 en RAY |
+| Experimentos | H-001 en SPY, QQQ, IWM y DIA · H-007 en ES (IS y OOS 2021–2026 de tres variantes: sin ventaja fuera de muestra) · H-PROPIA-001 en RAY |
 
 Las cifras de cada experimento están en [`resultados/indice.csv`](resultados/indice.csv), una fila por experimento.
 

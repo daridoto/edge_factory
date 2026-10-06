@@ -50,7 +50,7 @@ Bootstrap por bloques circulares (bloque = 3 × mes, 5.000 réplicas, semilla 73
 | Sharpe | 0,37 |
 | Costes | 50,37 USD |
 
-**Referencia al 100 % del capital** (la misma operativa con el 99,9 % de la equity, sin apalancamiento):
+**Referencia al 100 % del capital** (la misma operativa con el 99,9 % de la equity por unidad de tamaño; con multiplicador > 1 hay apalancamiento):
 
 | Riesgo | Valor |
 |---|---:|

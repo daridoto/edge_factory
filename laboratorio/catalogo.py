@@ -67,7 +67,10 @@ def _sumas(gs):
 
 
 def media_ventana(gs):
-    n_v, s_v, _, _ = _sumas(gs)
+    """Media de la ventana; no necesita resto (p. ej. operativa por sesión sin filtro)."""
+    n_v, s_v = sum(g[0] for g in gs), sum(g[1] for g in gs)
+    if not n_v:
+        raise ValueError("Ventana sin observaciones")
     return s_v / n_v * PB
 
 

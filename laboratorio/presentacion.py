@@ -9,7 +9,7 @@ def _referencia(r):
     if r is None:
         return ["**Referencia al 100 % del capital:** no calculada (experimento anterior al esquema 2.1).", ""]
     return [
-        f"**Referencia al 100 % del capital** (la misma operativa con el {n(r.fraccion * 100, 1)} % de la equity, sin apalancamiento):", "",
+        f"**Referencia al 100 % del capital** (la misma operativa con el {n(r.fraccion * 100, 1)} % de la equity por unidad de tamaño; con multiplicador > 1 hay apalancamiento):", "",
         "| Riesgo | Valor |", "|---|---:|",
         f"| Máximo drawdown | **{n(r.max_drawdown * 100)} %** |",
         f"| Pico → valle | {r.pico} → {r.valle} |",
@@ -35,6 +35,21 @@ def _variantes(v):
     ]
 
 
+def _sensibilidad(filas):
+    if not filas:
+        return []
+    return [
+        "## Sensibilidad del tamaño por serie (se informa, no se elige)", "",
+        "Al 100 % del capital por unidad de tamaño (multiplicador > 1 = apalancamiento). La diferencia es el retorno bruto "
+        "medio por operación sobre el umbral menos el resto y no depende del multiplicador.", "",
+        "| Umbral | Ops sobre umbral | Diferencia (pb) | × | Rentabilidad total | Máx. drawdown | Sharpe |",
+        "|---:|---:|---:|---:|---:|---:|---:|",
+        *[f"| {n(f.umbral, 0)} | {f.operaciones_sobre_umbral} | {'—' if f.diferencia is None else n(f.diferencia)} | "
+          f"{n(f.multiplicador, 1)} | {n(f.rentabilidad_total * 100)} % | {n(f.max_drawdown * 100)} % | "
+          f"{'—' if f.sharpe is None else n(f.sharpe)} |" for f in filas], "",
+    ]
+
+
 def render(resumen):
     e, ev, rb, m, c = (resumen.experimento, resumen.evidencia, resumen.robustez,
                        resumen.metricas, resumen.conclusiones)
@@ -50,11 +65,11 @@ def render(resumen):
 
     lineas = [
         f"# {e.hipotesis} · {e.pregunta}", "",
-        "**SOLO IS · EXPLORATORIA**" + (" · **DATOS SINTÉTICOS: no es evidencia**" if e.sintetico else ""), "",
+        (f"**{e.muestra} de {e.base} · EXPLORATORIA**" if e.base else "**SOLO IS · EXPLORATORIA**") + (" · **DATOS SINTÉTICOS: no es evidencia**" if e.sintetico else ""), "",
         f"**Recorrido:** [receta](../../{e.receta}) → [plan](../../{e.plan}) → esta ficha · "
         "datos: [resumen.json](resumen.json), [equity.csv](equity.csv), [operaciones.csv](operaciones.csv)", "",
         f"> {c.lectura}", "",
-        f"**Muestra:** {e.inicio} → {e.fin} · {e.instrumento} {e.frecuencia} · experimento {e.id}. OOS y holdout no utilizados.", "",
+        f"**Muestra:** {e.inicio} → {e.fin} · {e.instrumento} {e.frecuencia} · experimento {e.id}. " + (f"{e.muestra} autorizada; misma especificación que la base." if e.base else "OOS y holdout no utilizados."), "",
         "## Evidencia", "",
         "| | Valor |", "|---|---:|",
         *[f"| {x.nombre} | {n(x.valor, 0 if x.valor.is_integer() else 2)} {x.unidad} |" for x in ev.componentes],
@@ -86,6 +101,7 @@ def render(resumen):
         f"| Costes | {n(m.costes)} {e.moneda} |", "",
         *_referencia(resumen.referencia),
         *_variantes(resumen.variantes),
+        *_sensibilidad(resumen.sensibilidad),
         "Métricas completas y sus definiciones: `metricas` en resumen.json y [esquema](../../esquemas/resumen.schema.json).", "",
         "## Supuestos y límites", "",
         *[f"- {x}" for x in c.supuestos + c.limites], "",

@@ -95,12 +95,13 @@ function groupRow(g, k) {
   const effects = rs.map(r => pb(r.difference)), ups = rs.map(r => Object.values(r.by_year).filter(v => v > 0).length);
   const rets = Ds.map(D => computeMetrics(D.phases.IS).pnl / D.initialEquity * 100);
   const noZero = rs.filter(r => r.ci95[0] > 0 || r.ci95[1] < 0).length;
-  const best = Ds[effects.indexOf(Math.max(...effects))].identity.instrument;
+  const label = i => es[i].etiqueta ?? Ds[i].identity.instrument, variantes = es.some(x => x.etiqueta);
+  const best = label(effects.indexOf(Math.max(...effects)));
   return `<a class="row" href="#${g.id}" style="--row-state:var(--${STATE[state]?.[1] ?? 'faint'})">
     <div class="row-id">
-      <h2>${e.efecto} · ${Ds.map(D => D.identity.instrument).join(' ')}</h2>
+      <h2>${new Set(es.map(x => x.efecto)).size === 1 ? e.efecto : g.id} · ${Ds.map((_, i) => label(i)).join(variantes ? ' · ' : ' ')}</h2>
       <p class="question">${rs[0].question.replace(Ds[0].identity.instrument, 'el índice')}</p>
-      <p class="row-spec">${g.id} · ${Ds.length} instrumentos · ${Ds[0].identity.frequency} · ${fdate(ph.start)} → ${fdate(ph.end)}</p>
+      <p class="row-spec">${g.id} · ${Ds.length} ${variantes ? 'variantes' : 'instrumentos'} · ${Ds[0].identity.frequency} · ${fdate(ph.start)} → ${fdate(ph.end)}</p>
     </div>
     <div class="phases">${phaseChip('IS', state)}${phaseChip('OOS', null)}${phaseChip('Holdout', null)}</div>
     ${kpi(`Efecto ${e.efecto ?? ''}`, range(effects, sgn) + `<span class="u">${u}</span>`, `mayor en ${best}`)}
@@ -127,7 +128,7 @@ $('rows').innerHTML = groups.map((g, gi) => {
     </div>
     <div class="phases">${phaseChip('IS', state)}${phaseChip('OOS', e.experimentos.OOS && e.estados?.OOS)}${phaseChip('Holdout', null)}</div>
     ${kpi(`Efecto ${e.efecto ?? ''}`, sgn(pb(r.difference)) + `<span class="u">${r.unit}</span>`,
-          `${e.efecto ?? 'ventana'} ${nf(2).format(pb(r.mean_tom))} · resto ${nf(2).format(pb(r.mean_rest))}`, sign(r.difference))}
+          `${e.efecto ?? 'ventana'} ${nf(2).format(pb(r.mean_tom))}` + (r.mean_rest == null ? '' : ` · resto ${nf(2).format(pb(r.mean_rest))}`), sign(r.difference))}
     <div class="kpi"><span class="l">IC 95 %</span>${ciStrip(r)}<span class="d">${nf(2).format(lo)} a ${nf(2).format(hi)} · ${crosses ? '<span class="warn">cruza 0</span>' : 'no cruza 0'}</span></div>
     ${kpi('Años +', `${up}<span class="u">/ ${years.length}</span>`)}
     ${kpi('ROI', sgn(m.roi * 100) + '<span class="u">%</span>', `anual ${nf(2).format(m.cagr * 100)} % · ${nf(0).format(m.pnl)} USD`, sign(m.roi))}

@@ -14,7 +14,7 @@ from datetime import date, datetime, time, timedelta
 import math
 from pathlib import Path
 
-from .proteccion import MUESTRAS, exigir_is
+from .proteccion import MUESTRAS, exigir_muestra
 
 RAIZ = Path(__file__).resolve().parent.parent
 
@@ -55,18 +55,18 @@ SERIES = {
 }
 
 
-def _limites(d, inicio, fin, hipotesis):
-    """Límites de lectura: por defecto, toda la IS del mercado del dataset; siempre dentro de ella."""
+def _limites(d, inicio, fin, hipotesis, muestra="IS", base=None):
+    """Límites de lectura: por defecto, toda la IS del mercado del dataset; siempre dentro de la muestra autorizada."""
     mercado = d.get("mercado", "clasica")
     inicio, fin = inicio or MUESTRAS[mercado][0], fin or MUESTRAS[mercado][1]
-    exigir_is(inicio, fin, mercado, hipotesis)
+    exigir_muestra(inicio, fin, muestra, mercado, hipotesis, base)
     return str(inicio), str(fin)
 
 
-def cargar(nombre, inicio=None, fin=None, ruta=None, hipotesis=None):
-    """Barras IS del dataset, ordenadas. Fuera de IS solo se lee la fecha para descartar la fila."""
+def cargar(nombre, inicio=None, fin=None, ruta=None, hipotesis=None, muestra="IS", base=None):
+    """Barras de la muestra, ordenadas. Fuera de ella solo se lee la fecha para descartar la fila."""
     d = DATASETS[nombre]
-    inicio, fin = _limites(d, inicio, fin, hipotesis)
+    inicio, fin = _limites(d, inicio, fin, hipotesis, muestra, base)
     barras = []
     with Path(ruta or RAIZ / d["ruta"]).open(newline="", encoding="utf-8-sig") as f:
         lector = csv.DictReader(f)
@@ -87,10 +87,10 @@ def cargar(nombre, inicio=None, fin=None, ruta=None, hipotesis=None):
     return barras
 
 
-def cargar_serie(nombre, inicio=None, fin=None, ruta=None, hipotesis=None):
-    """{fecha: valor} de una serie auxiliar dentro de IS; filtra por fecha antes de leer el valor."""
+def cargar_serie(nombre, inicio=None, fin=None, ruta=None, hipotesis=None, muestra="IS", base=None):
+    """{fecha: valor} de una serie auxiliar dentro de la muestra; filtra por fecha antes de leer el valor."""
     d = SERIES[nombre]
-    inicio, fin = _limites(d, inicio, fin, hipotesis)
+    inicio, fin = _limites(d, inicio, fin, hipotesis, muestra, base)
     serie = {}
     with Path(ruta or RAIZ / d["ruta"]).open(newline="", encoding="utf-8-sig") as f:
         lector = csv.DictReader(f)

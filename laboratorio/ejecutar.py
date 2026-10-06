@@ -10,12 +10,12 @@ import re
 import statistics as st
 import tomllib
 
-from . import catalogo, datos, eventos, motor, variantes
+from . import catalogo, datos, eventos, motor, sesion, variantes
 from .backtest import backtest
 from .contratos import (Componente, Conclusiones, Evidencia, Experimento, Ficheros, Intento, Procedencia, Reglas,
-                        Resumen, Robustez, Variantes)
+                        Resumen, Robustez, Sensibilidad, Variantes)
 from .presentacion import n
-from .proteccion import FIN_IS, INICIO_IS
+from .proteccion import FIN_IS, INICIO_IS, limites_muestra
 from .robustez import bateria
 
 NOMBRES = {"media_ventana": "Retorno medio en la ventana", "media_vs_resto": "Diferencia ventana − resto"}
@@ -40,6 +40,20 @@ def historial(hipotesis, id_actual, fecha, cambio, resultados=motor.RESULTADOS):
     return sorted(previos, key=lambda i: i.fecha) + [Intento(id=id_actual, fecha=fecha, cambio=cambio)]
 
 
+IDENTIDAD = {"id", "version", "pregunta", "cambio", "muestra", "base", "conclusiones"}
+
+
+def exigir_mismo_plan(spec, resultados=motor.RESULTADOS):
+    """Un plan OOS repite la especificación de su experimento base: todo salvo identidad y conclusiones."""
+    base = Path(resultados) / spec["base"] / "resumen.json"
+    if not base.exists():
+        raise ValueError(f"No existe el experimento base {spec['base']}")
+    original = leer_plan(motor.RAIZ / json.loads(base.read_text())["experimento"]["plan"])
+    distinto = sorted(k for k in (set(spec) | set(original)) - IDENTIDAD if spec.get(k) != original.get(k))
+    if distinto or spec["hipotesis"] != original["hipotesis"]:
+        raise ValueError(f"El plan OOS cambia la especificación de {spec['base']}: {distinto or ['hipotesis']}")
+
+
 def tabla_variantes(spec, barras, dataset, inicio, fin, serie=None):
     """(Variantes, filas) si el plan tiene [variantes]; si no, (None, None). `serie` inyecta la serie en tests."""
     if "variantes" not in spec:
@@ -55,9 +69,17 @@ def tabla_variantes(spec, barras, dataset, inicio, fin, serie=None):
 def ejecutar(spec, plan, barras=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS, **sinteticos):
     """Devuelve (Resumen, sesiones, operaciones, (sesiones, operaciones) al 100 %, filas de variantes o None).
     `barras` (y `serie`) permiten inyectar datos sintéticos en tests.
-    Un plan con [senal] usa la operativa por eventos (eventos.py) en lugar de ventana + estadístico."""
+    Un plan con [senal] usa la operativa por eventos (eventos.py) y uno con [sesion], la operativa por sesión
+    (sesion.py), en lugar de ventana + estadístico."""
     if "senal" in spec:
         return ejecutar_eventos(spec, plan, barras=barras, hoy=hoy, **sinteticos)
+    if spec.get("muestra", "IS") != "IS":
+        if "sesion" not in spec:
+            raise ValueError("OOS y Total solo están implementados para la operativa por sesión")
+        exigir_mismo_plan(spec)
+        inicio, fin = limites_muestra(spec["muestra"], datos.DATASETS[spec["datos"]["dataset"]].get("mercado", "clasica"))
+    if "sesion" in spec:
+        return ejecutar_sesion(spec, plan, barras=barras, hoy=hoy, inicio=inicio, fin=fin, **sinteticos)
     d, v, es, op, bs, cc = (spec[k] for k in ("datos", "ventana", "estadistico", "operativa", "bootstrap", "conclusiones"))
     dataset = datos.DATASETS[d["dataset"]]
     sintetico = barras is not None
@@ -190,6 +212,101 @@ def ejecutar_eventos(spec, plan, barras=None, serie=None, referencia=None, hoy=N
                                 plan_sha256=motor.digest(Path(motor.RAIZ / plan).read_bytes()) if (motor.RAIZ / plan).exists() else "sin plan",
                                 periodos_por_anio=dataset.get("periodos_por_anio", 252)),
         historial=historial(h, spec["id"], hoy, spec["cambio"]), ficheros=FICHEROS_100), sesiones, operaciones, al_100, None
+
+
+def ejecutar_sesion(spec, plan, barras=None, serie=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS):
+    """Operativa por sesión (sesion.py): ventana intradía, filtro por la señal previa y tamaño por una serie previa.
+    La evidencia es el retorno bruto de precio por sesión, partido según [estadistico].particion."""
+    d, ss, es, op, bs, cc = (spec[k] for k in ("datos", "sesion", "estadistico", "operativa", "bootstrap", "conclusiones"))
+    tamano, sens = spec.get("tamano"), spec.get("sensibilidad")
+    if (tamano or sens or es["particion"] == "tamano") and not d.get("serie"):
+        raise ValueError("El tamaño por serie necesita [datos].serie")
+    dataset = datos.DATASETS[d["dataset"]]
+    sintetico = barras is not None
+    muestra, base = spec.get("muestra", "IS"), spec.get("base")
+    if not sintetico:
+        barras = datos.cargar(d["dataset"], inicio, fin, muestra=muestra, base=base)
+        serie = datos.cargar_serie(d["serie"], inicio, fin, muestra=muestra, base=base) if d.get("serie") else None
+    filas = variantes.tabla(barras, dataset["frecuencia"], {ss["nombre"]: ss["ventana"]}, ss.get("senal"), serie)
+    fechas = sorted({b.ts.date() for b in barras})
+    filtro, coste, capital = ss.get("filtro_senal"), op["coste_lado"], op["capital"]
+    periodos_anio = dataset.get("periodos_por_anio", 252)
+
+    def sim(c=coste, t=tamano, fraccion=op.get("fraccion")):
+        return sesion.simular(filas, fechas, ss["ventana"], capital, c, filtro, t, fraccion)
+    sesiones, operaciones = sim()
+    if len(operaciones) < 2:
+        raise ValueError("Menos de dos operaciones: no hay estadístico")
+    m, motivos, por_anio = motor.metricas(capital, sesiones, operaciones, periodos_anio)
+    al_100 = sim(fraccion=FRACCION_REF)
+    ref = motor.referencia(capital, *al_100, FRACCION_REF, periodos_anio)
+    x2 = sim(c=2 * coste)[0][-1].equity - capital
+    g = sesion.grupos(filas, es["particion"], filtro, tamano)
+    estadistico = catalogo.ESTADISTICOS[es["tipo"]]
+    robustez = Robustez(**bateria(g, estadistico, unidad=bs["unidad"], bloque=bs["bloque"], motivo=bs["motivo"], pnl_costes_x2=x2))
+    valor = estadistico(list(g.values()))
+    n_v, s_v, n_r, s_r = (sum(x[i] for x in g.values()) for i in range(4))
+    if es["particion"] == "filtro":
+        lados = ("operadas", "descartadas por el filtro")
+    else:
+        lados = (f"{d['serie'].split()[0]} > {n(tamano['umbral'], 0)}", f"{d['serie'].split()[0]} ≤ {n(tamano['umbral'], 0)}")
+    rs = [(f.salida / f.entrada - 1) * catalogo.PB for f in filas if g.get(f.fecha.isoformat(), [0])[0]]  # una fila por día
+    t_stat = st.mean(rs) / (st.stdev(rs) / len(rs) ** .5)
+    unidad = es.get("unidad", "pb/operación")
+    componentes = [
+        Componente(nombre=f"Sesiones {lados[0]}", valor=n_v, unidad="sesiones"),
+        Componente(nombre=f"Sesiones {lados[1]}", valor=n_r, unidad="sesiones"),
+        Componente(nombre=f"Retorno medio {lados[0]}", valor=s_v / n_v * catalogo.PB, unidad=unidad),
+        # sin filtro no hay resto: se omiten su media y la diferencia (el dashboard lo lee por n resto = 0)
+        *([Componente(nombre=f"Retorno medio {lados[1]}", valor=s_r / n_r * catalogo.PB, unidad=unidad),
+           Componente(nombre=f"Diferencia {lados[0]} − {lados[1]}", valor=(s_v / n_v - s_r / n_r) * catalogo.PB, unidad=unidad)]
+          if n_r else []),
+        Componente(nombre=f"Mediana {lados[0]}", valor=st.median(rs), unidad=unidad),
+        Componente(nombre=f"t de la media {lados[0]} (sin bloques)", valor=t_stat, unidad="t"),
+    ]
+    anios_sin = len({k[:4] for k in g}) - len(robustez.por_anio)
+    if anios_sin:
+        componentes.append(Componente(nombre="Años sin comparación posible (un lado vacío)", valor=anios_sin, unidad="años"))
+    nombre_est = {"media_ventana": f"Retorno bruto medio por operación ({ss['nombre']})",
+                  "media_vs_resto": f"Diferencia {lados[0]} − {lados[1]} ({ss['nombre']})"}[es["tipo"]]
+    sensibilidad = None
+    if sens:
+        sensibilidad = []
+        for u in sens["umbrales"]:
+            try:
+                dif = catalogo.media_vs_resto(list(sesion.grupos(filas, "tamano", filtro, {"umbral": u}).values()))
+            except ValueError:
+                dif = None
+            sobre = sum(1 for f in filas if sesion.opera(f, filtro) and f.serie is not None and f.serie > u)
+            for k in sens["multiplicadores"]:
+                mk, _, _ = motor.metricas(capital, *sim(t={"umbral": u, "multiplicador": k}, fraccion=FRACCION_REF), periodos_anio)
+                sensibilidad.append(Sensibilidad(umbral=u, multiplicador=k, operaciones_sobre_umbral=sobre, diferencia=dif,
+                                                 rentabilidad_total=mk.rentabilidad_total, max_drawdown=mk.max_drawdown,
+                                                 sharpe=mk.sharpe))
+    b = robustez.bootstrap
+    lectura = (f"{nombre_est}: {n(valor)} {unidad} ({n_v} sesiones" + (f" frente a {n_r}" if n_r else "") + f"); mediana {lados[0]} {n(st.median(rs))} {unidad}. "
+               + (f"El intervalo incluye cero: en {muestra} no se distingue de no tener efecto." if b.incluye_cero
+                  else "El intervalo no incluye cero bajo los supuestos del remuestreo; no prueba estabilidad futura."))
+    fuentes = [dataset["ruta"]] + ([datos.SERIES[d["serie"]]["ruta"]] if d.get("serie") else [])
+    hoy = hoy or date.today()
+    return Resumen(
+        experimento=Experimento(
+            id=spec["id"], hipotesis=spec["hipotesis"], version=spec["version"], fecha=hoy, sintetico=sintetico,
+            pregunta=spec["pregunta"], muestra=muestra, base=base, inicio=sesiones[0].fecha, fin=sesiones[-1].fecha,
+            instrumento=dataset["instrumento"], frecuencia=dataset["frecuencia"], moneda="USD", capital_inicial=capital,
+            reglas=Reglas(entrada=op["entrada"], salida=op["salida"], tamano=op["tamano"], costes=op["costes"]),
+            receta=spec["receta"], plan=str(plan), fuente_datos=" + ".join(fuentes)),
+        evidencia=Evidencia(estadistico=nombre_est, unidad=unidad, valor=valor, componentes=componentes),
+        robustez=robustez, metricas=m, referencia=ref, sensibilidad=sensibilidad, no_calculables=motivos,
+        operaciones_por_anio=por_anio,
+        conclusiones=Conclusiones(lectura=lectura, supuestos=cc["supuestos"], limites=cc["limites"],
+                                  siguiente_comprobacion=cc["siguiente"]),
+        procedencia=Procedencia(motor_sha256=motor.huella_motor(),
+                                datos_sha256=motor.digest(json.dumps([(str(x.ts), x.close, x.precio) for x in barras]
+                                                                     + [f.model_dump(mode="json") for f in filas]).encode()),
+                                plan_sha256=motor.digest(Path(motor.RAIZ / plan).read_bytes()) if (motor.RAIZ / plan).exists() else "sin plan",
+                                periodos_por_anio=periodos_anio),
+        historial=historial(spec["hipotesis"], spec["id"], hoy, spec["cambio"]), ficheros=FICHEROS_100), sesiones, operaciones, al_100, None
 
 
 def anadir_referencia(directorio):

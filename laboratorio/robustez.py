@@ -32,16 +32,27 @@ def bootstrap(observaciones, estadistico, bloque, replicas=5000, semilla=7301, n
     return percentil(cola), percentil(1 - cola)
 
 
+def _calculables(anios, estadistico, seleccion):
+    """Estadístico por año; omite los años en los que no se puede calcular (p. ej. comparación con un lado vacío)."""
+    out = {}
+    for a in anios:
+        try:
+            out[a] = estadistico(seleccion(a))
+        except ValueError:
+            continue
+    return out
+
+
 def por_anio(grupos, estadistico):
     anios = sorted({clave[:4] for clave in grupos})
-    return {a: estadistico([v for k, v in grupos.items() if k.startswith(a)]) for a in anios}
+    return _calculables(anios, estadistico, lambda a: [v for k, v in grupos.items() if k.startswith(a)])
 
 
 def sin_cada_anio(grupos, estadistico):
     anios = sorted({clave[:4] for clave in grupos})
     if len(anios) < 2:
         return {}
-    return {a: estadistico([v for k, v in grupos.items() if not k.startswith(a)]) for a in anios}
+    return _calculables(anios, estadistico, lambda a: [v for k, v in grupos.items() if not k.startswith(a)])
 
 
 def bateria(grupos, estadistico, unidad, bloque, motivo, pnl_costes_x2, replicas=5000, semilla=7301, nivel=.95):

@@ -114,19 +114,20 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .phase:disabled{color:var(--faint);cursor:default}
 .phase:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 
-/* KPIs: una línea; Evidencia a su medida y Resultado reparte el resto */
+/* KPIs: una línea si cabe; si no, cada KPI salta entero a la siguiente (nunca se recorta).
+   Evidencia a su medida y Resultado reparte el resto; en pantallas estrechas, un grupo debajo del otro. */
 .kpi-bar{display:grid;grid-template-columns:auto minmax(0,1fr);border-block:1px solid var(--rule)}
-.kpi-group{display:grid;gap:var(--s1);padding-block:var(--s3);min-width:0}
+.kpi-group{display:grid;align-content:start;gap:var(--s1);padding-block:var(--s3);min-width:0}
 .kpi-group:first-child{padding-right:var(--gap-kpi)}
 .kpi-group+.kpi-group{border-left:1px solid var(--rule);padding-left:var(--gap-kpi)}
 .group-title{font-size:var(--fs-1);color:var(--faint)}
-.kpis{display:grid;grid-auto-flow:column;grid-auto-columns:max-content;gap:var(--s2) var(--gap-kpi)}
-.kpi-group+.kpi-group .kpis{grid-auto-columns:minmax(max-content,1fr)}
-@media (max-width:1100px){
+.kpis{display:flex;flex-wrap:wrap;gap:var(--s2) var(--gap-kpi)}
+.kpis>.kpi{flex:0 0 auto}
+.kpi-group+.kpi-group .kpis>.kpi{flex:1 0 auto}
+@media (max-width:1440px){
   .kpi-bar{grid-template-columns:minmax(0,1fr)}
   .kpi-group:first-child{padding-right:0}
   .kpi-group+.kpi-group{border-left:0;padding-left:0;border-top:1px solid var(--rule)}
-  .kpis,.kpi-group+.kpi-group .kpis{grid-auto-flow:row;grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
 }
 .kpi{display:grid;gap:2px;cursor:help}
 .kpi .l{font-size:var(--fs-1);color:var(--muted)}
