@@ -130,3 +130,58 @@ class PlanH007(unittest.TestCase):
         # 1 punto a ~2.000 sobre 10.000 USD es ~20 % de la cuenta: al 99,9 % el drawdown es ~5 veces mayor
         self.assertEqual(r.referencia.fraccion, .999)
         self.assertAlmostEqual(r.referencia.max_drawdown / r.metricas.max_drawdown, 5, delta=.5)
+
+
+class OOSDiario(unittest.TestCase):
+    PLAN = "experimentos/H-001-cambio-de-mes/H001-OOS-REAL-001-qqq-tom.md"
+
+    def test_el_ultimo_cierre_is_da_el_primer_periodo_del_oos(self):
+        # sin el cierre previo, la primera sesión de enero no tiene periodo y +1 cae en la segunda
+        dias = [date(2021, 1, d) for d in (4, 5, 6, 7, 8)] + [date(2021, 1, d) for d in range(11, 30) if date(2021, 1, d).weekday() < 5]
+        enero = [Barra(datetime(d.year, d.month, d.day, 16), 100.0 + i, 100.0 + i) for i, d in enumerate(dias)]
+        previa = [Barra(datetime(2020, 12, 31, 16), 99.0, 99.0)]
+        etiquetas = lambda bs: {o.periodo.fin.ts.date(): o.etiqueta for o in dias_de_mes(periodos(bs, "1d"), [1], date(2021, 1, 1), date(2021, 1, 31), "mes")}
+        self.assertEqual(etiquetas(previa + enero)[date(2021, 1, 4)], 1)
+        self.assertEqual(etiquetas(enero)[date(2021, 1, 5)], 1)
+
+    def test_plan_oos_diario_lleva_muestra_y_base(self):
+        from laboratorio import ejecutar
+        from laboratorio.motor import guardar, cargar as cargar_resultado
+        from tests.fixtura import precios_2018
+        spec = ejecutar.leer_plan(ejecutar.motor.RAIZ / self.PLAN)
+        ejecutar.exigir_mismo_plan(spec)
+        bs = [Barra(b.ts.replace(year=2022), b.close, b.precio) for b in precios_2018() if not (b.ts.month == 2 and b.ts.day == 29)]
+        r, sesiones, ops, al_100, _ = ejecutar.ejecutar(spec, self.PLAN, barras=bs, hoy=date(2026, 10, 6))
+        self.assertEqual((r.experimento.muestra, r.experimento.base), ("OOS", "H001-IS-REAL-006"))
+        self.assertIn("en OOS", r.conclusiones.lectura) if r.robustez.bootstrap.incluye_cero else None
+        with tempfile.TemporaryDirectory() as tmp:
+            guardar(Path(tmp) / "x", r, sesiones, ops, al_100)
+            self.assertEqual(cargar_resultado(Path(tmp) / "x")[0], r)
+
+    def test_eventos_fuera_de_is_se_rechaza(self):
+        from laboratorio import ejecutar
+        with self.assertRaises(ValueError):
+            ejecutar.ejecutar({"senal": {}, "muestra": "OOS"}, "x.md")
+
+
+class VentanaMeses(unittest.TestCase):
+    def test_un_semestre_es_una_operacion(self):
+        from datetime import timedelta
+        from laboratorio.catalogo import meses
+        bs, d = [], date(2018, 9, 3)
+        while d <= date(2019, 6, 28):
+            if d.weekday() < 5:
+                bs.append(Barra(datetime(d.year, d.month, d.day, 16), 100 + len(bs) * .1, 100 + len(bs) * .1))
+            d += timedelta(days=1)
+        obs = meses(periodos(bs, "1d"), [11, 12, 1, 2, 3, 4], None, None, "mes")
+        self.assertEqual({o.etiqueta for o in obs if o.en_ventana}, {11, 12, 1, 2, 3, 4})
+        _, ops = backtest(obs, None, 10000, 0)
+        self.assertEqual(len(ops), 1)
+        self.assertEqual((ops[0].entrada, ops[0].salida), (date(2018, 10, 31), date(2019, 4, 30)))
+
+    def test_ventana_abierta_al_final_se_cierra(self):
+        from datetime import timedelta
+        from laboratorio.catalogo import meses
+        bs = [Barra(datetime(2020, m, d, 16), 100.0 + m + d / 100, 100.0) for m, d in [(10, 30), (11, 2), (11, 3), (12, 31)]]
+        _, ops = backtest(meses(periodos(bs, "1d"), [11, 12], None, None, "mes"), None, 10000, 0)
+        self.assertEqual((len(ops), ops[0].salida), (1, date(2020, 12, 31)))

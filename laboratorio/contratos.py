@@ -75,8 +75,9 @@ class Variante(Modelo):
     ventana: str = Field(min_length=1, description="Nombre de la ventana (clave de `variantes.ventanas`)")
     entrada: float = Field(gt=0, description="Precio a la hora de entrada")
     salida: float = Field(gt=0, description="Precio a la hora de salida")
-    senal: Optional[float] = Field(description="Retorno de la sesión previa entre las horas de `variantes.senal`; null si falta una barra")
+    senal: Optional[float] = Field(description="Retorno entre las horas de la señal (de la sesión previa o, con senal_dias [-1, 0], de la previa al día); null si falta una barra o cruza un roll")
     serie: Optional[float] = Field(description="Valor de `variantes.serie` en la sesión previa; null si no hay dato")
+    senal2: Optional[float] = Field(default=None, description="Segunda señal (`senal2` del plan, mismas reglas que senal); null si no hay")
     desfase: bool = Field(description="EE. UU. y Europa con distinto horario de verano ese día")
 
 

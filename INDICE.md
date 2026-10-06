@@ -4,8 +4,10 @@ Generado por `python -m laboratorio indice` desde `resultados/`; no se edita a m
 
 | hipótesis | qué es | variantes | experimentos |
 |---|---|---:|---:|
-| [H-001](#h-001) | Cambio de mes (−1 a +3): rendimiento diario medio mayor que el resto del mes | 8 | 8 |
+| [H-001](#h-001) | Cambio de mes (−1 a +3): rendimiento diario medio mayor que el resto del mes | 9 | 10 |
 | [H-007](#h-007) | Deriva nocturna del ES en la hora 2:00-3:00 ET | 8 | 18 |
+| [H-010](#h-010) | Primera media hora (cierre anterior → 10:00 ET) predice la última (15:30-16:00 ET) | 4 | 4 |
+| [H-019](#h-019) | Noviembre-abril rinde más que mayo-octubre | 4 | 4 |
 | [H-PROPIA-001](#h-propia-001) | RAY largo 28 días cuando el volumen de Raydium dobla su nivel normal | 1 | 1 |
 
 <a id="h-001"></a>
@@ -24,6 +26,8 @@ Generado por `python -m laboratorio indice` desde `resultados/`; no se edita a m
 | **QQQ · 30 %** | IS | [H001-IS-REAL-006](resultados/H-001-cambio-de-mes/H001-IS-REAL-006-qqq-30pct/ficha.md) | 2009–2020 | Diferencia ventana − resto | 4,30 pb/día | [-4,83; 13,86] · cruza 0 | 6/12 | 79,5 % | −11,0 % |
 | **IWM · 30 %** | IS | [H001-IS-REAL-007](resultados/H-001-cambio-de-mes/H001-IS-REAL-007-iwm-30pct/ficha.md) | 2009–2020 | Diferencia ventana − resto | -3,55 pb/día | [-15,78; 8,59] · cruza 0 | 3/12 | 10,3 % | −24,8 % |
 | **DIA · 30 %** | IS | [H001-IS-REAL-008](resultados/H-001-cambio-de-mes/H001-IS-REAL-008-dia-30pct/ficha.md) | 2009–2020 | Diferencia ventana − resto | 0,05 pb/día | [-8,55; 9,13] · cruza 0 | 4/12 | 30,3 % | −12,8 % |
+| **QQQ · TOM** | OOS | [H001-OOS-REAL-001](resultados/H-001-cambio-de-mes/H001-OOS-REAL-001-qqq-tom/ficha.md) | 2021–2026 | Diferencia ventana − resto | -4,16 pb/día | [-20,70; 11,94] · cruza 0 | 4/6 | 7,5 % | −14,5 % |
+|  | Total | [H001-TOT-REAL-001](resultados/H-001-cambio-de-mes/H001-TOT-REAL-001-qqq-tom/ficha.md) | 2009–2026 | Diferencia ventana − resto | 1,58 pb/día | [-6,73; 10,13] · cruza 0 | 10/18 | 89,6 % | −14,5 % |
 
 <a id="h-007"></a>
 
@@ -51,6 +55,32 @@ Generado por `python -m laboratorio indice` desde `resultados/`; no se edita a m
 | **NQ · OD+ bajista** | IS | [H007-IS-REAL-008](resultados/H-007-deriva-nocturna-nq/H007-IS-REAL-008-nq-odplus-bajista/ficha.md) | 2009–2020 | Retorno bruto medio por operación | 8,49 pb/operación | [2,46; 16,05] | 7/9 | 29,8 % | −2,9 % |
 |  | OOS | [H007-OOS-REAL-005](resultados/H-007-deriva-nocturna-nq/H007-OOS-REAL-005-nq-odplus-bajista/ficha.md) | 2021–2026 | Retorno bruto medio por operación | 1,13 pb/operación | [-3,28; 5,73] · cruza 0 | 2/4 | 2,6 % | −10,7 % |
 |  | Total | [H007-TOT-REAL-005](resultados/H-007-deriva-nocturna-nq/H007-TOT-REAL-005-nq-odplus-bajista/ficha.md) | 2009–2026 | Retorno bruto medio por operación | 5,01 pb/operación | [1,07; 9,47] | 9/13 | 33,2 % | −10,7 % |
+
+<a id="h-010"></a>
+
+## H-010 · Primera media hora (cierre anterior → 10:00 ET) predice la última (15:30-16:00 ET)
+
+[receta](estrategias/H-010.md) · [notas](conocimiento/H-010.md) · planes: `experimentos/H-010-momentum-intradia-es/` · resultados: `resultados/H-010-momentum-intradia-es/`
+
+| variante | muestra | experimento | periodo | mide | valor | IC 95 % | años + | ROI 100 % | DD 100 % |
+|---|---|---|---|---|---:|---|---:|---:|---:|
+| **ES · r1 → r13** | IS | [H010-IS-REAL-001](resultados/H-010-momentum-intradia-es/H010-IS-REAL-001-r1-r13/ficha.md) | 2009–2020 | Retorno bruto medio por operación | 0,28 pb/operación | [-0,87; 1,45] · cruza 0 | 8/12 | -26,3 % | −28,9 % |
+| **ES · r1 apertura → r13** | IS | [H010-IS-REAL-002](resultados/H-010-momentum-intradia-es/H010-IS-REAL-002-r1-apertura/ficha.md) | 2009–2020 | Retorno bruto medio por operación | 0,56 pb/operación | [-0,48; 1,67] · cruza 0 | 8/12 | -21,5 % | −31,2 % |
+| **ES · r1 + r12 → r13** | IS | [H010-IS-REAL-003](resultados/H-010-momentum-intradia-es/H010-IS-REAL-003-r1-r12/ficha.md) | 2009–2020 | Retorno bruto medio por operación | 0,46 pb/operación | [-1,25; 2,24] · cruza 0 | 6/12 | -11,1 % | −13,1 % |
+| **ES · r1 apertura → r13 · VIX ≥ 20** | IS | [H010-IS-REAL-004](resultados/H-010-momentum-intradia-es/H010-IS-REAL-004-r1-apertura-vix/ficha.md) | 2009–2020 | Retorno bruto medio por operación | 2,40 pb/operación | [-0,86; 5,81] · cruza 0 | 9/11 | 5,4 % | −10,4 % |
+
+<a id="h-019"></a>
+
+## H-019 · Noviembre-abril rinde más que mayo-octubre
+
+[receta](estrategias/H-019.md) · [notas](conocimiento/H-019.md) · planes: `experimentos/H-019-halloween/` · resultados: `resultados/H-019-halloween/`
+
+| variante | muestra | experimento | periodo | mide | valor | IC 95 % | años + | ROI 100 % | DD 100 % |
+|---|---|---|---|---|---:|---|---:|---:|---:|
+| **SPY · Nov-Abr** | IS | [H019-IS-REAL-001](resultados/H-019-halloween/H019-IS-REAL-001-spy/ficha.md) | 2009–2020 | Diferencia ventana − resto | 4,45 pb/día | [-0,57; 9,81] · cruza 0 | 8/12 | 181,2 % | −33,7 % |
+| **QQQ · Nov-Abr** | IS | [H019-IS-REAL-002](resultados/H-019-halloween/H019-IS-REAL-002-qqq/ficha.md) | 2009–2020 | Diferencia ventana − resto | 2,52 pb/día | [-3,39; 8,96] · cruza 0 | 7/12 | 235,4 % | −28,5 % |
+| **IWM · Nov-Abr** | IS | [H019-IS-REAL-003](resultados/H-019-halloween/H019-IS-REAL-003-iwm/ficha.md) | 2009–2020 | Diferencia ventana − resto | 6,63 pb/día | [-1,57; 15,55] · cruza 0 | 8/12 | 204,9 % | −41,0 % |
+| **DIA · Nov-Abr** | IS | [H019-IS-REAL-004](resultados/H-019-halloween/H019-IS-REAL-004-dia/ficha.md) | 2009–2020 | Diferencia ventana − resto | 4,45 pb/día | [-0,66; 9,64] · cruza 0 | 8/12 | 168,7 % | −36,7 % |
 
 <a id="h-propia-001"></a>
 

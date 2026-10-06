@@ -1,0 +1,277 @@
+{
+  "version_esquema": "2.5",
+  "experimento": {
+    "id": "H010-IS-REAL-004",
+    "hipotesis": "H-010",
+    "version": "real-is-v1",
+    "fecha": "2026-10-06",
+    "sintetico": false,
+    "pregunta": "¿Predice el signo del retorno 9:30 → 10:00 ET el de 15:30 → 16:00 ET en el ES cuando el VIX está alto?",
+    "variante": "ES · r1 apertura → r13 · VIX ≥ 20",
+    "muestra": "IS",
+    "base": null,
+    "mercado": "clasica",
+    "inicio": "2009-09-27",
+    "fin": "2020-12-31",
+    "instrumento": "ES",
+    "frecuencia": "15min",
+    "moneda": "USD",
+    "capital_inicial": 10000.0,
+    "reglas": {
+      "entrada": "A las 15:30 ET (cierre de la barra de 15:15), lun-vie: si el VIX al cierre de la sesión previa es ≥ 20: largo si el retorno 9:30 → 10:00 ET es > 0, corto si no.",
+      "salida": "A las 16:00 ET (cierre de la barra de 15:45).",
+      "tamano": "1 unidad del índice (1 USD por punto); referencia al 100 % del capital aparte.",
+      "costes": "1 tick (0,25 puntos) por operación completa: 0,125 puntos por lado."
+    },
+    "receta": "estrategias/H-010.md",
+    "plan": "experimentos/H-010-momentum-intradia-es/H010-IS-REAL-004-r1-apertura-vix.md",
+    "fuente_datos": "data/indices/ES_15min_2009-2026.csv + data/macro/Indice de volatilidad VIX - Temp. 1d - Date 2006-07-17 a 2026-07-15 - Norgate.csv"
+  },
+  "evidencia": {
+    "estadistico": "Retorno bruto medio por operación (r1 apertura → r13)",
+    "unidad": "pb/operación",
+    "valor": 2.3977206892847227,
+    "componentes": [
+      {
+        "nombre": "Sesiones operadas",
+        "valor": 759.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Sesiones descartadas por el filtro",
+        "valor": 1960.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Retorno medio operadas",
+        "valor": 2.3977206892847227,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Retorno medio descartadas por el filtro",
+        "valor": 0.01251244882349448,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Diferencia operadas − descartadas por el filtro",
+        "valor": 2.3852082404612283,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Mediana operadas",
+        "valor": 2.909937436346155,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "t de la media operadas (sin bloques)",
+        "valor": 1.2363846055341077,
+        "unidad": "t"
+      },
+      {
+        "nombre": "Operaciones largos",
+        "valor": 364.0,
+        "unidad": "operaciones"
+      },
+      {
+        "nombre": "Retorno medio largos (con signo)",
+        "valor": 3.453036708636828,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Operaciones cortos",
+        "valor": 395.0,
+        "unidad": "operaciones"
+      },
+      {
+        "nombre": "Retorno medio cortos (con signo)",
+        "valor": 1.4252269398058206,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Acierto (posición × retorno > 0)",
+        "valor": 52.700922266139656,
+        "unidad": "%"
+      },
+      {
+        "nombre": "Sesiones con señal = 0 (van cortas)",
+        "valor": 61.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "β × 100 (retorno ventana sobre señal)",
+        "valor": 6.105328603872299,
+        "unidad": "β×100"
+      },
+      {
+        "nombre": "t de β (Newey-West, retardo 8)",
+        "valor": 1.610656183562377,
+        "unidad": "t"
+      },
+      {
+        "nombre": "R²",
+        "valor": 0.32391154827605684,
+        "unidad": "%"
+      },
+      {
+        "nombre": "R² fuera de muestra recursivo (desde 2014-09)",
+        "valor": 0.154523688013819,
+        "unidad": "%"
+      },
+      {
+        "nombre": "Años sin comparación posible (un lado vacío)",
+        "valor": 1.0,
+        "unidad": "años"
+      }
+    ],
+    "desglose": {}
+  },
+  "robustez": {
+    "bootstrap": {
+      "metodo": "bloques circulares",
+      "unidad": "sesión",
+      "bloque": 5,
+      "replicas": 5000,
+      "semilla": 7301,
+      "nivel": 0.95,
+      "ic_inf": -0.8587400074927489,
+      "ic_sup": 5.81386811944279,
+      "incluye_cero": true,
+      "motivo": "Una operación por sesión; bloques de 5 sesiones (una semana) conservan la dependencia de corto plazo."
+    },
+    "por_anio": {
+      "2009": 1.5400617686649836,
+      "2010": 2.120635896988781,
+      "2011": 2.3388200010496303,
+      "2012": 8.717303119434563,
+      "2013": 23.81412838446765,
+      "2014": 1.7138588156857941,
+      "2015": -1.8814035314416444,
+      "2016": 1.3258112878486716,
+      "2018": -3.4606615250763904,
+      "2019": 8.500257142319464,
+      "2020": 3.4057186155658488
+    },
+    "sin_cada_anio": {
+      "2009": 2.4713394807542284,
+      "2010": 2.467106007948616,
+      "2011": 2.410007297817839,
+      "2012": 2.0181926941779587,
+      "2013": 2.3127349444625684,
+      "2014": 2.4077774815435307,
+      "2015": 2.6357804512166485,
+      "2016": 2.45735403567894,
+      "2017": 2.3977206892847227,
+      "2018": 2.8464478376187654,
+      "2019": 2.2746856801509576,
+      "2020": 2.012147712018718
+    },
+    "pnl_costes_x2": -103.75
+  },
+  "metricas": {
+    "operaciones": 759,
+    "pnl_neto": 86.0,
+    "esperanza": 0.11330698287220026,
+    "tasa_acierto": 0.5032938076416338,
+    "payoff": 0.9731984459291665,
+    "profit_factor": 1.0355482070889739,
+    "rentabilidad_total": 0.008599999999999941,
+    "rentabilidad_anual": 0.0006163903835130223,
+    "sharpe": 0.07276213901399166,
+    "sortino": 0.10268497343990927,
+    "max_drawdown": 0.02543968293287091,
+    "max_recuperacion": null,
+    "drawdown_abierto": 67,
+    "exposicion": 0.004711593375214164,
+    "rotacion": 295.08541797258624,
+    "costes": 189.75,
+    "peso_costes": 0.038451795936977555,
+    "concentracion_anual": 0.2766798418972332,
+    "autocorrelacion": -0.1684888077304658
+  },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": 0.05393866267707281,
+    "rentabilidad_anual": 0.00378746045534209,
+    "sharpe": 0.11561672497367989,
+    "max_drawdown": 0.10397690590324127,
+    "pico": "2015-08-25",
+    "valle": "2020-03-17",
+    "recuperacion": "2020-03-27",
+    "sesiones_bajo_agua": 1428,
+    "motor_sha256": "82dfd8c82e307041a57cc01aade84046fc6279e3ec71ec5c31661f06d6e1f9fa"
+  },
+  "variantes": null,
+  "sensibilidad": null,
+  "control": null,
+  "no_calculables": {
+    "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
+  },
+  "operaciones_por_anio": {
+    "2009": 60,
+    "2010": 152,
+    "2011": 131,
+    "2012": 43,
+    "2013": 3,
+    "2014": 11,
+    "2015": 40,
+    "2016": 40,
+    "2018": 54,
+    "2019": 15,
+    "2020": 210
+  },
+  "conclusiones": {
+    "estado": "exploratoria",
+    "lectura": "Retorno bruto medio por operación (r1 apertura → r13): 2,40 pb/operación (759 sesiones frente a 1960); mediana operadas 2,91 pb/operación. El intervalo incluye cero: en IS no se distingue de no tener efecto.",
+    "supuestos": [
+      "Hora ET con horario de verano ya aplicado; ts marca el inicio de la barra.",
+      "ES en lugar de SPY (C8); retorno simple con precios de operación, con rebote bid-ask.",
+      "r1 = precio 10:00 / precio 9:30 − 1 (cierres de las barras de 09:45 y 09:15), sin overnight.",
+      "Si falta una barra necesaria o el VIX de la sesión previa, no se opera ese día.",
+      "VIX: cierre de la sesión lun-vie anterior (16:15 ET), conocido antes de la entrada."
+    ],
+    "limites": [
+      "Variante elegida tras ver 001-003: el efecto de 002 se concentraba en años de volatilidad alta (sesgo de selección).",
+      "Umbral 20 fijado antes de calcular (≈ mediana del VIX, el mismo de H-007); sin barrido de umbrales.",
+      "La muestra empieza en 2009: sin la crisis financiera, que concentra el efecto en el paper (R² 0,8 % sin ella).",
+      "El coste de 1,2 pb del paper es el spread de SPY, no el del ES.",
+      "La regla de roll anterior a 2022 no está verificada (C6)."
+    ],
+    "siguiente_comprobacion": "Decidir con el usuario si H-010 se descarta o se lleva a OOS. OOS bloqueado."
+  },
+  "procedencia": {
+    "motor_sha256": "82dfd8c82e307041a57cc01aade84046fc6279e3ec71ec5c31661f06d6e1f9fa",
+    "datos_sha256": "c72861f7b716c91d09e31fdb85a93f340590c8349d2e0aba150003d4b10be928",
+    "plan_sha256": "b7d51cbf28385c7ada291ab2b551ff1c44d4ab4d0c65e7e3a0e71ed283093e32",
+    "periodos_por_anio": 252
+  },
+  "historial": [
+    {
+      "id": "H010-IS-REAL-001",
+      "fecha": "2026-10-06",
+      "cambio": "Primer ensayo: r1 desde el cierre anterior, largo/corto en la última media hora."
+    },
+    {
+      "id": "H010-IS-REAL-002",
+      "fecha": "2026-10-06",
+      "cambio": "Igual que H010-IS-REAL-001, con r1 desde la apertura de las 9:30 (sin overnight)."
+    },
+    {
+      "id": "H010-IS-REAL-003",
+      "fecha": "2026-10-06",
+      "cambio": "Igual que H010-IS-REAL-001, operando solo si r1 y r12 tienen el mismo signo (W3123013550 p. 17)."
+    },
+    {
+      "id": "H010-IS-REAL-004",
+      "fecha": "2026-10-06",
+      "cambio": "Igual que H010-IS-REAL-002, operando solo si el VIX de la sesión previa es ≥ 20."
+    }
+  ],
+  "ficheros": {
+    "equity": "equity.csv",
+    "operaciones": "operaciones.csv",
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv",
+    "variantes": null
+  }
+}

@@ -1,11 +1,12 @@
 import * as echarts from 'echarts';
-import { clave, loadRegistro, loadFicha } from './data.js';
+import { clave, loadIndice, loadRegistro, loadFicha, sinRegistrar } from './data.js';
 import { computeMetrics } from './metrics.js';
 import { BUCKETS, DEFAULTS, byBucket, isBase, simulate } from './variantes.js';
 
-// La hipótesis se elige por la URL (#H-001); sin nada, la primera del registro.
+// La hipótesis se elige por la URL (#H-001), en el registro o entre las del lab sin registrar; sin nada, la primera.
 const registro = await loadRegistro();
-const entry = registro.find(h => h.id === location.hash.slice(1)) ?? registro[0];
+const buscar = lista => lista.find(h => h.id === location.hash.slice(1));
+const entry = buscar(registro) ?? buscar(sinRegistrar(registro, await loadIndice())) ?? registro[0];
 const D = await loadFicha(entry);
 const P = D.phases;
 const U = P.IS.research.unit;   // unidad del estadístico, tal como la da el lab

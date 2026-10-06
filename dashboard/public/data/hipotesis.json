@@ -23,7 +23,9 @@
     "nombre": "TOM · QQQ",
     "efecto": "TOM",
     "experimentos": {
-      "IS": "H001-IS-REAL-006"
+      "IS": "H001-IS-REAL-006",
+      "OOS": "H001-OOS-REAL-001",
+      "Total": "H001-TOT-REAL-001"
     },
     "reglas": {
       "Entrada": "cierre · penúltima sesión del mes",
@@ -222,5 +224,145 @@
     "estados": {
       "IS": "inconclusive"
     }
+  },
+  {
+    "id": "H-010-ON",
+    "hipotesis": "H-010",
+    "etiqueta": "r1 cierre",
+    "nombre": "R1 CIERRE → R13 · ES",
+    "efecto": "r1 → r13",
+    "experimentos": {
+      "IS": "H010-IS-REAL-001"
+    },
+    "reglas": {
+      "Señal": "retorno 16:00 previa → 10:00 ET",
+      "Entrada": "15:30 ET · largo si señal > 0, corto si no",
+      "Salida": "16:00 ET",
+      "Tamaño": "1 punto del índice"
+    },
+    "costes": "1 tick (0,25 pt) por operación",
+    "estados": {},
+    "grupo": "MOMENTUM INTRADÍA · ES"
+  },
+  {
+    "id": "H-010-AP",
+    "hipotesis": "H-010",
+    "etiqueta": "r1 apertura",
+    "nombre": "R1 APERTURA → R13 · ES",
+    "efecto": "r1 → r13",
+    "experimentos": {
+      "IS": "H010-IS-REAL-002"
+    },
+    "reglas": {
+      "Señal": "retorno 9:30 → 10:00 ET",
+      "Entrada": "15:30 ET · largo si señal > 0, corto si no",
+      "Salida": "16:00 ET",
+      "Tamaño": "1 punto del índice"
+    },
+    "costes": "1 tick (0,25 pt) por operación",
+    "estados": {},
+    "grupo": "MOMENTUM INTRADÍA · ES"
+  },
+  {
+    "id": "H-010-R12",
+    "hipotesis": "H-010",
+    "etiqueta": "r1 + r12",
+    "nombre": "R1 + R12 → R13 · ES",
+    "efecto": "r1 → r13",
+    "experimentos": {
+      "IS": "H010-IS-REAL-003"
+    },
+    "reglas": {
+      "Señal": "r1 (16:00 previa → 10:00) y r12 (15:00 → 15:30) ET",
+      "Entrada": "15:30 ET · largo si ambas > 0, corto si ambas < 0, si no fuera",
+      "Salida": "16:00 ET",
+      "Tamaño": "1 punto del índice"
+    },
+    "costes": "1 tick (0,25 pt) por operación",
+    "estados": {},
+    "grupo": "MOMENTUM INTRADÍA · ES"
+  },
+  {
+    "id": "H-010-VIX",
+    "hipotesis": "H-010",
+    "etiqueta": "r1 apertura · VIX",
+    "nombre": "R1 APERTURA → R13 · VIX ≥ 20 · ES",
+    "efecto": "r1 → r13",
+    "experimentos": {
+      "IS": "H010-IS-REAL-004"
+    },
+    "reglas": {
+      "Señal": "retorno 9:30 → 10:00 ET, solo si VIX previo ≥ 20",
+      "Entrada": "15:30 ET · largo si señal > 0, corto si no",
+      "Salida": "16:00 ET",
+      "Tamaño": "1 punto del índice"
+    },
+    "costes": "1 tick (0,25 pt) por operación",
+    "estados": {},
+    "grupo": "MOMENTUM INTRADÍA · ES"
+  },
+  {
+    "id": "H-019-SPY",
+    "hipotesis": "H-019",
+    "nombre": "HALLOWEEN · SPY",
+    "efecto": "Halloween",
+    "experimentos": {
+      "IS": "H019-IS-REAL-001"
+    },
+    "reglas": {
+      "Entrada": "cierre · última sesión de octubre",
+      "Salida": "cierre · última sesión de abril",
+      "Tamaño": "1 acción"
+    },
+    "costes": "0,01 USD / acción y lado",
+    "estados": {}
+  },
+  {
+    "id": "H-019-QQQ",
+    "hipotesis": "H-019",
+    "nombre": "HALLOWEEN · QQQ",
+    "efecto": "Halloween",
+    "experimentos": {
+      "IS": "H019-IS-REAL-002"
+    },
+    "reglas": {
+      "Entrada": "cierre · última sesión de octubre",
+      "Salida": "cierre · última sesión de abril",
+      "Tamaño": "1 acción"
+    },
+    "costes": "0,01 USD / acción y lado",
+    "estados": {}
+  },
+  {
+    "id": "H-019-IWM",
+    "hipotesis": "H-019",
+    "nombre": "HALLOWEEN · IWM",
+    "efecto": "Halloween",
+    "experimentos": {
+      "IS": "H019-IS-REAL-003"
+    },
+    "reglas": {
+      "Entrada": "cierre · última sesión de octubre",
+      "Salida": "cierre · última sesión de abril",
+      "Tamaño": "1 acción"
+    },
+    "costes": "0,01 USD / acción y lado",
+    "estados": {}
+  },
+  {
+    "id": "H-019-DIA",
+    "hipotesis": "H-019",
+    "nombre": "HALLOWEEN · DIA",
+    "efecto": "Halloween",
+    "experimentos": {
+      "IS": "H019-IS-REAL-004"
+    },
+    "reglas": {
+      "Entrada": "cierre · última sesión de octubre",
+      "Salida": "cierre · última sesión de abril",
+      "Tamaño": "1 acción"
+    },
+    "costes": "0,01 USD / acción y lado",
+    "estados": {}
   }
 ]

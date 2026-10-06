@@ -176,5 +176,78 @@ class MuestraOOS(unittest.TestCase):
             self.assertEqual(motor.cargar(Path(tmp) / "x")[0], resumen)
 
 
+class SenalDelDiaYCortos(unittest.TestCase):
+    PLAN = "experimentos/H-010-momentum-intradia-es/H010-IS-REAL-001-r1-r13.md"
+
+    def test_domingo_de_roll(self):
+        from laboratorio.variantes import cruza_roll, domingo_roll
+        self.assertEqual(domingo_roll(2020, 3), date(2020, 3, 15))   # tercer viernes 2020-03-20
+        self.assertEqual(domingo_roll(2019, 6), date(2019, 6, 16))   # tercer viernes 2019-06-21
+        self.assertTrue(cruza_roll(date(2020, 3, 13), date(2020, 3, 16)))
+        self.assertFalse(cruza_roll(date(2020, 3, 6), date(2020, 3, 9)))
+
+    def test_senal_de_la_previa_al_dia(self):
+        from laboratorio.variantes import tabla
+        bs = barras_es(inicio=datetime(2019, 3, 3, 18), fin=datetime(2019, 3, 23))
+        precio = {b.ts: b.close for b in bs}
+        filas = tabla(bs, "15min", {"v": ["15:30", "16:00"]}, ["16:00", "10:00"], None, (-1, 0), rolls=True)
+        f = next(x for x in filas if x.fecha == date(2019, 3, 6))
+        self.assertAlmostEqual(f.senal, precio[datetime(2019, 3, 6, 9, 45)] / precio[datetime(2019, 3, 5, 15, 45)] - 1)
+        lunes_roll = next(x for x in filas if x.fecha == date(2019, 3, 11))   # roll el domingo 2019-03-10
+        self.assertIsNone(lunes_roll.senal)
+        self.assertIsNotNone(next(x for x in filas if x.fecha == date(2019, 3, 18)).senal)
+
+    def test_cortos_ganan_cuando_baja(self):
+        fila = Variante(fecha=date(2019, 1, 2), previa=date(2019, 1, 1), ventana="v", entrada=100, salida=99,
+                        senal=-0.01, serie=None, desfase=False)
+        _, ops = sesion.simular([fila], [date(2019, 1, 2)], ["15:30", "16:00"], 10000, 0.1, direccion="senal")
+        self.assertAlmostEqual(ops[0].pnl_bruto, 1)
+        self.assertAlmostEqual(ops[0].pnl_neto, .8)
+        g = sesion.grupos([fila], "filtro", direccion="senal")
+        self.assertAlmostEqual(g["2019-01-02"][1], .01)
+
+    def test_prediccion_recupera_la_pendiente(self):
+        rng = random.Random(3)
+        xs = [rng.gauss(0, 1) for _ in range(2000)]
+        ys = [0.5 + 2 * x + rng.gauss(0, .1) for x in xs]
+        meses = [f"{2000 + i // 240}-{i // 20 % 12 + 1:02}" for i in range(2000)]
+        p = catalogo.prediccion(xs, ys, sorted(meses), arranque=12)
+        self.assertAlmostEqual(p["beta"], 2, places=2)
+        self.assertGreater(p["r2"], .99)
+        self.assertGreater(p["r2_os"], .99)
+        self.assertGreater(p["t_nw"], 100)
+
+    def test_plan_h010_con_barras_sinteticas(self):
+        spec = ejecutar.leer_plan(motor.RAIZ / self.PLAN)
+        bs = barras_es(inicio=datetime(2018, 1, 7, 18), fin=datetime(2018, 3, 3))
+        r, sesiones, ops, al_100, _ = ejecutar.ejecutar(spec, self.PLAN, barras=bs, hoy=date(2026, 10, 6))
+        comp = {c.nombre: c.valor for c in r.evidencia.componentes}
+        self.assertEqual(comp["Operaciones largos"] + comp["Operaciones cortos"], len(ops))
+        self.assertIn("β × 100 (retorno ventana sobre señal)", comp)
+
+    def test_acuerdo_de_dos_senales(self):
+        def fila(s1, s2):
+            return Variante(fecha=date(2019, 1, 2), previa=date(2019, 1, 1), ventana="v", entrada=100, salida=99,
+                            senal=s1, serie=None, senal2=s2, desfase=False)
+        self.assertEqual([sesion.signo(fila(a, b), "acuerdo") for a, b in [(.1, .2), (-.1, -.2), (.1, -.2), (None, .1), (0, .1)]],
+                         [1, -1, None, None, None])
+        _, ops = sesion.simular([fila(-.1, -.2)], [date(2019, 1, 2)], ["15:30", "16:00"], 10000, 0, direccion="acuerdo")
+        self.assertAlmostEqual(ops[0].pnl_bruto, 1)
+
+    def test_segunda_senal_del_dia(self):
+        from laboratorio.variantes import tabla
+        bs = barras_es(inicio=datetime(2019, 4, 7, 18), fin=datetime(2019, 4, 13))
+        precio = {b.ts: b.close for b in bs}
+        f = next(x for x in tabla(bs, "15min", {"v": ["15:30", "16:00"]}, ["16:00", "10:00"], None, (-1, 0), True,
+                                  ["15:00", "15:30"]) if x.fecha == date(2019, 4, 10))
+        self.assertAlmostEqual(f.senal2, precio[datetime(2019, 4, 10, 15, 15)] / precio[datetime(2019, 4, 10, 14, 45)] - 1)
+
+    def test_senal_posterior_a_la_entrada_se_rechaza(self):
+        spec = ejecutar.leer_plan(motor.RAIZ / self.PLAN)
+        spec["sesion"] = {**spec["sesion"], "senal": ["16:00", "15:45"]}
+        with self.assertRaises(ValueError):
+            ejecutar.ejecutar(spec, self.PLAN, barras=barras_es(inicio=datetime(2018, 1, 7, 18), fin=datetime(2018, 2, 3)))
+
+
 if __name__ == "__main__":
     unittest.main()

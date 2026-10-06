@@ -84,10 +84,14 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .spark pattern circle{fill:currentColor}
 .spark-line{fill:none;stroke:var(--ink);stroke-width:1.4}
 @media (max-width:1580px){
-  .rows{grid-template-columns:minmax(0,1fr)}
-  .row{grid-template-columns:repeat(auto-fit,minmax(140px,max-content));column-gap:var(--gap-kpi)}
+  .rows{grid-template-columns:repeat(4,max-content) minmax(0,1fr)}
+  .row{grid-template-columns:subgrid}
   .row-id{grid-column:1/-1}
   .row .phases{grid-column:1/-1;justify-self:start}
+}
+@media (max-width:1000px){
+  .rows{grid-template-columns:minmax(0,1fr)}
+  .row{grid-template-columns:repeat(auto-fit,minmax(240px,1fr));column-gap:var(--gap-kpi)}
 }
 
 /* estructura: todo en una pantalla */

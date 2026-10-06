@@ -1,7 +1,8 @@
 """Backtest común: opera las ventanas completas de las observaciones y valora la cuenta por día.
 
 Una operación es una racha de periodos consecutivos en la ventana (cada uno empieza donde acaba el
-anterior) con tantos periodos como valores tiene la ventana. Entra al cierre anterior al primero y sale
+anterior) con tantos periodos como valores tiene la ventana (con `longitud` None, de cualquier longitud: p. ej. un
+semestre, cerrado al final de la muestra si la ventana sigue abierta). Entra al cierre anterior al primero y sale
 al cierre del último. Tamaño: 1 unidad del precio negociado o, con `fraccion`, esa fracción de la equity
 al cierre de entrada (unidades fraccionarias); crece con `close` (retorno total si `close` está ajustado).
 Coste: `coste_lado` por unidad y lado.
@@ -17,10 +18,10 @@ def rachas(obs, longitud):
         if o.en_ventana and (not actual or actual[-1].periodo.fin == o.periodo.inicio):
             actual.append(o)
             continue
-        if len(actual) == longitud:
+        if actual and (longitud is None or len(actual) == longitud):
             out.append(actual)
         actual = [o] if o.en_ventana else []
-    if len(actual) == longitud:
+    if actual and (longitud is None or len(actual) == longitud):
         out.append(actual)
     return out
 

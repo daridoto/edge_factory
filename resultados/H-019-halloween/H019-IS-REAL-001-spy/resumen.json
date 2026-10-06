@@ -1,0 +1,187 @@
+{
+  "version_esquema": "2.5",
+  "experimento": {
+    "id": "H019-IS-REAL-001",
+    "hipotesis": "H-019",
+    "version": "real-is-v1",
+    "fecha": "2026-10-06",
+    "sintetico": false,
+    "pregunta": "¿Rinde más SPY de noviembre a abril que de mayo a octubre?",
+    "variante": "SPY · Nov-Abr",
+    "muestra": "IS",
+    "base": null,
+    "mercado": "clasica",
+    "inicio": "2009-09-29",
+    "fin": "2020-12-31",
+    "instrumento": "SPY",
+    "frecuencia": "1d",
+    "moneda": "USD",
+    "capital_inicial": 10000.0,
+    "reglas": {
+      "entrada": "Comprar al cierre de la última sesión de octubre.",
+      "salida": "Vender al cierre de la última sesión de abril (o de la muestra).",
+      "tamano": "1 acción por semestre; referencia al 100 % del capital aparte.",
+      "costes": "0,01 USD por acción y lado; sin comisión adicional ni impacto."
+    },
+    "receta": "estrategias/H-019.md",
+    "plan": "experimentos/H-019-halloween/H019-IS-REAL-001-spy.md",
+    "fuente_datos": "data/etf/indices/SP500 SPY - Temp. 1d - Date 2006-07-17 a 2026-07-15 - Norgate.csv"
+  },
+  "evidencia": {
+    "estadistico": "Diferencia ventana − resto (Nov-Abr)",
+    "unidad": "pb/día",
+    "valor": 4.448170284544515,
+    "componentes": [
+      {
+        "nombre": "Sesiones Nov-Abr",
+        "valor": 1400.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Sesiones resto",
+        "valor": 1435.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Retorno medio Nov-Abr",
+        "valor": 8.069627849203833,
+        "unidad": "pb/día"
+      },
+      {
+        "nombre": "Retorno medio resto",
+        "valor": 3.6214575646593175,
+        "unidad": "pb/día"
+      }
+    ],
+    "desglose": {}
+  },
+  "robustez": {
+    "bootstrap": {
+      "metodo": "bloques circulares",
+      "unidad": "mes",
+      "bloque": 12,
+      "replicas": 5000,
+      "semilla": 7301,
+      "nivel": 0.95,
+      "ic_inf": -0.5693433333273418,
+      "ic_sup": 9.809825391366559,
+      "incluye_cero": true,
+      "motivo": "La hipótesis es semestral; bloques de 12 meses conservan un año de dependencia."
+    },
+    "por_anio": {
+      "2009": 29.246455406986275,
+      "2010": 9.524804481205592,
+      "2011": 12.29391315995966,
+      "2012": 8.60967529838919,
+      "2013": 5.860151588578529,
+      "2014": -2.0561447711664576,
+      "2015": -0.4059254116410232,
+      "2016": 2.9626453413606835,
+      "2017": 2.2419930833155766,
+      "2018": -8.315424014908276,
+      "2019": 15.476490624169974,
+      "2020": -3.561850544097419
+    },
+    "sin_cada_anio": {
+      "2009": 3.8731313109538843,
+      "2010": 3.952484980971076,
+      "2011": 3.6797823045223015,
+      "2012": 4.046094380242068,
+      "2013": 4.324142435358201,
+      "2014": 5.081159538348971,
+      "2015": 4.918023675445938,
+      "2016": 4.59234755948797,
+      "2017": 4.6694038799682565,
+      "2018": 5.663730559942949,
+      "2019": 3.3857398699660295,
+      "2020": 5.232729296736525
+    },
+    "pnl_costes_x2": 198.5568756370501
+  },
+  "metricas": {
+    "operaciones": 12,
+    "pnl_neto": 198.79804815210264,
+    "esperanza": 16.56650401267455,
+    "tasa_acierto": 0.9166666666666666,
+    "payoff": 1.9490878140040704,
+    "profit_factor": 21.439965954044776,
+    "rentabilidad_total": 0.019879804815210234,
+    "rentabilidad_anual": 0.001751290114800566,
+    "sharpe": 0.5793615574166854,
+    "sortino": 0.7900678740713954,
+    "max_drawdown": 0.011243348790692442,
+    "max_recuperacion": 304,
+    "drawdown_abierto": 0,
+    "exposicion": 0.49382716049382713,
+    "rotacion": 0.5032377263590259,
+    "costes": 0.24117251505254197,
+    "peso_costes": 0.0011040124559468852,
+    "concentracion_anual": 0.16666666666666666,
+    "autocorrelacion": -0.2173708005475018
+  },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": 1.812419408143076,
+    "rentabilidad_anual": 0.09627176777655169,
+    "sharpe": 0.780564524204795,
+    "max_drawdown": 0.33688286930094835,
+    "pico": "2020-02-19",
+    "valle": "2020-03-23",
+    "recuperacion": null,
+    "sesiones_bajo_agua": 220,
+    "motor_sha256": "5af14857d8c2b74d6326fe2142921d27dd718d1f75925ea63f6b5e7ad2eaca67"
+  },
+  "variantes": null,
+  "sensibilidad": null,
+  "control": null,
+  "no_calculables": {},
+  "operaciones_por_anio": {
+    "2010": 1,
+    "2011": 1,
+    "2012": 1,
+    "2013": 1,
+    "2014": 1,
+    "2015": 1,
+    "2016": 1,
+    "2017": 1,
+    "2018": 1,
+    "2019": 1,
+    "2020": 2
+  },
+  "conclusiones": {
+    "estado": "exploratoria",
+    "lectura": "Diferencia ventana − resto (Nov-Abr): 4,45 pb/día. El intervalo incluye cero: en IS no se distingue de no tener efecto.",
+    "supuestos": [
+      "Invierno = sesiones de noviembre a abril; verano = mayo a octubre.",
+      "Retornos close-to-close ajustados por dividendos, antes de costes.",
+      "El invierno 2020-21 queda cortado el 31-12-2020: cuenta en el estadístico y la operación se cierra ahí."
+    ],
+    "limites": [
+      "Solo 11 inviernos completos en la IS: el intervalo será ancho.",
+      "El intervalo no corrige la exploración previa de esta hipótesis en la literatura.",
+      "Sin comisiones adicionales, impacto ni dividendos fuera de posición."
+    ],
+    "siguiente_comprobacion": "Según el resultado: repetir en QQQ, IWM y DIA con la misma especificación, en IS."
+  },
+  "procedencia": {
+    "motor_sha256": "5af14857d8c2b74d6326fe2142921d27dd718d1f75925ea63f6b5e7ad2eaca67",
+    "datos_sha256": "477221938341d519dbd555f911503b9338a7177dc850476ba8afc9445f19ee9a",
+    "plan_sha256": "094fbf9e6e01028ca74436dc1059fc28ed372f3b0725bb23a6d53c8925e6f45a",
+    "periodos_por_anio": 252
+  },
+  "historial": [
+    {
+      "id": "H019-IS-REAL-001",
+      "fecha": "2026-10-06",
+      "cambio": "Primer ensayo: semestre de invierno frente a verano en SPY."
+    }
+  ],
+  "ficheros": {
+    "equity": "equity.csv",
+    "operaciones": "operaciones.csv",
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv",
+    "variantes": null
+  }
+}

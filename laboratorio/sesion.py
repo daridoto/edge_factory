@@ -6,6 +6,8 @@ tamaño según una serie diaria de la sesión previa. Sale de la tabla de varian
   `filtro_serie` = {serie_max, serie_min}: opera solo con la serie de la sesión previa en ese rango (p. ej. tendencia ≤ 0).
 - Tamaño: unidades = fraccion · w · equity previa / entrada (o w unidades sin fraccion), con w = multiplicador si la
   serie de la sesión previa supera el umbral y 1 si no (o si falta el dato). w > 1 es apalancamiento declarado.
+- Dirección (`direccion`): "largo" (por defecto); "senal": largo si señal > 0 y corto si no (sin señal: no opera);
+  "acuerdo": largo si señal y senal2 > 0, corto si ambas < 0; si discrepan o falta alguna, no opera.
 - Coste: `coste_lado` por unidad y lado. Exposición: horas de la ventana / 23 (sesión de Globex).
 - Calendario de la equity: todas las fechas con barras.
 
@@ -55,7 +57,20 @@ def peso(fila, tamano):
     return float(tamano["multiplicador"])
 
 
-def simular(filas, fechas, ventana, capital, coste_lado, filtro=None, tamano=None, fraccion=None):
+def signo(fila, direccion):
+    """+1 largo, -1 corto. Con "senal", el signo de la señal (<= 0: corto); sin señal, None (no opera)."""
+    if direccion == "largo":
+        return 1
+    if direccion == "acuerdo":
+        if fila.senal is None or fila.senal2 is None:
+            return None
+        return 1 if fila.senal > 0 and fila.senal2 > 0 else -1 if fila.senal < 0 and fila.senal2 < 0 else None
+    if direccion != "senal":
+        raise ValueError(f"Dirección desconocida: {direccion}")
+    return None if fila.senal is None else (1 if fila.senal > 0 else -1)
+
+
+def simular(filas, fechas, ventana, capital, coste_lado, filtro=None, tamano=None, fraccion=None, direccion="largo"):
     """(sesiones, operaciones). `filas`: Variante de una sola ventana; `fechas`: calendario de la equity."""
     if fraccion is not None and not 0 < fraccion <= 1:
         raise ValueError("fraccion debe estar en (0, 1]")
@@ -68,12 +83,13 @@ def simular(filas, fechas, ventana, capital, coste_lado, filtro=None, tamano=Non
     sesiones, operaciones, equity = [], [], capital
     for dia in fechas:
         f = por_fecha.get(dia)
-        if f is None or not opera(f, filtro):
+        s = signo(f, direccion) if f is not None else None
+        if f is None or s is None or not opera(f, filtro):
             sesiones.append(Sesion(fecha=dia, equity=equity, pnl_bruto=0, coste=0, nocional=0, exposicion=0))
             continue
         w = peso(f, tamano)
         unidades = w * (1 if fraccion is None else fraccion * equity / f.entrada)
-        bruto = unidades * (f.salida - f.entrada)
+        bruto = s * unidades * (f.salida - f.entrada)
         c = coste_lado * unidades
         operaciones.append(Operacion(id=f"T{len(operaciones) + 1:04d}", entrada=dia, salida=dia, pnl_bruto=bruto,
                                      coste_entrada=c, coste_salida=c, pnl_neto=bruto - 2 * c))
@@ -95,11 +111,15 @@ def tendencia(barras, frecuencia, hora, n):
     return out
 
 
-def grupos(filas, particion, filtro=None, tamano=None, lado_filtro="operadas"):
-    """{fecha ISO: [n ventana, suma ventana, n resto, suma resto]} en orden cronológico. `tamano`: {"umbral": u}."""
+def grupos(filas, particion, filtro=None, tamano=None, lado_filtro="operadas", direccion="largo"):
+    """{fecha ISO: [n ventana, suma ventana, n resto, suma resto]} en orden cronológico. `tamano`: {"umbral": u}.
+    El retorno lleva el signo de la posición (`direccion`); las sesiones sin dirección quedan fuera."""
     g = defaultdict(lambda: [0, 0.0, 0, 0.0])
     for f in sorted(filas, key=lambda f: f.fecha):
-        r = f.salida / f.entrada - 1
+        s = signo(f, direccion)
+        if s is None:
+            continue
+        r = s * (f.salida / f.entrada - 1)
         if particion == "filtro":
             if isinstance(filtro, dict) and ("serie_max" in filtro or "serie_min" in filtro) and f.serie is None:
                 continue  # sin dato de la serie: ni dentro ni fuera del filtro

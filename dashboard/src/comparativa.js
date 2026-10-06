@@ -48,11 +48,11 @@ const efectos = new Set(items.map(i => i.e.efecto)), efecto = efectos.size === 1
 // `grupo` del registro (p. ej. «HORA 2 · ES»); si no, efecto e instrumentos o variantes
 $('c-name').textContent = group[0].grupo ?? `${efecto} · ${items.map(i => i.name).join(' · ')}`;
 document.title = group[0].grupo ?? `${hid} · ${efecto}`;
-// pregunta: la de la primera entrada del registro (con variantes, la de la hipótesis base)
+// pregunta y reglas: las de la primera entrada del registro (con variantes, la de la hipótesis base)
 const q0 = items.find(i => i.e === group[0]);
 $('c-q').textContent = q0.r.question.replace(new RegExp(`(el )?${q0.D.identity.instrument}`), 'el índice');
 $('c-spec').innerHTML = [
-  ...Object.entries(first.e.reglas).map(([k, v]) => k === 'Tamaño' && first.D.sizing ? [k, `${first.D.sizing} (plan: ${v})`] : [k, v]),
+  ...Object.entries(q0.e.reglas).map(([k, v]) => k === 'Tamaño' && first.D.sizing ? [k, `${first.D.sizing} (plan: ${v})`] : [k, v]),
   ['Periodo', `<span id="c-period">${fdate(first.ph.start)} → ${fdate(first.ph.end)}</span>`],
   ['Capital', `${nf(0).format(first.D.initialEquity)} USD`],
   ['Costes', first.e.costes],

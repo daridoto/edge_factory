@@ -25,7 +25,7 @@ async function getCSV(url) {
 
 // Grupo de una entrada en la portada y en la comparativa (#<clave>): su `grupo` (en minúsculas y con guiones) si lo
 // tiene; si no, su `hipotesis`. Así una hipótesis puede tener varios grupos (p. ej. HORA 2 · ES y HORA 2 · NQ).
-export const clave = e => e.grupo ? e.grupo.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : e.hipotesis;
+export const clave = e => e.grupo ? e.grupo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : e.hipotesis;
 
 // Registro de hipótesis: nombre, reglas, costes, estados y experimento de cada fase (public/data/hipotesis.json).
 export const loadRegistro = () => getJSON('/data/hipotesis.json');
@@ -33,6 +33,13 @@ export const loadRegistro = () => getJSON('/data/hipotesis.json');
 // Índice del lab: una fila por experimento (id, ruta, hipotesis, variante, muestra…).
 let indice = null;
 export const loadIndice = () => (indice ??= getCSV(`${LAB}/indice.csv`));
+
+// Hipótesis del lab sin entrada en el registro: una entrada mínima por hipótesis (su primer experimento como IS).
+export const sinRegistrar = (registro, filas) => {
+  const known = new Set(registro.flatMap(e => [e.id, e.hipotesis]));
+  return Object.values(Object.fromEntries(filas.filter(r => !known.has(r.hipotesis)).map(r => [r.hipotesis, r])))
+    .map(r => ({ id: r.hipotesis, experimentos: { IS: r.id }, reglas: {}, estados: {}, nuevo: true }));
+};
 // Carpeta de un experimento dentro de resultados/ (<H-NNN-nombre>/<ID>-<variante>), según el índice.
 const rutaDe = async id => {
   const fila = (await loadIndice()).find(r => r.id === id);

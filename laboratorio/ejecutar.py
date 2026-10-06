@@ -79,11 +79,12 @@ def ejecutar(spec, plan, barras=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS, **
     `barras` (y `serie`) permiten inyectar datos sintéticos en tests.
     Un plan con [senal] usa la operativa por eventos (eventos.py) y uno con [sesion], la operativa por sesión
     (sesion.py), en lugar de ventana + estadístico."""
+    muestra, base = spec.get("muestra", "IS"), spec.get("base")
     if "senal" in spec:
+        if muestra != "IS":
+            raise ValueError("OOS y Total no están implementados para la operativa por eventos")
         return ejecutar_eventos(spec, plan, barras=barras, hoy=hoy, **sinteticos)
-    if spec.get("muestra", "IS") != "IS":
-        if "sesion" not in spec:
-            raise ValueError("OOS y Total solo están implementados para la operativa por sesión")
+    if muestra != "IS":
         exigir_mismo_plan(spec)
         inicio, fin = limites_muestra(spec["muestra"], datos.DATASETS[spec["datos"]["dataset"]].get("mercado", "clasica"))
     if "sesion" in spec:
@@ -91,15 +92,19 @@ def ejecutar(spec, plan, barras=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS, **
     d, v, es, op, bs, cc = (spec[k] for k in ("datos", "ventana", "estadistico", "operativa", "bootstrap", "conclusiones"))
     dataset = datos.DATASETS[d["dataset"]]
     sintetico = barras is not None
-    barras = barras if sintetico else datos.cargar(d["dataset"], inicio, fin)
-    periodos = datos.periodos(barras, d["periodo"], d.get("excluir_horas", ()))
+    barras = barras if sintetico else datos.cargar(d["dataset"], inicio, fin, muestra=muestra, base=base)
+    # en OOS, el primer retorno diario parte del último cierre IS (información pasada, siempre permitida);
+    # sin él, la primera sesión del primer mes no tendría periodo y las posiciones del mes se correrían
+    previa = datos.cargar(d["dataset"])[-1:] if muestra == "OOS" and d["periodo"] == "1d" and not sintetico else []
+    periodos = datos.periodos(previa + barras, d["periodo"], d.get("excluir_horas", ()))
     obs = catalogo.VENTANAS[v["tipo"]](periodos, v["valores"], inicio, fin, bs["unidad"])
     estadistico = catalogo.ESTADISTICOS[es["tipo"]]
+    longitud = len(v["valores"]) if v["tipo"] in catalogo.LONGITUD_FIJA else None
     g = catalogo.grupos(obs)
     n_v, s_v, n_r, s_r = catalogo._sumas(g.values())
-    sesiones, operaciones = backtest(obs, len(v["valores"]), op["capital"], op["coste_lado"], op.get("fraccion"))
+    sesiones, operaciones = backtest(obs, longitud, op["capital"], op["coste_lado"], op.get("fraccion"))
     m, motivos, por_anio = motor.metricas(op["capital"], sesiones, operaciones)
-    al_100 = backtest(obs, len(v["valores"]), op["capital"], op["coste_lado"], FRACCION_REF)
+    al_100 = backtest(obs, longitud, op["capital"], op["coste_lado"], FRACCION_REF)
     ref = motor.referencia(op["capital"], *al_100, FRACCION_REF, dataset.get("periodos_por_anio", 252))
     robustez = Robustez(**bateria(g, estadistico, unidad=bs["unidad"], bloque=bs["bloque"], motivo=bs["motivo"],
                                   pnl_costes_x2=m.pnl_neto - m.costes))
@@ -109,7 +114,7 @@ def ejecutar(spec, plan, barras=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS, **
     desglose = catalogo.desglose(obs) if es.get("desglose") else {}
     b = robustez.bootstrap
     lectura = f"{NOMBRES[es['tipo']]} ({ventana}): {n(valor)} {unidad}. " + (
-        "El intervalo incluye cero: en IS no se distingue de no tener efecto." if b.incluye_cero
+        f"El intervalo incluye cero: en {muestra} no se distingue de no tener efecto." if b.incluye_cero
         else "El intervalo no incluye cero bajo los supuestos del remuestreo; no prueba estabilidad futura.")
     if desglose and len(v["valores"]) == 1:
         orden = sorted(desglose, key=desglose.get, reverse=True)
@@ -120,7 +125,7 @@ def ejecutar(spec, plan, barras=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS, **
     return Resumen(
         experimento=Experimento(
             id=spec["id"], hipotesis=spec["hipotesis"], version=spec["version"], fecha=hoy, sintetico=sintetico,
-            pregunta=spec["pregunta"], variante=spec.get("variante"), muestra="IS", inicio=sesiones[0].fecha, fin=sesiones[-1].fecha,
+            pregunta=spec["pregunta"], variante=spec.get("variante"), muestra=muestra, base=base, inicio=sesiones[0].fecha, fin=sesiones[-1].fecha,
             instrumento=dataset["instrumento"], frecuencia=dataset["frecuencia"], moneda="USD", capital_inicial=op["capital"],
             reglas=Reglas(entrada=op["entrada"], salida=op["salida"], tamano=op["tamano"], costes=op["costes"]),
             receta=spec["receta"], plan=str(plan), fuente_datos=" + ".join(fuentes)),
@@ -240,7 +245,13 @@ def ejecutar_sesion(spec, plan, barras=None, serie=None, hoy=None, inicio=INICIO
         previas = datos.cargar(d["dataset"]) if muestra == "OOS" and not sintetico else []
         serie = sesion.tendencia(previas + barras, dataset["frecuencia"], tend["hora"], tend["sesiones"])
     nombre_serie = f"precio/media {tend['sesiones']} − 1" if tend else (d["serie"].split()[0] if d.get("serie") else None)
-    filas = variantes.tabla(barras, dataset["frecuencia"], {ss["nombre"]: ss["ventana"]}, ss.get("senal"), serie)
+    senal_dias, direccion = tuple(ss.get("senal_dias", (-1, -1))), ss.get("direccion", "largo")
+    senal2_dias = tuple(ss.get("senal2_dias", (0, 0)))
+    for horas, dias in ((ss.get("senal"), senal_dias), (ss.get("senal2"), senal2_dias)):
+        if horas and dias[1] == 0 and horas[1] > ss["ventana"][0]:
+            raise ValueError("La señal del propio día debe conocerse antes de la entrada")
+    filas = variantes.tabla(barras, dataset["frecuencia"], {ss["nombre"]: ss["ventana"]}, ss.get("senal"), serie,
+                            senal_dias, dataset.get("rolls", False), ss.get("senal2"), senal2_dias)
     fechas = sorted({b.ts.date() for b in barras})
     filtro = ss.get("filtro_senal")
     if ss.get("filtro_serie"):
@@ -249,7 +260,7 @@ def ejecutar_sesion(spec, plan, barras=None, serie=None, hoy=None, inicio=INICIO
     periodos_anio = dataset.get("periodos_por_anio", 252)
 
     def sim(c=coste, t=tamano, fraccion=op.get("fraccion")):
-        return sesion.simular(filas, fechas, ss["ventana"], capital, c, filtro, t, fraccion)
+        return sesion.simular(filas, fechas, ss["ventana"], capital, c, filtro, t, fraccion, direccion)
     sesiones, operaciones = sim()
     if len(operaciones) < 2:
         raise ValueError("Menos de dos operaciones: no hay estadístico")
@@ -258,7 +269,7 @@ def ejecutar_sesion(spec, plan, barras=None, serie=None, hoy=None, inicio=INICIO
     ref = motor.referencia(capital, *al_100, FRACCION_REF, periodos_anio)
     x2 = sim(c=2 * coste)[0][-1].equity - capital
     corte = {"umbral": es["umbral"]} if es["particion"] == "serie" else tamano
-    g = sesion.grupos(filas, es["particion"], filtro, corte)
+    g = sesion.grupos(filas, es["particion"], filtro, corte, direccion=direccion)
     estadistico = catalogo.ESTADISTICOS[es["tipo"]]
     robustez = Robustez(**bateria(g, estadistico, unidad=bs["unidad"], bloque=bs["bloque"], motivo=bs["motivo"], pnl_costes_x2=x2))
     valor = estadistico(list(g.values()))
@@ -267,7 +278,8 @@ def ejecutar_sesion(spec, plan, barras=None, serie=None, hoy=None, inicio=INICIO
         lados = ("operadas", "descartadas por el filtro")
     else:
         lados = tuple(es["lados"]) if es.get("lados") else (f"{nombre_serie} > {n(corte['umbral'], 0)}", f"{nombre_serie} ≤ {n(corte['umbral'], 0)}")
-    rs = [(f.salida / f.entrada - 1) * catalogo.PB for f in filas if g.get(f.fecha.isoformat(), [0])[0]]  # una fila por día
+    rs = [sesion.signo(f, direccion) * (f.salida / f.entrada - 1) * catalogo.PB
+          for f in filas if g.get(f.fecha.isoformat(), [0])[0]]  # una fila por día
     t_stat = st.mean(rs) / (st.stdev(rs) / len(rs) ** .5)
     unidad = es.get("unidad", "pb/operación")
     componentes = [
@@ -281,6 +293,31 @@ def ejecutar_sesion(spec, plan, barras=None, serie=None, hoy=None, inicio=INICIO
         Componente(nombre=f"Mediana {lados[0]}", valor=st.median(rs), unidad=unidad),
         Componente(nombre=f"t de la media {lados[0]} (sin bloques)", valor=t_stat, unidad="t"),
     ]
+    if direccion in ("senal", "acuerdo"):
+        for nombre, s in (("largos", 1), ("cortos", -1)):
+            rl = [r for f, r in zip([f for f in filas if g.get(f.fecha.isoformat(), [0])[0]], rs) if sesion.signo(f, direccion) == s]
+            componentes += [Componente(nombre=f"Operaciones {nombre}", valor=len(rl), unidad="operaciones"),
+                            Componente(nombre=f"Retorno medio {nombre} (con signo)", valor=st.mean(rl) if rl else 0, unidad=unidad)]
+        componentes.append(Componente(nombre="Acierto (posición × retorno > 0)", valor=100 * sum(r > 0 for r in rs) / len(rs), unidad="%"))
+        if direccion == "senal":
+            componentes.append(Componente(nombre="Sesiones con señal = 0 (van cortas)", valor=sum(f.senal == 0 for f in filas if f.senal is not None), unidad="sesiones"))
+    if es.get("prediccion"):
+        # regresión del retorno de la ventana sobre la señal, en todas las sesiones con señal y precios
+        usadas = [f for f in filas if f.senal is not None]
+        p = catalogo.prediccion([f.senal for f in usadas], [f.salida / f.entrada - 1 for f in usadas],
+                                [f.fecha.strftime("%Y-%m") for f in usadas])
+        componentes += [Componente(nombre="β × 100 (retorno ventana sobre señal)", valor=100 * p["beta"], unidad="β×100"),
+                        Componente(nombre=f"t de β (Newey-West, retardo {p['retardo']})", valor=p["t_nw"], unidad="t"),
+                        Componente(nombre="R²", valor=100 * p["r2"], unidad="%")]
+        if p["r2_os"] is not None:
+            componentes.append(Componente(nombre=f"R² fuera de muestra recursivo (desde {p['desde']})", valor=100 * p["r2_os"], unidad="%"))
+    sin_senal = sum(f.senal is None for f in filas) if direccion in ("senal", "acuerdo") else 0
+    if direccion == "acuerdo":
+        componentes.append(Componente(nombre="Sesiones sin acuerdo de señales (no operadas)",
+                                      valor=sum(f.senal is not None and f.senal2 is not None and sesion.signo(f, direccion) is None
+                                                for f in filas), unidad="sesiones"))
+    if sin_senal:
+        componentes.append(Componente(nombre="Sesiones sin señal (falta barra o roll)", valor=sin_senal, unidad="sesiones"))
     control = None
     if es["particion"] == "serie" and filtro:
         # control: la misma partición en las sesiones que el filtro descarta (¿la serie afecta solo a las operadas?)

@@ -5,10 +5,13 @@ Para cada día lun-vie e con precios en una ventana [entrada, salida] (horas de 
 - entrada / salida: precio a esa hora = cierre de la barra que termina a esa hora (la que empieza `paso` antes).
 - previa: día lun-vie anterior a e (viernes -> lunes).
 - senal: retorno entre dos horas de la sesión previa (p. ej. 15:15 -> 16:15); vacío si falta alguna barra.
+  Con `senal_dias` = [-1, 0], la hora inicial es de la sesión previa y la final del propio día e (p. ej. r1 16:00 previa
+  -> 10:00); con `rolls`, vacío si ese tramo cruza el domingo 18:00 de roll (C6).
 - serie: valor de una serie diaria (p. ej. VIX) en la sesión previa; vacío si no hay dato.
 - desfase: e cae entre los cambios de hora de EE. UU. y de Europa (la apertura europea se mueve una hora en ET).
 
-Todo lo usado para decidir (senal, serie) se conoce al cierre de la sesión previa, antes de la entrada.
+Todo lo usado para decidir (senal, serie) se conoce antes de la entrada: al cierre de la sesión previa o, con
+`senal_dias` [-1, 0], a la hora final de la señal (el ejecutor exige que no pase de la entrada).
 """
 from datetime import date, datetime, time, timedelta
 
@@ -34,12 +37,24 @@ def desfase(d):
     return ee[0] <= d < ue[0] or ue[1] <= d < ee[1]
 
 
+def domingo_roll(anio, mes):
+    """Domingo inmediatamente anterior al tercer viernes del mes (C6)."""
+    d = date(anio, mes, 1)
+    return d + timedelta((4 - d.weekday()) % 7 + 14) - timedelta(5)
+
+
+def cruza_roll(d, e):
+    """True si entre las 16:00 de d y el día e (d < e) cae un domingo de roll de mar/jun/sep/dic."""
+    return any(d < domingo_roll(a, m) < e for a in {d.year, e.year} for m in (3, 6, 9, 12))
+
+
 def previa(e):
     return e - timedelta(3 if e.weekday() == 0 else 1)
 
 
-def tabla(barras, frecuencia, ventanas, senal=None, serie=None):
-    """Filas Variante ordenadas por (fecha, ventana). `ventanas`: {nombre: ["HH:MM", "HH:MM"]}; `senal`: ["HH:MM", "HH:MM"]."""
+def tabla(barras, frecuencia, ventanas, senal=None, serie=None, senal_dias=(-1, -1), rolls=False, senal2=None, senal2_dias=(0, 0)):
+    """Filas Variante ordenadas por (fecha, ventana). `ventanas`: {nombre: ["HH:MM", "HH:MM"]}; `senal`: ["HH:MM", "HH:MM"];
+    `senal_dias`: día de cada hora de la señal (-1 sesión previa, 0 el propio día). `senal2`/`senal2_dias`: segunda señal."""
     paso = PASOS[frecuencia]
     precio = {b.ts: b.close for b in barras}
 
@@ -51,13 +66,19 @@ def tabla(barras, frecuencia, ventanas, senal=None, serie=None):
         if e.weekday() > 4:
             continue
         d = previa(e)
-        s0, s1 = (a_la_hora(d, h) for h in senal) if senal else (None, None)
-        valor_senal = s1 / s0 - 1 if s0 and s1 else None
+        def retorno(horas, dias):
+            if not horas:
+                return None
+            s0, s1 = (a_la_hora(e if k == 0 else d, h) for k, h in zip(dias, horas))
+            if not (s0 and s1) or (rolls and dias[0] != dias[1] and cruza_roll(d, e)):
+                return None
+            return s1 / s0 - 1
+        valor_senal, valor_senal2 = retorno(senal, senal_dias), retorno(senal2, senal2_dias)
         valor_serie = serie.get(d) if serie else None
         for nombre, (h_in, h_out) in ventanas.items():
             p_in, p_out = a_la_hora(e, h_in), a_la_hora(e, h_out)
             if p_in is None or p_out is None:
                 continue
             filas.append(Variante(fecha=e, previa=d, ventana=nombre, entrada=p_in, salida=p_out,
-                                  senal=valor_senal, serie=valor_serie, desfase=desfase(e)))
+                                  senal=valor_senal, serie=valor_serie, senal2=valor_senal2, desfase=desfase(e)))
     return filas

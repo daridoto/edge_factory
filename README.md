@@ -58,8 +58,8 @@ flowchart LR
 | | |
 |---|---|
 | Hipótesis triadas | **36** · 11 compatibles · 5 proxy · 20 bloqueadas |
-| Recetas | H-001 · H-007 · H-008 · H-010 · H-PROPIA-001 |
-| Experimentos | H-001 en SPY, QQQ, IWM y DIA · H-007 en ES y NQ (IS y OOS 2021–2026 de varias variantes: sin ventaja fuera de muestra) · H-PROPIA-001 en RAY |
+| Recetas | H-001 · H-007 · H-008 · H-010 · H-019 · H-PROPIA-001 |
+| Experimentos | H-001 en SPY, QQQ, IWM y DIA (OOS de QQQ: sin efecto) · H-007 en ES y NQ (IS y OOS 2021–2026 de varias variantes: sin ventaja fuera de muestra) · H-010 en ES (cuatro variantes en IS: no cubre costes) · H-019 en SPY, QQQ, IWM y DIA (IS) · H-PROPIA-001 en RAY |
 
 Todas las hipótesis, sus variantes y sus cifras en [`INDICE.md`](INDICE.md) (y en [`resultados/indice.csv`](resultados/indice.csv) para máquinas).
 

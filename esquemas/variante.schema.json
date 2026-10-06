@@ -42,7 +42,7 @@
           "type": "null"
         }
       ],
-      "description": "Retorno de la sesión previa entre las horas de `variantes.senal`; null si falta una barra",
+      "description": "Retorno entre las horas de la señal (de la sesión previa o, con senal_dias [-1, 0], de la previa al día); null si falta una barra o cruza un roll",
       "title": "Senal"
     },
     "serie": {
@@ -56,6 +56,19 @@
       ],
       "description": "Valor de `variantes.serie` en la sesión previa; null si no hay dato",
       "title": "Serie"
+    },
+    "senal2": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Segunda señal (`senal2` del plan, mismas reglas que senal); null si no hay",
+      "title": "Senal2"
     },
     "desfase": {
       "description": "EE. UU. y Europa con distinto horario de verano ese día",

@@ -1,0 +1,254 @@
+{
+  "version_esquema": "2.5",
+  "experimento": {
+    "id": "H001-TOT-REAL-001",
+    "hipotesis": "H-001",
+    "version": "real-tot-v1",
+    "fecha": "2026-10-06",
+    "sintetico": false,
+    "pregunta": "¿Rinde más QQQ en el cambio de mes que el resto de sesiones?",
+    "variante": "QQQ · TOM",
+    "muestra": "Total",
+    "base": "H001-IS-REAL-006",
+    "mercado": "clasica",
+    "inicio": "2009-10-01",
+    "fin": "2026-04-30",
+    "instrumento": "QQQ",
+    "frecuencia": "1d",
+    "moneda": "USD",
+    "capital_inicial": 10000.0,
+    "reglas": {
+      "entrada": "Comprar al cierre de la penúltima sesión de cada mes completo en IS.",
+      "salida": "Vender al cierre de la tercera sesión del mes siguiente.",
+      "tamano": "30 % de la equity al cierre de entrada, acciones fraccionarias; resto en efectivo sin remunerar; dividendos reinvertidos implícitamente; sin apalancamiento.",
+      "costes": "0,01 USD por acción y lado; sin comisión adicional ni impacto."
+    },
+    "receta": "estrategias/H-001.md",
+    "plan": "experimentos/H-001-cambio-de-mes/H001-TOT-REAL-001-qqq-tom.md",
+    "fuente_datos": "data/etf/indices/Nasdaq 100 QQQ - Temp. 1d - Date 2006-07-17 a 2026-07-15 - Norgate.csv"
+  },
+  "evidencia": {
+    "estadistico": "Diferencia ventana − resto (TOM)",
+    "unidad": "pb/día",
+    "valor": 1.5777599375936546,
+    "componentes": [
+      {
+        "nombre": "Sesiones TOM",
+        "valor": 796.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Sesiones resto",
+        "valor": 3374.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Retorno medio TOM",
+        "valor": 9.084133108194925,
+        "unidad": "pb/día"
+      },
+      {
+        "nombre": "Retorno medio resto",
+        "valor": 7.50637317060127,
+        "unidad": "pb/día"
+      }
+    ],
+    "desglose": {}
+  },
+  "robustez": {
+    "bootstrap": {
+      "metodo": "bloques circulares",
+      "unidad": "mes",
+      "bloque": 3,
+      "replicas": 5000,
+      "semilla": 7301,
+      "nivel": 0.95,
+      "ic_inf": -6.730927458966908,
+      "ic_sup": 10.13263621422974,
+      "incluye_cero": true,
+      "motivo": "La hipótesis es mensual; bloques de 3 meses conservan la dependencia entre meses vecinos."
+    },
+    "por_anio": {
+      "2009": -60.0095466794176,
+      "2010": 22.645844764114422,
+      "2011": 7.032089418060374,
+      "2012": 18.033064117652486,
+      "2013": 8.80311849952229,
+      "2014": -11.225599579738716,
+      "2015": -10.31252405867009,
+      "2016": -15.675184711444203,
+      "2017": -0.775412940483178,
+      "2018": 8.935454128675289,
+      "2019": -2.858078655331542,
+      "2020": 38.877531109666464,
+      "2021": -16.291767893583042,
+      "2022": 7.748400451975133,
+      "2023": 0.1314773935529143,
+      "2024": -21.33301701913954,
+      "2025": 1.2270289412145496,
+      "2026": 19.087207368020273
+    },
+    "sin_cada_anio": {
+      "2009": 2.526319403124464,
+      "2010": 0.22510536053044075,
+      "2011": 1.2265877753201846,
+      "2012": 0.5236839214495888,
+      "2013": 1.1147394384063711,
+      "2014": 2.3997259282720753,
+      "2015": 2.3405302705587308,
+      "2016": 2.684667469822523,
+      "2017": 1.7281334036907816,
+      "2018": 1.106871036403882,
+      "2019": 1.8636191661958743,
+      "2020": -0.8140859776350833,
+      "2021": 2.725537757555514,
+      "2022": 1.1852568779570405,
+      "2023": 1.665384258379459,
+      "2024": 3.049107353210736,
+      "2025": 1.5998277167056592,
+      "2026": 1.2187261723104306
+    },
+    "pnl_costes_x2": 2152.8179287338126
+  },
+  "metricas": {
+    "operaciones": 198,
+    "pnl_neto": 2259.693672737845,
+    "esperanza": 11.412594306756846,
+    "tasa_acierto": 0.5757575757575758,
+    "payoff": 1.0741452460798961,
+    "profit_factor": 1.4577685482512879,
+    "rentabilidad_total": 0.22596936727378458,
+    "rentabilidad_anual": 0.012387955746227504,
+    "sharpe": 0.47569339010077133,
+    "sortino": 0.6870039061197917,
+    "max_drawdown": 0.045068115348459004,
+    "max_recuperacion": null,
+    "drawdown_abierto": 438,
+    "exposicion": 0.18992805755395684,
+    "rotacion": 118.96796835079867,
+    "costes": 106.87574400403275,
+    "peso_costes": 0.008797312834541686,
+    "concentracion_anual": 0.06060606060606061,
+    "autocorrelacion": -0.023476770700886315
+  },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": 0.8955045059119779,
+    "rentabilidad_anual": 0.03940157479696006,
+    "sharpe": 0.48038429110229464,
+    "max_drawdown": 0.14470787741438074,
+    "pico": "2021-04-05",
+    "valle": "2022-04-29",
+    "recuperacion": "2024-07-03",
+    "sesiones_bajo_agua": 817,
+    "motor_sha256": "824ff8b3f8aa54eb1c6121a21b00562599d545719e83d00f9f52816d3d8d6780"
+  },
+  "variantes": null,
+  "sensibilidad": null,
+  "control": null,
+  "no_calculables": {
+    "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
+  },
+  "operaciones_por_anio": {
+    "2009": 2,
+    "2010": 12,
+    "2011": 12,
+    "2012": 12,
+    "2013": 12,
+    "2014": 12,
+    "2015": 12,
+    "2016": 12,
+    "2017": 12,
+    "2018": 12,
+    "2019": 12,
+    "2020": 12,
+    "2021": 12,
+    "2022": 12,
+    "2023": 12,
+    "2024": 12,
+    "2025": 12,
+    "2026": 4
+  },
+  "conclusiones": {
+    "estado": "exploratoria",
+    "lectura": "Diferencia ventana − resto (TOM): 1,58 pb/día. El intervalo incluye cero: en Total no se distingue de no tener efecto.",
+    "supuestos": [
+      "TOM = última sesión del mes y tres primeras del siguiente; resto = demás sesiones del mes.",
+      "Retornos close-to-close ajustados por dividendos, antes de costes.",
+      "Calendario observado conocido de antemano, incluidos cierres no programados (C5).",
+      "Solo meses completos dentro de la muestra; mayo de 2026 queda fuera (último dato 2026-05-28)."
+    ],
+    "limites": [
+      "QQQ se eligió como candidato tras ver el IS de cuatro ETF: el Total mide si sobrevive a esa elección.",
+      "Las métricas de cuenta se leen en la referencia al 100 %; el 30 % del plan solo se conserva por identidad con la base.",
+      "Sin comisiones adicionales, impacto ni ejecución intradía."
+    ],
+    "siguiente_comprobacion": "Decidir con el usuario qué hacer con H-001 a la vista del OOS."
+  },
+  "procedencia": {
+    "motor_sha256": "824ff8b3f8aa54eb1c6121a21b00562599d545719e83d00f9f52816d3d8d6780",
+    "datos_sha256": "7290204bb12c3d774cd9a22b2f5bd1ca4463f68eaab53355bd82aa64bb79ffe6",
+    "plan_sha256": "e4ad81f1f01ce3e00fe8f631982a510ea2f6ec29f6cc6a11e4f5119eadcbd9e7",
+    "periodos_por_anio": 252
+  },
+  "historial": [
+    {
+      "id": "H001-IS-REAL-001",
+      "fecha": "2026-09-24",
+      "cambio": "Primera ejecución real (2026-09-22); regenerada con el ejecutor único."
+    },
+    {
+      "id": "H001-IS-REAL-002",
+      "fecha": "2026-09-24",
+      "cambio": "Misma especificación que H001-IS-REAL-001 con QQQ en lugar de SPY."
+    },
+    {
+      "id": "H001-IS-REAL-003",
+      "fecha": "2026-09-24",
+      "cambio": "Misma especificación que H001-IS-REAL-001 con IWM en lugar de SPY."
+    },
+    {
+      "id": "H001-IS-REAL-004",
+      "fecha": "2026-09-24",
+      "cambio": "Misma especificación que H001-IS-REAL-001 con DIA en lugar de SPY."
+    },
+    {
+      "id": "H001-IS-REAL-005",
+      "fecha": "2026-09-24",
+      "cambio": "Mismo plan que H001-IS-REAL-001; tamaño 30 % de la equity por operación en lugar de 1 acción."
+    },
+    {
+      "id": "H001-IS-REAL-006",
+      "fecha": "2026-09-24",
+      "cambio": "Mismo plan que H001-IS-REAL-002; tamaño 30 % de la equity por operación en lugar de 1 acción."
+    },
+    {
+      "id": "H001-IS-REAL-007",
+      "fecha": "2026-09-24",
+      "cambio": "Mismo plan que H001-IS-REAL-003; tamaño 30 % de la equity por operación en lugar de 1 acción."
+    },
+    {
+      "id": "H001-IS-REAL-008",
+      "fecha": "2026-09-24",
+      "cambio": "Mismo plan que H001-IS-REAL-004; tamaño 30 % de la equity por operación en lugar de 1 acción."
+    },
+    {
+      "id": "H001-OOS-REAL-001",
+      "fecha": "2026-10-06",
+      "cambio": "OOS 2021-01-01 → 2026-05-28 de H001-IS-REAL-006, sin cambiar nada de su especificación."
+    },
+    {
+      "id": "H001-TOT-REAL-001",
+      "fecha": "2026-10-06",
+      "cambio": "Total 2009-09-27 → 2026-05-28 de H001-IS-REAL-006, sin cambiar nada de su especificación."
+    }
+  ],
+  "ficheros": {
+    "equity": "equity.csv",
+    "operaciones": "operaciones.csv",
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv",
+    "variantes": null
+  }
+}

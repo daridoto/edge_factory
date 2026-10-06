@@ -40,7 +40,14 @@ def hora(periodos, valores, inicio, fin, unidad):
     return [Obs(p, p.fin.ts.hour, p.fin.ts.hour in valores, UNIDADES[unidad](p.fin.ts)) for p in periodos]
 
 
-VENTANAS = {"dias_de_mes": dias_de_mes, "hora": hora}
+def meses(periodos, valores, inicio, fin, unidad):
+    """Mes del año del periodo (1-12): p. ej. [11, 12, 1, 2, 3, 4] es el semestre de invierno."""
+    return [Obs(p, p.fin.ts.month, p.fin.ts.month in valores, UNIDADES[unidad](p.fin.ts)) for p in periodos]
+
+
+VENTANAS = {"dias_de_mes": dias_de_mes, "hora": hora, "meses": meses}
+# ventanas cuyas operaciones tienen tantos periodos como valores; en las demás, una operación por tramo continuo
+LONGITUD_FIJA = {"dias_de_mes", "hora"}
 
 
 # ---------- estadísticos (sobre grupos [n ventana, suma ventana, n resto, suma resto], en pb) ----------
@@ -88,6 +95,40 @@ def media_operacion(gs):
 
 
 ESTADISTICOS = {"media_ventana": media_ventana, "media_vs_resto": media_vs_resto, "media_operacion": media_operacion}
+
+
+def _mco(xs, ys):
+    mx, my = sum(xs) / len(xs), sum(ys) / len(ys)
+    sxx = sum((x - mx) ** 2 for x in xs)
+    beta = sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / sxx
+    return my - beta * mx, beta, mx, sxx
+
+
+def prediccion(xs, ys, meses, arranque=60):
+    """Regresión y = α + β·x (MCO) con t de Newey-West (retardo floor(4·(T/100)^(2/9)), pesos de Bartlett), R² y
+    R²_OS recursivo: desde el mes `arranque` (contado desde el primero), cada mes se estima con los meses anteriores
+    y se predice; R²_OS = 1 - Σ(y - pred)² / Σ(y - media histórica)². `meses`: "AAAA-MM" de cada observación, en orden."""
+    alfa, beta, mx, sxx = _mco(xs, ys)
+    e = [y - alfa - beta * x for x, y in zip(xs, ys)]
+    u = [(x - mx) * r for x, r in zip(xs, e)]
+    T = len(xs)
+    L = int(4 * (T / 100) ** (2 / 9))
+    s = sum(v * v for v in u) + 2 * sum((1 - l / (L + 1)) * sum(u[t] * u[t - l] for t in range(l, T)) for l in range(1, L + 1))
+    my = sum(ys) / T
+    r2 = 1 - sum(r * r for r in e) / sum((y - my) ** 2 for y in ys)
+    orden = sorted(set(meses))
+    sse = sse_media = 0.0
+    for m in orden[arranque:]:
+        antes = [i for i, mm in enumerate(meses) if mm < m]
+        a, b, _, _ = _mco([xs[i] for i in antes], [ys[i] for i in antes])
+        media = sum(ys[i] for i in antes) / len(antes)
+        for i, mm in enumerate(meses):
+            if mm == m:
+                sse += (ys[i] - a - b * xs[i]) ** 2
+                sse_media += (ys[i] - media) ** 2
+    r2_os = 1 - sse / sse_media if sse_media else None
+    return dict(beta=beta, t_nw=beta / (s / sxx ** 2) ** .5, retardo=L, r2=r2, r2_os=r2_os,
+                desde=orden[arranque] if len(orden) > arranque else None)
 
 
 def desglose(obs):

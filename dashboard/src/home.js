@@ -1,6 +1,6 @@
 // Portada: una fila por hipótesis con lo justo para decidir cuál abrir.
 // Fila = nombre y pregunta · fases · efecto · IC frente a 0 · años positivos · PnL · equity.
-import { clave, loadRegistro, loadIndice, loadFicha } from './data.js';
+import { clave, loadRegistro, loadIndice, loadFicha, sinRegistrar } from './data.js';
 import { computeMetrics } from './metrics.js';
 
 const $ = id => document.getElementById(id);
@@ -17,10 +17,7 @@ document.title = 'Hipótesis';
 
 // Registro + experimentos del lab que aún no tienen entrada (se ven igual, con su ID como nombre).
 const [registro, indice] = await Promise.all([loadRegistro(), loadIndice()]);
-const known = new Set(registro.flatMap(e => [e.id, e.hipotesis]));
-const extra = Object.values(Object.fromEntries(indice.filter(r => !known.has(r.hipotesis)).map(r => [r.hipotesis, r])))
-  .map(r => ({ id: r.hipotesis, experimentos: { IS: r.id }, reglas: {}, estados: {}, nuevo: true }));
-const entries = [...registro, ...extra];
+const entries = [...registro, ...sinRegistrar(registro, indice)];
 const fichas = await Promise.all(entries.map(loadFicha));
 
 // Entradas con la misma clave (`grupo` o `hipotesis`: varios instrumentos o variantes) se agrupan en una fila.
