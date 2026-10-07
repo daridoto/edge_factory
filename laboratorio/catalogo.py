@@ -45,7 +45,25 @@ def meses(periodos, valores, inicio, fin, unidad):
     return [Obs(p, p.fin.ts.month, p.fin.ts.month in valores, UNIDADES[unidad](p.fin.ts)) for p in periodos]
 
 
-VENTANAS = {"dias_de_mes": dias_de_mes, "hora": hora, "meses": meses}
+def festivos(periodos, valores, inicio, fin, unidad):
+    """Víspera de festivo de NYSE (festivos.py): la última sesión antes de cada festivo de `valores`; etiqueta, el
+    festivo (o "resto"). Una operación por víspera."""
+    from .festivos import vispera
+    v = vispera({p.fin.ts.date() for p in periodos}, valores)
+    return [Obs(p, v.get(p.fin.ts.date(), "resto"), p.fin.ts.date() in v, UNIDADES[unidad](p.fin.ts)) for p in periodos]
+
+
+def solo_vispera(obs, nombres):
+    """Filtro de cualquier ventana: deja solo los periodos que terminan en una víspera de festivo (calendario por regla)."""
+    from .festivos import vispera_regla
+    if not obs:
+        return obs
+    fechas = [o.periodo.fin.ts.date() for o in obs]
+    dias = vispera_regla(min(fechas), max(fechas), nombres)
+    return [o for o, f in zip(obs, fechas) if f in dias]
+
+
+VENTANAS = {"dias_de_mes": dias_de_mes, "hora": hora, "meses": meses, "festivos": festivos}
 # ventanas cuyas operaciones tienen tantos periodos como valores; en las demás, una operación por tramo continuo
 LONGITUD_FIJA = {"dias_de_mes", "hora"}
 

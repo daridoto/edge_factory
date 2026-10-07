@@ -1,0 +1,233 @@
+{
+  "version_esquema": "2.5",
+  "experimento": {
+    "id": "H018-TOT-REAL-001",
+    "hipotesis": "H-018",
+    "version": "real-tot-v1",
+    "fecha": "2026-10-07",
+    "sintetico": false,
+    "pregunta": "¿Rinde más SPY en la sesión previa a un festivo que en el resto de sesiones?",
+    "variante": "SPY · víspera",
+    "muestra": "Total",
+    "base": "H018-IS-REAL-001",
+    "mercado": "clasica",
+    "inicio": "2009-09-29",
+    "fin": "2026-05-28",
+    "instrumento": "SPY",
+    "frecuencia": "1d",
+    "moneda": "USD",
+    "capital_inicial": 10000.0,
+    "reglas": {
+      "entrada": "Comprar al cierre de la sesión anterior a la víspera.",
+      "salida": "Vender al cierre de la víspera.",
+      "tamano": "1 acción por víspera; referencia al 100 % del capital aparte.",
+      "costes": "0,01 USD por acción y lado; sin comisión adicional ni impacto."
+    },
+    "receta": "estrategias/H-018.md",
+    "plan": "experimentos/H-018-vispera-festivo/H018-TOT-REAL-001-spy.md",
+    "fuente_datos": "data/etf/indices/SP500 SPY - Temp. 1d - Date 2006-07-17 a 2026-07-15 - Norgate.csv"
+  },
+  "evidencia": {
+    "estadistico": "Diferencia ventana − resto (víspera)",
+    "unidad": "pb/día",
+    "valor": 7.962120978338391,
+    "componentes": [
+      {
+        "nombre": "Sesiones víspera",
+        "valor": 132.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Sesiones resto",
+        "valor": 4059.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Retorno medio víspera",
+        "valor": 13.676087110535114,
+        "unidad": "pb/día"
+      },
+      {
+        "nombre": "Retorno medio resto",
+        "valor": 5.713966132196722,
+        "unidad": "pb/día"
+      }
+    ],
+    "desglose": {
+      "accion_gracias": 15.076187064632489,
+      "ano_nuevo": -13.62934237631408,
+      "independencia": 41.16572713026817,
+      "memorial": 22.17775106432324,
+      "navidad": 10.069306846063657,
+      "presidentes": 22.92967273146181,
+      "resto": 5.7139661321967194,
+      "trabajo": -19.535878033066986,
+      "viernes_santo": 27.60626162764395
+    }
+  },
+  "robustez": {
+    "bootstrap": {
+      "metodo": "bloques circulares",
+      "unidad": "mes",
+      "bloque": 12,
+      "replicas": 5000,
+      "semilla": 7301,
+      "nivel": 0.95,
+      "ic_inf": -1.7498942338931798,
+      "ic_sup": 17.1351704910266,
+      "incluye_cero": true,
+      "motivo": "Cada festivo cae una vez al año; bloques de 12 meses conservan un año completo de festivos."
+    },
+    "por_anio": {
+      "2009": -13.560920873684582,
+      "2010": 14.662245979540147,
+      "2011": -24.816573761615576,
+      "2012": 27.17137168689229,
+      "2013": -1.8270341043753333,
+      "2014": 9.345094995783846,
+      "2015": -30.0996419806393,
+      "2016": 33.046505000621245,
+      "2017": -17.130371611253366,
+      "2018": -7.792518246836222,
+      "2019": 26.75504462776039,
+      "2020": 21.150615041868008,
+      "2021": 39.03893528225269,
+      "2022": 26.514030730871056,
+      "2023": 16.310332134945,
+      "2024": 16.256996814168026,
+      "2025": -8.179092849553518,
+      "2026": 8.035389965489252
+    },
+    "sin_cada_anio": {
+      "2009": 8.437590053554333,
+      "2010": 7.587587420731346,
+      "2011": 10.078621895382645,
+      "2012": 6.7231801197576235,
+      "2013": 8.59049714031294,
+      "2014": 7.873313613415811,
+      "2015": 10.41983938041252,
+      "2016": 6.344849269571743,
+      "2017": 9.57868916643401,
+      "2018": 8.984200972030715,
+      "2019": 6.747143165804447,
+      "2020": 7.110553092571745,
+      "2021": 6.251159021016394,
+      "2022": 6.776425567995155,
+      "2023": 7.419726749967215,
+      "2024": 7.425346271168498,
+      "2025": 9.001462429125162,
+      "2026": 7.967407216680386
+    },
+    "pnl_costes_x2": 58.146793135123914
+  },
+  "metricas": {
+    "operaciones": 132,
+    "pnl_neto": 60.786793138613575,
+    "esperanza": 0.46050600862607843,
+    "tasa_acierto": 0.6060606060606061,
+    "payoff": 1.2032338176363166,
+    "profit_factor": 1.8511289502097186,
+    "rentabilidad_total": 0.006078679313861413,
+    "rentabilidad_anual": 0.00036446397317166357,
+    "sharpe": 0.5713238424017755,
+    "sortino": 0.994158169293449,
+    "max_drawdown": 0.0008372576123416575,
+    "max_recuperacion": null,
+    "drawdown_abierto": 103,
+    "exposicion": 0.031496062992125984,
+    "rotacion": 7.991821616709859,
+    "costes": 2.640000003489664,
+    "peso_costes": 0.012924395436279629,
+    "concentracion_anual": 0.06060606060606061,
+    "autocorrelacion": -0.0022085848980787698
+  },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": 0.17953548038936318,
+    "rentabilidad_anual": 0.00997796866431327,
+    "sharpe": 0.47785495107460113,
+    "max_drawdown": 0.047406082760397816,
+    "pico": "2011-08-31",
+    "valle": "2011-12-22",
+    "recuperacion": "2014-07-03",
+    "sesiones_bajo_agua": 713,
+    "motor_sha256": "9f347cb55685421978c7fb898862f0277e395fac3833443c8875ef5282624c85"
+  },
+  "variantes": null,
+  "sensibilidad": null,
+  "control": null,
+  "no_calculables": {
+    "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
+  },
+  "operaciones_por_anio": {
+    "2009": 3,
+    "2010": 7,
+    "2011": 8,
+    "2012": 8,
+    "2013": 8,
+    "2014": 8,
+    "2015": 8,
+    "2016": 8,
+    "2017": 8,
+    "2018": 8,
+    "2019": 8,
+    "2020": 8,
+    "2021": 7,
+    "2022": 8,
+    "2023": 8,
+    "2024": 8,
+    "2025": 8,
+    "2026": 3
+  },
+  "conclusiones": {
+    "estado": "exploratoria",
+    "lectura": "Diferencia ventana − resto (víspera): 7,96 pb/día. El intervalo incluye cero: en Total no se distingue de no tener efecto.",
+    "supuestos": [
+      "Víspera = última sesión antes de un cierre observado de NYSE por uno de los 8 festivos (reglas en festivos.py).",
+      "Año Nuevo en sábado (2011) no es cierre: ese año no hay víspera de Año Nuevo.",
+      "Retornos close-to-close ajustados por dividendos, antes de costes."
+    ],
+    "limites": [
+      "Unas 89 vísperas en la IS (10-12 por festivo): el intervalo será ancho y el desglose por festivo, ruidoso.",
+      "Solapa con el cambio de mes (H-001) en Labor Day, Navidad y Año Nuevo.",
+      "El intervalo no corrige la exploración previa de esta hipótesis en la literatura."
+    ],
+    "siguiente_comprobacion": "Decidir con el usuario qué hacer con H-018 a la vista del OOS."
+  },
+  "procedencia": {
+    "motor_sha256": "9f347cb55685421978c7fb898862f0277e395fac3833443c8875ef5282624c85",
+    "datos_sha256": "1eed0c4920bcee745b62a9cda320b3fb2771c0877b603605e1855effd6fffe48",
+    "plan_sha256": "4b6af6438c1a52212d296fdce82c6d7b1ff1ab43cda861d8a71f5a83c3cfc9a4",
+    "periodos_por_anio": 252
+  },
+  "historial": [
+    {
+      "id": "H018-IS-REAL-001",
+      "fecha": "2026-10-07",
+      "cambio": "Primer ensayo: víspera de los 8 festivos de W2943226912 en SPY."
+    },
+    {
+      "id": "H018-IS-REAL-002",
+      "fecha": "2026-10-07",
+      "cambio": "Huella del cierre de cortos: perfil horario del ES en las vísperas de H018-IS-REAL-001."
+    },
+    {
+      "id": "H018-OOS-REAL-001",
+      "fecha": "2026-10-07",
+      "cambio": "OOS 2021-01-01 → 2026-05-28 de H018-IS-REAL-001, sin cambiar nada de su especificación."
+    },
+    {
+      "id": "H018-TOT-REAL-001",
+      "fecha": "2026-10-07",
+      "cambio": "Total 2009-09-27 → 2026-05-28 (IS + OOS) de H018-IS-REAL-001, sin cambiar nada de su especificación."
+    }
+  ],
+  "ficheros": {
+    "equity": "equity.csv",
+    "operaciones": "operaciones.csv",
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv",
+    "variantes": null
+  }
+}

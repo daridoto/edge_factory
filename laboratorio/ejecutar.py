@@ -98,13 +98,16 @@ def ejecutar(spec, plan, barras=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS, **
     previa = datos.cargar(d["dataset"])[-1:] if muestra == "OOS" and d["periodo"] == "1d" and not sintetico else []
     periodos = datos.periodos(previa + barras, d["periodo"], d.get("excluir_horas", ()))
     obs = catalogo.VENTANAS[v["tipo"]](periodos, v["valores"], inicio, fin, bs["unidad"])
+    if "solo_vispera" in v:  # p. ej. horas del día solo en vísperas de festivo
+        obs = catalogo.solo_vispera(obs, v["solo_vispera"])
     estadistico = catalogo.ESTADISTICOS[es["tipo"]]
     longitud = len(v["valores"]) if v["tipo"] in catalogo.LONGITUD_FIJA else None
     g = catalogo.grupos(obs)
     n_v, s_v, n_r, s_r = catalogo._sumas(g.values())
-    sesiones, operaciones = backtest(obs, longitud, op["capital"], op["coste_lado"], op.get("fraccion"))
+    desde = obs[0].periodo.fin.ts.date() if previa else None  # la operación abierta en IS entra al primer cierre OOS
+    sesiones, operaciones = backtest(obs, longitud, op["capital"], op["coste_lado"], op.get("fraccion"), desde)
     m, motivos, por_anio = motor.metricas(op["capital"], sesiones, operaciones)
-    al_100 = backtest(obs, longitud, op["capital"], op["coste_lado"], FRACCION_REF)
+    al_100 = backtest(obs, longitud, op["capital"], op["coste_lado"], FRACCION_REF, desde)
     ref = motor.referencia(op["capital"], *al_100, FRACCION_REF, dataset.get("periodos_por_anio", 252))
     robustez = Robustez(**bateria(g, estadistico, unidad=bs["unidad"], bloque=bs["bloque"], motivo=bs["motivo"],
                                   pnl_costes_x2=m.pnl_neto - m.costes))

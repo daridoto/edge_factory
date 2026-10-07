@@ -1,0 +1,192 @@
+{
+  "version_esquema": "2.5",
+  "experimento": {
+    "id": "H018-OOS-REAL-001",
+    "hipotesis": "H-018",
+    "version": "real-oos-v1",
+    "fecha": "2026-10-07",
+    "sintetico": false,
+    "pregunta": "¿Rinde más SPY en la sesión previa a un festivo que en el resto de sesiones?",
+    "variante": "SPY · víspera",
+    "muestra": "OOS",
+    "base": "H018-IS-REAL-001",
+    "mercado": "clasica",
+    "inicio": "2021-01-04",
+    "fin": "2026-05-28",
+    "instrumento": "SPY",
+    "frecuencia": "1d",
+    "moneda": "USD",
+    "capital_inicial": 10000.0,
+    "reglas": {
+      "entrada": "Comprar al cierre de la sesión anterior a la víspera.",
+      "salida": "Vender al cierre de la víspera.",
+      "tamano": "1 acción por víspera; referencia al 100 % del capital aparte.",
+      "costes": "0,01 USD por acción y lado; sin comisión adicional ni impacto."
+    },
+    "receta": "estrategias/H-018.md",
+    "plan": "experimentos/H-018-vispera-festivo/H018-OOS-REAL-001-spy.md",
+    "fuente_datos": "data/etf/indices/SP500 SPY - Temp. 1d - Date 2006-07-17 a 2026-07-15 - Norgate.csv"
+  },
+  "evidencia": {
+    "estadistico": "Diferencia ventana − resto (víspera)",
+    "unidad": "pb/día",
+    "valor": 16.663418241007886,
+    "componentes": [
+      {
+        "nombre": "Sesiones víspera",
+        "valor": 42.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Sesiones resto",
+        "valor": 1314.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Retorno medio víspera",
+        "valor": 22.418652657588503,
+        "unidad": "pb/día"
+      },
+      {
+        "nombre": "Retorno medio resto",
+        "valor": 5.755234416580618,
+        "unidad": "pb/día"
+      }
+    ],
+    "desglose": {
+      "accion_gracias": 33.411358195989834,
+      "ano_nuevo": -41.44004993288375,
+      "independencia": 63.429130927352254,
+      "memorial": 71.68474401627805,
+      "navidad": 57.233286209227074,
+      "presidentes": -13.929773322228407,
+      "resto": 5.755234416580618,
+      "trabajo": -10.679532191866459,
+      "viernes_santo": 7.307095247073478
+    }
+  },
+  "robustez": {
+    "bootstrap": {
+      "metodo": "bloques circulares",
+      "unidad": "mes",
+      "bloque": 12,
+      "replicas": 5000,
+      "semilla": 7301,
+      "nivel": 0.95,
+      "ic_inf": 4.373852362198798,
+      "ic_sup": 29.29674178490739,
+      "incluye_cero": false,
+      "motivo": "Cada festivo cae una vez al año; bloques de 12 meses conservan un año completo de festivos."
+    },
+    "por_anio": {
+      "2021": 39.03893528225269,
+      "2022": 26.514030730871056,
+      "2023": 16.310332134945,
+      "2024": 16.256996814168026,
+      "2025": -8.179092849553518,
+      "2026": 8.035389965489252
+    },
+    "sin_cada_anio": {
+      "2021": 12.291069234094,
+      "2022": 14.4584559039923,
+      "2023": 16.714368055081383,
+      "2024": 16.738262380000645,
+      "2025": 22.491758632051344,
+      "2026": 17.344227298790436
+    },
+    "pnl_costes_x2": 41.39015379550697
+  },
+  "metricas": {
+    "operaciones": 42,
+    "pnl_neto": 42.23015379799472,
+    "esperanza": 1.0054798523333208,
+    "tasa_acierto": 0.6428571428571429,
+    "payoff": 1.2094376600195087,
+    "profit_factor": 2.176987788035115,
+    "rentabilidad_total": 0.004223015379799522,
+    "rentabilidad_anual": 0.0007834624365939597,
+    "sharpe": 0.8261996782255229,
+    "sortino": 1.5894941769587518,
+    "max_drawdown": 0.0008388090842047502,
+    "max_recuperacion": null,
+    "drawdown_abierto": 103,
+    "exposicion": 0.030973451327433628,
+    "rotacion": 4.259958045730946,
+    "costes": 0.8400000024877452,
+    "peso_costes": 0.007353593375285867,
+    "concentracion_anual": 0.19047619047619047,
+    "autocorrelacion": -0.0035918171637500714
+  },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": 0.09556541842084942,
+    "rentabilidad_anual": 0.017106459753423935,
+    "sharpe": 0.8560470912225345,
+    "max_drawdown": 0.018941507472923336,
+    "pico": "2022-02-16",
+    "valle": "2022-05-26",
+    "recuperacion": "2022-05-27",
+    "sesiones_bajo_agua": 70,
+    "motor_sha256": "9f347cb55685421978c7fb898862f0277e395fac3833443c8875ef5282624c85"
+  },
+  "variantes": null,
+  "sensibilidad": null,
+  "control": null,
+  "no_calculables": {
+    "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
+  },
+  "operaciones_por_anio": {
+    "2021": 7,
+    "2022": 8,
+    "2023": 8,
+    "2024": 8,
+    "2025": 8,
+    "2026": 3
+  },
+  "conclusiones": {
+    "estado": "exploratoria",
+    "lectura": "Diferencia ventana − resto (víspera): 16,66 pb/día. El intervalo no incluye cero bajo los supuestos del remuestreo; no prueba estabilidad futura.",
+    "supuestos": [
+      "Víspera = última sesión antes de un cierre observado de NYSE por uno de los 8 festivos (reglas en festivos.py).",
+      "Año Nuevo en sábado (2011) no es cierre: ese año no hay víspera de Año Nuevo.",
+      "Retornos close-to-close ajustados por dividendos, antes de costes."
+    ],
+    "limites": [
+      "Unas 89 vísperas en la IS (10-12 por festivo): el intervalo será ancho y el desglose por festivo, ruidoso.",
+      "Solapa con el cambio de mes (H-001) en Labor Day, Navidad y Año Nuevo.",
+      "El intervalo no corrige la exploración previa de esta hipótesis en la literatura."
+    ],
+    "siguiente_comprobacion": "Decidir con el usuario qué hacer con H-018 a la vista del OOS."
+  },
+  "procedencia": {
+    "motor_sha256": "9f347cb55685421978c7fb898862f0277e395fac3833443c8875ef5282624c85",
+    "datos_sha256": "799b88c2cc6f77d1dbd9a16bc7f10fa39a00b999c22df97e2946fa377acbe254",
+    "plan_sha256": "793538f62a215d54112b70a45eaee04f41748b503764c6ec540e0af050d49798",
+    "periodos_por_anio": 252
+  },
+  "historial": [
+    {
+      "id": "H018-IS-REAL-001",
+      "fecha": "2026-10-07",
+      "cambio": "Primer ensayo: víspera de los 8 festivos de W2943226912 en SPY."
+    },
+    {
+      "id": "H018-IS-REAL-002",
+      "fecha": "2026-10-07",
+      "cambio": "Huella del cierre de cortos: perfil horario del ES en las vísperas de H018-IS-REAL-001."
+    },
+    {
+      "id": "H018-OOS-REAL-001",
+      "fecha": "2026-10-07",
+      "cambio": "OOS 2021-01-01 → 2026-05-28 de H018-IS-REAL-001, sin cambiar nada de su especificación."
+    }
+  ],
+  "ficheros": {
+    "equity": "equity.csv",
+    "operaciones": "operaciones.csv",
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv",
+    "variantes": null
+  }
+}

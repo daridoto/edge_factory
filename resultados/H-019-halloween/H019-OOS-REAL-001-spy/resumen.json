@@ -1,0 +1,197 @@
+{
+  "version_esquema": "2.5",
+  "experimento": {
+    "id": "H019-OOS-REAL-001",
+    "hipotesis": "H-019",
+    "version": "real-oos-v1",
+    "fecha": "2026-10-07",
+    "sintetico": false,
+    "pregunta": "¿Rinde más SPY de noviembre a abril que de mayo a octubre?",
+    "variante": "SPY · Nov-Abr",
+    "muestra": "OOS",
+    "base": "H019-IS-REAL-001",
+    "mercado": "clasica",
+    "inicio": "2021-01-04",
+    "fin": "2026-05-28",
+    "instrumento": "SPY",
+    "frecuencia": "1d",
+    "moneda": "USD",
+    "capital_inicial": 10000.0,
+    "reglas": {
+      "entrada": "Comprar al cierre de la última sesión de octubre.",
+      "salida": "Vender al cierre de la última sesión de abril (o de la muestra).",
+      "tamano": "1 acción por semestre; referencia al 100 % del capital aparte.",
+      "costes": "0,01 USD por acción y lado; sin comisión adicional ni impacto."
+    },
+    "receta": "estrategias/H-019.md",
+    "plan": "experimentos/H-019-halloween/H019-OOS-REAL-001-spy.md",
+    "fuente_datos": "data/etf/indices/SP500 SPY - Temp. 1d - Date 2006-07-17 a 2026-07-15 - Norgate.csv"
+  },
+  "evidencia": {
+    "estadistico": "Diferencia ventana − resto (Nov-Abr)",
+    "unidad": "pb/día",
+    "valor": -2.08307681411811,
+    "componentes": [
+      {
+        "nombre": "Sesiones Nov-Abr",
+        "valor": 699.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Sesiones resto",
+        "valor": 657.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Retorno medio Nov-Abr",
+        "valor": 5.262079622514787,
+        "unidad": "pb/día"
+      },
+      {
+        "nombre": "Retorno medio resto",
+        "valor": 7.345156436632897,
+        "unidad": "pb/día"
+      }
+    ],
+    "desglose": {}
+  },
+  "robustez": {
+    "bootstrap": {
+      "metodo": "bloques circulares",
+      "unidad": "mes",
+      "bloque": 12,
+      "replicas": 5000,
+      "semilla": 7301,
+      "nivel": 0.95,
+      "ic_inf": -11.144280569734507,
+      "ic_sup": 6.760127732837976,
+      "incluye_cero": true,
+      "motivo": "La hipótesis es semestral; bloques de 12 meses conservan un año de dependencia."
+    },
+    "por_anio": {
+      "2021": 4.150171275418949,
+      "2022": -7.496372954182318,
+      "2023": 17.172680443819253,
+      "2024": -2.9061038646037125,
+      "2025": -19.71463689183518,
+      "2026": -18.78019357478182
+    },
+    "sin_cada_anio": {
+      "2021": -3.419588755564417,
+      "2022": -1.1666129250928872,
+      "2023": -6.3401890327929475,
+      "2024": -1.820850427093742,
+      "2025": 1.9362990168024647,
+      "2026": -1.7779954264444475
+    },
+    "pnl_costes_x2": 155.85883911878065
+  },
+  "metricas": {
+    "operaciones": 6,
+    "pnl_neto": 155.97921503124053,
+    "esperanza": 25.99653583853716,
+    "tasa_acierto": 0.6666666666666666,
+    "payoff": 1.9150090768725783,
+    "profit_factor": 3.8300181537451565,
+    "rentabilidad_total": 0.015597921503124113,
+    "rentabilidad_anual": 0.002880494744404668,
+    "sharpe": 0.45267564153927187,
+    "sortino": 0.6527703754458473,
+    "max_drawdown": 0.011339079061415402,
+    "max_recuperacion": null,
+    "drawdown_abierto": 319,
+    "exposicion": 0.5147492625368731,
+    "rotacion": 0.5875293802446919,
+    "costes": 0.12037591245986637,
+    "peso_costes": 0.00045211392242107835,
+    "concentracion_anual": 0.16666666666666666,
+    "autocorrelacion": -0.0452935828249291
+  },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": 0.39909140741596016,
+    "rentabilidad_anual": 0.0643982221908162,
+    "sharpe": 0.5459610270309203,
+    "max_drawdown": 0.18738270142880453,
+    "pico": "2025-02-19",
+    "valle": "2025-04-08",
+    "recuperacion": null,
+    "sesiones_bajo_agua": 319,
+    "motor_sha256": "554aadf37e3de480032cbaf23b74fb95ad3a2735826c4243b0a65b6d5947fdb3"
+  },
+  "variantes": null,
+  "sensibilidad": null,
+  "control": null,
+  "no_calculables": {
+    "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
+  },
+  "operaciones_por_anio": {
+    "2021": 1,
+    "2022": 1,
+    "2023": 1,
+    "2024": 1,
+    "2025": 1,
+    "2026": 1
+  },
+  "conclusiones": {
+    "estado": "exploratoria",
+    "lectura": "Diferencia ventana − resto (Nov-Abr): -2,08 pb/día. El intervalo incluye cero: en OOS no se distingue de no tener efecto.",
+    "supuestos": [
+      "Invierno = sesiones de noviembre a abril; verano = mayo a octubre.",
+      "Retornos close-to-close ajustados por dividendos, antes de costes.",
+      "El invierno 2020-21 queda cortado el 31-12-2020: cuenta en el estadístico y la operación se cierra ahí."
+    ],
+    "limites": [
+      "Solo 11 inviernos completos en la IS: el intervalo será ancho.",
+      "El intervalo no corrige la exploración previa de esta hipótesis en la literatura.",
+      "Sin comisiones adicionales, impacto ni dividendos fuera de posición."
+    ],
+    "siguiente_comprobacion": "Decidir con el usuario qué hacer con H-019 a la vista del OOS."
+  },
+  "procedencia": {
+    "motor_sha256": "554aadf37e3de480032cbaf23b74fb95ad3a2735826c4243b0a65b6d5947fdb3",
+    "datos_sha256": "799b88c2cc6f77d1dbd9a16bc7f10fa39a00b999c22df97e2946fa377acbe254",
+    "plan_sha256": "697b39eee95ba7aa193882807df2713756243e5ca52db27aca9740284a04246e",
+    "periodos_por_anio": 252
+  },
+  "historial": [
+    {
+      "id": "H019-IS-REAL-001",
+      "fecha": "2026-10-06",
+      "cambio": "Primer ensayo: semestre de invierno frente a verano en SPY."
+    },
+    {
+      "id": "H019-IS-REAL-002",
+      "fecha": "2026-10-06",
+      "cambio": "Misma especificación que H019-IS-REAL-001 en QQQ."
+    },
+    {
+      "id": "H019-IS-REAL-003",
+      "fecha": "2026-10-06",
+      "cambio": "Misma especificación que H019-IS-REAL-001 en IWM."
+    },
+    {
+      "id": "H019-IS-REAL-004",
+      "fecha": "2026-10-06",
+      "cambio": "Misma especificación que H019-IS-REAL-001 en DIA."
+    },
+    {
+      "id": "H019-TOT-REAL-001",
+      "fecha": "2026-10-07",
+      "cambio": "Total 2009-09-27 → 2026-05-28 (IS + OOS) de H019-IS-REAL-001, sin cambiar nada de su especificación."
+    },
+    {
+      "id": "H019-OOS-REAL-001",
+      "fecha": "2026-10-07",
+      "cambio": "OOS 2021-01-01 → 2026-05-28 de H019-IS-REAL-001, sin cambiar nada de su especificación."
+    }
+  ],
+  "ficheros": {
+    "equity": "equity.csv",
+    "operaciones": "operaciones.csv",
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv",
+    "variantes": null
+  }
+}

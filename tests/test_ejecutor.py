@@ -185,3 +185,11 @@ class VentanaMeses(unittest.TestCase):
         bs = [Barra(datetime(2020, m, d, 16), 100.0 + m + d / 100, 100.0) for m, d in [(10, 30), (11, 2), (11, 3), (12, 31)]]
         _, ops = backtest(meses(periodos(bs, "1d"), [11, 12], None, None, "mes"), None, 10000, 0)
         self.assertEqual((len(ops), ops[0].salida), (1, date(2020, 12, 31)))
+
+    def test_ventana_abierta_al_empezar_el_oos_entra_al_primer_cierre(self):
+        from laboratorio.catalogo import meses
+        bs = [Barra(datetime(y, m, d, 16), 100.0 + m + d / 100, 100.0) for y, m, d in [(2020, 12, 31), (2021, 1, 4), (2021, 1, 5), (2021, 5, 3)]]
+        obs = meses(periodos(bs, "1d"), [1, 2, 3, 4], None, None, "mes")
+        sesiones, ops = backtest(obs, None, 10000, 0, desde=date(2021, 1, 4))
+        self.assertEqual((len(ops), ops[0].entrada, ops[0].salida), (1, date(2021, 1, 4), date(2021, 1, 5)))
+        self.assertEqual(sesiones[0].pnl_bruto, 0)

@@ -1,5 +1,5 @@
 // Entrada: sin nada en la URL, la portada; con #<hipótesis> de varios instrumentos, la comparativa;
-// con #<entrada del registro>, su ficha.
+// con #<grupo>/<subgrupo>, la comparativa de ese subgrupo (p. ej. #hora-2/nq); con #<entrada del registro>, su ficha.
 import './styles.css';
 import { clave, loadRegistro } from './data.js';
 
@@ -12,7 +12,7 @@ addEventListener('hashchange', () => {
 const hash = location.hash.slice(1);
 try {
   if (!hash) await import('./home.js');
-  else if ((await loadRegistro()).filter(e => clave(e) === hash).length > 1) await import('./comparativa.js');
+  else if ((await loadRegistro()).filter(e => clave(e) === hash.split('/')[0]).length > 1) await import('./comparativa.js');
   else await import('./ficha.js');
 } finally {
   document.documentElement.classList.add('ready');

@@ -2,6 +2,7 @@ import * as echarts from 'echarts';
 import { clave, loadIndice, loadRegistro, loadFicha, sinRegistrar } from './data.js';
 import { computeMetrics } from './metrics.js';
 import { BUCKETS, DEFAULTS, byBucket, isBase, simulate } from './variantes.js';
+import { linea, marcarPagina, veredictoDe } from './veredicto.js';
 
 // La hipótesis se elige por la URL (#H-001), en el registro o entre las del lab sin registrar; sin nada, la primera.
 const registro = await loadRegistro();
@@ -45,13 +46,16 @@ const STATE = { inconclusive: ['no concluyente', 'caution'], holds: ['se sostien
 /* ---------- cabecera ---------- */
 $('h-name').textContent = D.name;
 $('h-q').textContent = P.IS.research.question;
+const veredicto = veredictoDe([entry, ...registro.filter(e => e.hipotesis && e.hipotesis === entry.hipotesis)]);
+$('h-q').insertAdjacentHTML('afterend', linea(veredicto));
+marcarPagina(veredicto);
 document.title = D.name;
 const B = P.IS.research.bootstrap;
 $('sub-boot').textContent = `${B.replicas.toLocaleString('es-ES', { useGrouping: 'always' })} réplicas · bloques de ${B.bloque} · ${U}`;
 $('sub-eq').textContent = `USD · ${D.sizing ?? entry.reglas['Tamaño'] ?? ''} por entrada`;
 // si la hipótesis se probó en varios instrumentos, «volver» lleva a su comparativa
 if (clave(entry) && registro.filter(e => clave(e) === clave(entry)).length > 1)
-  Object.assign(document.querySelector('.dash .back'), { href: `#${clave(entry)}`, textContent: `← ${entry.grupo ?? entry.hipotesis} · todos` });
+  Object.assign(document.querySelector('.dash .back'), { href: `#${clave(entry)}${entry.subgrupo ? '/' + entry.subgrupo.toLowerCase() : ''}`, textContent: `← ${[entry.grupo ?? entry.hipotesis, entry.subgrupo].filter(Boolean).join(' · ')} · todos` });
 $('foot').textContent = `${D.id} · ${D.exp} · ${fdate(D.frozen)}`;
 
 function renderPhases() {

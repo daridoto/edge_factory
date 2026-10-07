@@ -5,6 +5,7 @@
 import * as echarts from 'echarts';
 import { clave, loadRegistro, loadFicha } from './data.js';
 import { computeMetrics } from './metrics.js';
+import { linea, marcarPagina, veredictoDe } from './veredicto.js';
 
 const nf = d => new Intl.NumberFormat('es-ES', { minimumFractionDigits: d, maximumFractionDigits: d });
 const pb = v => v * 10000;
@@ -19,8 +20,12 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 document.querySelector('.dash').hidden = true;
 $('cmp').hidden = false;
 
-const hid = location.hash.slice(1);
-const group = (await loadRegistro()).filter(e => clave(e) === hid);
+const [hid, subHash] = location.hash.slice(1).split('/');
+const todo = (await loadRegistro()).filter(e => clave(e) === hid);
+// con `subgrupo` (p. ej. HORA 2 en ES y NQ), se ve un subgrupo cada vez (máximo 4 colores) y un selector cambia de uno a otro
+const subs = [...new Set(todo.map(e => e.subgrupo).filter(Boolean))];
+const sub = subs.find(x => x.toLowerCase() === subHash?.toLowerCase()) ?? subs[0];
+const group = sub ? todo.filter(e => e.subgrupo === sub) : todo;
 const fichas = await Promise.all(group.map(loadFicha));
 // Cifras de una entrada en una fase (IS, OOS o Total); null si esa entrada no la tiene.
 function stats(D, key) {
@@ -47,9 +52,13 @@ const first = items[0], U = first.r.unit;
 const efectos = new Set(items.map(i => i.e.efecto)), efecto = efectos.size === 1 ? first.e.efecto : hid;
 // `grupo` del registro (p. ej. «HORA 2 · ES»); si no, efecto e instrumentos o variantes
 $('c-name').textContent = group[0].grupo ?? `${efecto} · ${items.map(i => i.name).join(' · ')}`;
-document.title = group[0].grupo ?? `${hid} · ${efecto}`;
+document.title = group[0].grupo ? [group[0].grupo, sub].filter(Boolean).join(' · ') : `${hid} · ${efecto}`;
+if (subs.length > 1) $('c-name').insertAdjacentHTML('afterend', `<nav class="chips subs" aria-label="Mercado">${subs.map(x =>
+  `<a class="chip" href="#${hid}/${x.toLowerCase()}" aria-pressed="${x === sub}">${x}</a>`).join('')}</nav>`);
 // pregunta y reglas: las de la primera entrada del registro (con variantes, la de la hipótesis base)
 const q0 = items.find(i => i.e === group[0]);
+$('c-q').insertAdjacentHTML('afterend', linea(veredictoDe(todo)));
+marcarPagina(veredictoDe(todo));
 $('c-q').textContent = q0.r.question.replace(new RegExp(`(el )?${q0.D.identity.instrument}`), 'el índice');
 $('c-spec').innerHTML = [
   ...Object.entries(q0.e.reglas).map(([k, v]) => k === 'Tamaño' && first.D.sizing ? [k, `${first.D.sizing} (plan: ${v})`] : [k, v]),

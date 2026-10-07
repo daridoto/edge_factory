@@ -1,0 +1,200 @@
+{
+  "version_esquema": "2.5",
+  "experimento": {
+    "id": "H018-IS-REAL-001",
+    "hipotesis": "H-018",
+    "version": "real-is-v1",
+    "fecha": "2026-10-07",
+    "sintetico": false,
+    "pregunta": "¿Rinde más SPY en la sesión previa a un festivo que en el resto de sesiones?",
+    "variante": "SPY · víspera",
+    "muestra": "IS",
+    "base": null,
+    "mercado": "clasica",
+    "inicio": "2009-09-29",
+    "fin": "2020-12-31",
+    "instrumento": "SPY",
+    "frecuencia": "1d",
+    "moneda": "USD",
+    "capital_inicial": 10000.0,
+    "reglas": {
+      "entrada": "Comprar al cierre de la sesión anterior a la víspera.",
+      "salida": "Vender al cierre de la víspera.",
+      "tamano": "1 acción por víspera; referencia al 100 % del capital aparte.",
+      "costes": "0,01 USD por acción y lado; sin comisión adicional ni impacto."
+    },
+    "receta": "estrategias/H-018.md",
+    "plan": "experimentos/H-018-vispera-festivo/H018-IS-REAL-001-spy.md",
+    "fuente_datos": "data/etf/indices/SP500 SPY - Temp. 1d - Date 2006-07-17 a 2026-07-15 - Norgate.csv"
+  },
+  "evidencia": {
+    "estadistico": "Diferencia ventana − resto (víspera)",
+    "unidad": "pb/día",
+    "valor": 3.4225312317407797,
+    "componentes": [
+      {
+        "nombre": "Sesiones víspera",
+        "valor": 89.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Sesiones resto",
+        "valor": 2746.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Retorno medio víspera",
+        "valor": 9.133171554332158,
+        "unidad": "pb/día"
+      },
+      {
+        "nombre": "Retorno medio resto",
+        "valor": 5.710640322591379,
+        "unidad": "pb/día"
+      }
+    ],
+    "desglose": {
+      "accion_gracias": 7.4365324265669255,
+      "ano_nuevo": -8.948775454953207,
+      "independencia": 31.04599813159359,
+      "memorial": -4.82606327310665,
+      "navidad": -9.582351221921101,
+      "presidentes": 43.034825124383744,
+      "resto": 5.710640322591372,
+      "trabajo": -23.561489779067227,
+      "viernes_santo": 38.678534198864206
+    }
+  },
+  "robustez": {
+    "bootstrap": {
+      "metodo": "bloques circulares",
+      "unidad": "mes",
+      "bloque": 12,
+      "replicas": 5000,
+      "semilla": 7301,
+      "nivel": 0.95,
+      "ic_inf": -9.030598574106518,
+      "ic_sup": 15.766950885689269,
+      "incluye_cero": true,
+      "motivo": "Cada festivo cae una vez al año; bloques de 12 meses conservan un año completo de festivos."
+    },
+    "por_anio": {
+      "2009": -13.560920873684582,
+      "2010": 14.662245979540147,
+      "2011": -24.816573761615576,
+      "2012": 27.17137168689229,
+      "2013": -1.8270341043753333,
+      "2014": 9.345094995783846,
+      "2015": -30.0996419806393,
+      "2016": 33.046505000621245,
+      "2017": -17.130371611253366,
+      "2018": -7.792518246836222,
+      "2019": 26.75504462776039,
+      "2020": 17.91390340815521
+    },
+    "sin_cada_anio": {
+      "2009": 3.9767786689158027,
+      "2010": 2.464115014852885,
+      "2011": 6.2154657485876275,
+      "2012": 1.077654573703934,
+      "2013": 3.9339122620109204,
+      "2014": 2.8385111340799623,
+      "2015": 6.738084418248927,
+      "2016": 0.49909920893407644,
+      "2017": 5.447814903315354,
+      "2018": 4.541543297540385,
+      "2019": 1.1124416522689113,
+      "2020": 2.2203266395421553
+    },
+    "pnl_costes_x2": 14.90663929416626
+  },
+  "metricas": {
+    "operaciones": 89,
+    "pnl_neto": 16.68663929516697,
+    "esperanza": 0.1874903291594414,
+    "tasa_acierto": 0.5842696629213483,
+    "payoff": 1.045625864314619,
+    "profit_factor": 1.469528241739465,
+    "rentabilidad_total": 0.0016686639295167005,
+    "rentabilidad_anual": 0.00014821304973029655,
+    "sharpe": 0.35963256580069886,
+    "sortino": 0.5146654776521545,
+    "max_drawdown": 0.0007164028452097959,
+    "max_recuperacion": null,
+    "drawdown_abierto": 83,
+    "exposicion": 0.03139329805996473,
+    "rotacion": 3.665270211008427,
+    "costes": 1.78000000100071,
+    "peso_costes": 0.020193997264024544,
+    "concentracion_anual": 0.0898876404494382,
+    "autocorrelacion": -0.0014323769275261977
+  },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": 0.07126552646022577,
+    "rentabilidad_anual": 0.006137932343981699,
+    "sharpe": 0.2922404147636863,
+    "max_drawdown": 0.047406082760397816,
+    "pico": "2011-08-31",
+    "valle": "2011-12-22",
+    "recuperacion": "2014-07-03",
+    "sesiones_bajo_agua": 713,
+    "motor_sha256": "96ed465cfcf4f75ebe4b1831c64dad2fcdb629db0ed92723f685ea80d0e91253"
+  },
+  "variantes": null,
+  "sensibilidad": null,
+  "control": null,
+  "no_calculables": {
+    "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
+  },
+  "operaciones_por_anio": {
+    "2009": 3,
+    "2010": 7,
+    "2011": 8,
+    "2012": 8,
+    "2013": 8,
+    "2014": 8,
+    "2015": 8,
+    "2016": 8,
+    "2017": 8,
+    "2018": 8,
+    "2019": 8,
+    "2020": 7
+  },
+  "conclusiones": {
+    "estado": "exploratoria",
+    "lectura": "Diferencia ventana − resto (víspera): 3,42 pb/día. El intervalo incluye cero: en IS no se distingue de no tener efecto.",
+    "supuestos": [
+      "Víspera = última sesión antes de un cierre observado de NYSE por uno de los 8 festivos (reglas en festivos.py).",
+      "Año Nuevo en sábado (2011) no es cierre: ese año no hay víspera de Año Nuevo.",
+      "Retornos close-to-close ajustados por dividendos, antes de costes."
+    ],
+    "limites": [
+      "Unas 89 vísperas en la IS (10-12 por festivo): el intervalo será ancho y el desglose por festivo, ruidoso.",
+      "Solapa con el cambio de mes (H-001) en Labor Day, Navidad y Año Nuevo.",
+      "El intervalo no corrige la exploración previa de esta hipótesis en la literatura."
+    ],
+    "siguiente_comprobacion": "Según el resultado: mirar el desglose por festivo y el solapamiento con TOM, en IS."
+  },
+  "procedencia": {
+    "motor_sha256": "96ed465cfcf4f75ebe4b1831c64dad2fcdb629db0ed92723f685ea80d0e91253",
+    "datos_sha256": "477221938341d519dbd555f911503b9338a7177dc850476ba8afc9445f19ee9a",
+    "plan_sha256": "b1a910df81c9ee22c7a414c16c5289649512389d97884d859c2efadcc91908c0",
+    "periodos_por_anio": 252
+  },
+  "historial": [
+    {
+      "id": "H018-IS-REAL-001",
+      "fecha": "2026-10-07",
+      "cambio": "Primer ensayo: víspera de los 8 festivos de W2943226912 en SPY."
+    }
+  ],
+  "ficheros": {
+    "equity": "equity.csv",
+    "operaciones": "operaciones.csv",
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv",
+    "variantes": null
+  }
+}

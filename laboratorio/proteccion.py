@@ -19,7 +19,9 @@ INICIO_IS, FIN_IS = MUESTRAS["clasica"]
 # Todo lo posterior a la IS clásica con datos del ES (último dato 2026-05-28): no queda holdout.
 OOS = {"clasica": (date(2021, 1, 1), date(2026, 5, 28))}
 AUTORIZADAS_OOS = {"clasica": {"H007-IS-REAL-003", "H007-IS-REAL-004", "H007-IS-REAL-005", "H007-IS-REAL-006", "H007-IS-REAL-008",  # 2026-10-06, conocimiento/H-007.md
-                               "H001-IS-REAL-006"}}  # 2026-10-06, conocimiento/H-001.md
+                               "H001-IS-REAL-006",  # 2026-10-06, conocimiento/H-001.md
+                               "H019-IS-REAL-001",  # 2026-10-07, conocimiento/H-019.md
+                               "H018-IS-REAL-001"}}  # 2026-10-07, conocimiento/H-018.md
 BLOQUEO = "OOS/holdout BLOQUEADO: se requiere un mensaje explícito del usuario para ese uso; esta versión solo procesa IS"
 
 

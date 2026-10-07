@@ -5,7 +5,8 @@ anterior) con tantos periodos como valores tiene la ventana (con `longitud` None
 semestre, cerrado al final de la muestra si la ventana sigue abierta). Entra al cierre anterior al primero y sale
 al cierre del último. Tamaño: 1 unidad del precio negociado o, con `fraccion`, esa fracción de la equity
 al cierre de entrada (unidades fraccionarias); crece con `close` (retorno total si `close` está ajustado).
-Coste: `coste_lado` por unidad y lado.
+Coste: `coste_lado` por unidad y lado. Con `desde` (OOS), una racha que empieza antes de esa fecha entra al primer
+cierre de la muestra: la posición abierta en IS no se opera, como su cierre forzado al final de la IS.
 """
 from collections import defaultdict
 
@@ -26,7 +27,7 @@ def rachas(obs, longitud):
     return out
 
 
-def backtest(obs, longitud, capital, coste_lado, fraccion=None):
+def backtest(obs, longitud, capital, coste_lado, fraccion=None, desde=None):
     """Sin `fraccion`, 1 unidad por operación. Con `fraccion` (0-1], unidades = fraccion · equity / precio de entrada."""
     if fraccion is not None and not 0 < fraccion <= 1:
         raise ValueError("fraccion debe estar en (0, 1]; no se permite apalancamiento")
@@ -36,6 +37,9 @@ def backtest(obs, longitud, capital, coste_lado, fraccion=None):
         total[o.periodo.fin.ts.date()] += 1
     operaciones = []
     for racha in rachas(obs, longitud):
+        racha = [o for o in racha if desde is None or o.periodo.inicio.ts.date() >= desde]
+        if not racha:
+            continue
         entrada, salida = racha[0].periodo.inicio, racha[-1].periodo.fin
         dia_entrada = entrada.ts.date()
         if fraccion is None:

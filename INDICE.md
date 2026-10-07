@@ -7,7 +7,8 @@ Generado por `python -m laboratorio indice` desde `resultados/`; no se edita a m
 | [H-001](#h-001) | Cambio de mes (−1 a +3): rendimiento diario medio mayor que el resto del mes | 9 | 10 |
 | [H-007](#h-007) | Deriva nocturna del ES en la hora 2:00-3:00 ET | 8 | 18 |
 | [H-010](#h-010) | Primera media hora (cierre anterior → 10:00 ET) predice la última (15:30-16:00 ET) | 4 | 4 |
-| [H-019](#h-019) | Noviembre-abril rinde más que mayo-octubre | 4 | 4 |
+| [H-018](#h-018) | La víspera de festivo rinde más que el resto | 2 | 4 |
+| [H-019](#h-019) | Noviembre-abril rinde más que mayo-octubre | 4 | 6 |
 | [H-PROPIA-001](#h-propia-001) | RAY largo 28 días cuando el volumen de Raydium dobla su nivel normal | 1 | 1 |
 
 <a id="h-001"></a>
@@ -69,6 +70,19 @@ Generado por `python -m laboratorio indice` desde `resultados/`; no se edita a m
 | **ES · r1 + r12 → r13** | IS | [H010-IS-REAL-003](resultados/H-010-momentum-intradia-es/H010-IS-REAL-003-r1-r12/ficha.md) | 2009–2020 | Retorno bruto medio por operación | 0,46 pb/operación | [-1,25; 2,24] · cruza 0 | 6/12 | -11,1 % | −13,1 % |
 | **ES · r1 apertura → r13 · VIX ≥ 20** | IS | [H010-IS-REAL-004](resultados/H-010-momentum-intradia-es/H010-IS-REAL-004-r1-apertura-vix/ficha.md) | 2009–2020 | Retorno bruto medio por operación | 2,40 pb/operación | [-0,86; 5,81] · cruza 0 | 9/11 | 5,4 % | −10,4 % |
 
+<a id="h-018"></a>
+
+## H-018 · La víspera de festivo rinde más que el resto
+
+[receta](estrategias/H-018.md) · [notas](conocimiento/H-018.md) · planes: `experimentos/H-018-vispera-festivo/` · resultados: `resultados/H-018-vispera-festivo/`
+
+| variante | muestra | experimento | periodo | mide | valor | IC 95 % | años + | ROI 100 % | DD 100 % |
+|---|---|---|---|---|---:|---|---:|---:|---:|
+| **SPY · víspera** | IS | [H018-IS-REAL-001](resultados/H-018-vispera-festivo/H018-IS-REAL-001-spy/ficha.md) | 2009–2020 | Diferencia ventana − resto | 3,42 pb/día | [-9,03; 15,77] · cruza 0 | 6/12 | 7,1 % | −4,7 % |
+|  | OOS | [H018-OOS-REAL-001](resultados/H-018-vispera-festivo/H018-OOS-REAL-001-spy/ficha.md) | 2021–2026 | Diferencia ventana − resto | 16,66 pb/día | [4,37; 29,30] | 5/6 | 9,6 % | −1,9 % |
+|  | Total | [H018-TOT-REAL-001](resultados/H-018-vispera-festivo/H018-TOT-REAL-001-spy/ficha.md) | 2009–2026 | Diferencia ventana − resto | 7,96 pb/día | [-1,75; 17,14] · cruza 0 | 11/18 | 18,0 % | −4,7 % |
+| **ES · última hora de la víspera** | IS | [H018-IS-REAL-002](resultados/H-018-vispera-festivo/H018-IS-REAL-002-es-hora/ficha.md) | 2009–2020 | Diferencia ventana − resto | 1,57 pb/hora | [-4,21; 7,32] · cruza 0 | 7/12 | 0,6 % | −1,5 % |
+
 <a id="h-019"></a>
 
 ## H-019 · Noviembre-abril rinde más que mayo-octubre
@@ -78,6 +92,8 @@ Generado por `python -m laboratorio indice` desde `resultados/`; no se edita a m
 | variante | muestra | experimento | periodo | mide | valor | IC 95 % | años + | ROI 100 % | DD 100 % |
 |---|---|---|---|---|---:|---|---:|---:|---:|
 | **SPY · Nov-Abr** | IS | [H019-IS-REAL-001](resultados/H-019-halloween/H019-IS-REAL-001-spy/ficha.md) | 2009–2020 | Diferencia ventana − resto | 4,45 pb/día | [-0,57; 9,81] · cruza 0 | 8/12 | 181,2 % | −33,7 % |
+|  | OOS | [H019-OOS-REAL-001](resultados/H-019-halloween/H019-OOS-REAL-001-spy/ficha.md) | 2021–2026 | Diferencia ventana − resto | -2,08 pb/día | [-11,14; 6,76] · cruza 0 | 2/6 | 39,9 % | −18,7 % |
+|  | Total | [H019-TOT-REAL-001](resultados/H-019-halloween/H019-TOT-REAL-001-spy/ficha.md) | 2009–2026 | Diferencia ventana − resto | 2,34 pb/día | [-2,13; 6,91] · cruza 0 | 10/18 | 288,2 % | −33,7 % |
 | **QQQ · Nov-Abr** | IS | [H019-IS-REAL-002](resultados/H-019-halloween/H019-IS-REAL-002-qqq/ficha.md) | 2009–2020 | Diferencia ventana − resto | 2,52 pb/día | [-3,39; 8,96] · cruza 0 | 7/12 | 235,4 % | −28,5 % |
 | **IWM · Nov-Abr** | IS | [H019-IS-REAL-003](resultados/H-019-halloween/H019-IS-REAL-003-iwm/ficha.md) | 2009–2020 | Diferencia ventana − resto | 6,63 pb/día | [-1,57; 15,55] · cruza 0 | 8/12 | 204,9 % | −41,0 % |
 | **DIA · Nov-Abr** | IS | [H019-IS-REAL-004](resultados/H-019-halloween/H019-IS-REAL-004-dia/ficha.md) | 2009–2020 | Diferencia ventana − resto | 4,45 pb/día | [-0,66; 9,64] · cruza 0 | 8/12 | 168,7 % | −36,7 % |

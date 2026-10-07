@@ -2,6 +2,7 @@
 // Fila = nombre y pregunta · fases · efecto · IC frente a 0 · años positivos · PnL · equity.
 import { clave, loadRegistro, loadIndice, loadFicha, sinRegistrar } from './data.js';
 import { computeMetrics } from './metrics.js';
+import { chip, tono, veredictoDe } from './veredicto.js';
 
 const $ = id => document.getElementById(id);
 const nf = d => new Intl.NumberFormat('es-ES', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -73,13 +74,13 @@ function ciStack(rs) {
 }
 
 // Equity de varios instrumentos, en % sobre su capital, con la misma escala.
-function sparkMany(eqs, id) {
+function sparkMany(eqs, id, colores = eqs.map((_, k) => k)) {
   const W = 150, H = 40, rel = eqs.map(eq => eq.map(e => e[1] / eq[0][1] - 1));
   const lo = Math.min(...rel.flat()), hi = Math.max(...rel.flat());
   return `<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">${rel.map((v, k) => {
     const step = Math.max(1, Math.floor(v.length / W));
     const pts = v.filter((_, i) => i % step === 0).map((y, i, a) => `${((i / (a.length - 1)) * W).toFixed(1)},${(H - 2 - ((y - lo) / (hi - lo || 1)) * (H - 4)).toFixed(1)}`);
-    return `<polyline class="spark-line thin" style="--sc:var(--series-${k + 1})" points="${pts.join(' ')}"/>`; }).join('')}</svg>`;
+    return `<polyline class="spark-line thin" style="--sc:var(--series-${colores[k] + 1})" points="${pts.join(' ')}"/>`; }).join('')}</svg>`;
 }
 
 const range = (vs, f) => { const lo = Math.min(...vs), hi = Math.max(...vs); return lo === hi ? f(lo) : `${f(lo)} … ${f(hi)}`; };
@@ -92,11 +93,11 @@ function groupRow(g, k) {
   const effects = rs.map(r => pb(r.difference)), ups = rs.map(r => Object.values(r.by_year).filter(v => v > 0).length);
   const rets = Ds.map(D => computeMetrics(D.phases.IS).pnl / D.initialEquity * 100);
   const noZero = rs.filter(r => r.ci95[0] > 0 || r.ci95[1] < 0).length;
-  const label = i => es[i].etiqueta ?? Ds[i].identity.instrument, variantes = es.some(x => x.etiqueta);
+  const label = i => [es[i].subgrupo, es[i].etiqueta ?? Ds[i].identity.instrument].filter(Boolean).join(' '), variantes = es.some(x => x.etiqueta);
   const best = label(effects.indexOf(Math.max(...effects)));
-  return `<a class="row" href="#${g.id}" style="--row-state:var(--${STATE[state]?.[1] ?? 'faint'})">
+  return `<a class="row" href="#${g.id}" style="--row-state:var(${tono(veredictoDe(es)) ?? `--${STATE[state]?.[1] ?? 'faint'}`})">${chip(veredictoDe(es), 'row-verdict')}
     <div class="row-id">
-      <h2>${e.grupo ?? `${new Set(es.map(x => x.efecto)).size === 1 ? e.efecto : g.id} · ${Ds.map((_, i) => label(i)).join(variantes ? ' · ' : ' ')}`}</h2>
+      <h2>${e.grupo ? [e.grupo, ...new Set(es.map(x => x.subgrupo).filter(Boolean))].join(' · ') : `${new Set(es.map(x => x.efecto)).size === 1 ? e.efecto : g.id} · ${Ds.map((_, i) => label(i)).join(variantes ? ' · ' : ' ')}`}</h2>
       <p class="question">${rs[0].question.replace(new RegExp(`(el )?${Ds[0].identity.instrument}`), 'el índice')}</p>
       <p class="row-spec">${e.hipotesis ?? g.id} · ${Ds.length} ${variantes ? 'variantes' : 'instrumentos'} · ${Ds[0].identity.frequency} · ${fdate(ph.start)} → ${fdate(ph.end)}</p>
     </div>
@@ -105,7 +106,7 @@ function groupRow(g, k) {
     <div class="kpi"><span class="l">IC 95 %</span>${ciStack(rs)}<span class="d">${noZero ? `${noZero}/${rs.length} no cruzan 0` : '<span class="warn">todos cruzan 0</span>'}</span></div>
     ${kpi('Años +', range(ups, v => v) + `<span class="u">/ ${Object.keys(rs[0].by_year).length}</span>`)}
     ${kpi('ROI', range(rets, sgn) + '<span class="u">%</span>', Ds[0].sizing ?? e.reglas['Tamaño'] ?? '')}
-    ${sparkMany(Ds.map(D => D.phases.IS.equity), k)}
+    ${sparkMany(Ds.map(D => D.phases.IS.equity), k, es.map((x, i) => es.slice(0, i).filter(y => y.subgrupo === x.subgrupo).length))}
   </a>`;
 }
 
@@ -117,7 +118,7 @@ $('rows').innerHTML = groups.map((g, gi) => {
   const years = Object.values(r.by_year), up = years.filter(v => v > 0).length;
   const [lo, hi] = r.ci95.map(pb), crosses = lo < 0 && hi > 0;
   const state = e.estados?.IS ?? ph.state;
-  return `<a class="row" href="#${e.id}" style="--row-state:var(--${STATE[state]?.[1] ?? 'faint'})">
+  return `<a class="row" href="#${e.id}" style="--row-state:var(${tono(veredictoDe([e])) ?? `--${STATE[state]?.[1] ?? 'faint'}`})">${chip(veredictoDe([e]), 'row-verdict')}
     <div class="row-id">
       <h2>${D.name}</h2>
       <p class="question">${r.question}</p>

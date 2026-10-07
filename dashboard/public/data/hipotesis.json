@@ -95,7 +95,8 @@
     "estados": {
       "IS": "inconclusive"
     },
-    "grupo": "HORA 2 · ES"
+    "grupo": "HORA 2",
+    "subgrupo": "ES"
   },
   {
     "id": "H-007-ODP",
@@ -117,7 +118,8 @@
     "estados": {
       "IS": "inconclusive"
     },
-    "grupo": "HORA 2 · ES"
+    "grupo": "HORA 2",
+    "subgrupo": "ES"
   },
   {
     "id": "H-007-NUCLEO",
@@ -139,7 +141,8 @@
     "estados": {
       "IS": "inconclusive"
     },
-    "grupo": "HORA 2 · ES"
+    "grupo": "HORA 2",
+    "subgrupo": "ES"
   },
   {
     "id": "H-007-VIX",
@@ -161,12 +164,14 @@
     "estados": {
       "IS": "inconclusive"
     },
-    "grupo": "HORA 2 · ES"
+    "grupo": "HORA 2",
+    "subgrupo": "ES"
   },
   {
     "id": "H-007-NQ",
     "hipotesis": "H-007",
-    "grupo": "HORA 2 · NQ",
+    "grupo": "HORA 2",
+    "subgrupo": "NQ",
     "etiqueta": "OD+ BtD",
     "nombre": "HORA 2 · NQ BtD",
     "efecto": "BtD",
@@ -189,7 +194,8 @@
   {
     "id": "H-007-NQ-BAJ",
     "hipotesis": "H-007",
-    "grupo": "HORA 2 · NQ",
+    "grupo": "HORA 2",
+    "subgrupo": "NQ",
     "etiqueta": "OD+ bajista",
     "nombre": "HORA 2 · NQ bajista",
     "efecto": "bajista",
@@ -302,12 +308,42 @@
     "grupo": "MOMENTUM INTRADÍA · ES"
   },
   {
+    "id": "H-018-SPY",
+    "hipotesis": "H-018",
+    "nombre": "VÍSPERA FESTIVO · SPY",
+    "efecto": "Víspera",
+    "experimentos": {
+      "IS": "H018-IS-REAL-001",
+      "OOS": "H018-OOS-REAL-001",
+      "Total": "H018-TOT-REAL-001"
+    },
+    "reglas": {
+      "Entrada": "cierre · sesión anterior a la víspera",
+      "Salida": "cierre · víspera de festivo NYSE",
+      "Festivos": "los 8 del paper (sin MLK)",
+      "Tamaño": "1 acción"
+    },
+    "costes": "0,01 USD / acción y lado",
+    "estados": {
+      "IS": "inconclusive",
+      "OOS": "holds",
+      "Total": "inconclusive"
+    },
+    "veredicto": {
+      "marca": "candidata",
+      "motivo": "en OOS no cruza 0 … el core es el mismo",
+      "fecha": "2026-10-07"
+    }
+  },
+  {
     "id": "H-019-SPY",
     "hipotesis": "H-019",
     "nombre": "HALLOWEEN · SPY",
     "efecto": "Halloween",
     "experimentos": {
-      "IS": "H019-IS-REAL-001"
+      "IS": "H019-IS-REAL-001",
+      "OOS": "H019-OOS-REAL-001",
+      "Total": "H019-TOT-REAL-001"
     },
     "reglas": {
       "Entrada": "cierre · última sesión de octubre",
