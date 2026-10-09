@@ -122,6 +122,8 @@ function toPhase(key, r, equity, trades, entry) {
   const x = r.experimento, ev = r.evidencia, boot = r.robustez.bootstrap;
   // componentes: [n ventana, n resto, media ventana, media resto], en ese orden; sin resto (n resto = 0), sin su media
   const [nWin, nRest, meanWin, meanRest] = ev.componentes.map(c => c.valor);
+  // detalle opcional (operativa por sesión con dirección y predicción): por nombre del componente; null si no está
+  const comp = re => ev.componentes.find(c => re.test(c.nombre))?.valor ?? null;
   return {
     key,
     state: entry.estados?.[key] ?? 'inconclusive',
@@ -143,6 +145,13 @@ function toPhase(key, r, equity, trades, entry) {
       by_year: fracMap(r.robustez.por_anio),
       leave_one_year_out: fracMap(r.robustez.sin_cada_anio),
       cost_stress_net: r.robustez.pnl_costes_x2,
+      detail: {
+        median: comp(/^Mediana/), hit: comp(/^Acierto/),
+        longs: [comp(/^Operaciones largos/), comp(/^Retorno medio largos/)],
+        shorts: [comp(/^Operaciones cortos/), comp(/^Retorno medio cortos/)],
+        beta: comp(/^β × 100/), tBeta: comp(/^t de β/), r2: comp(/^R²$/), r2os: comp(/^R² fuera/),
+        beta2: comp(/^Interacción: β2/), tBeta2: comp(/^Interacción: t de β2/), r2osInt: comp(/^Interacción: R² fuera/),
+      },
     },
   };
 }

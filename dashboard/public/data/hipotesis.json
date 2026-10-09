@@ -400,5 +400,94 @@
     },
     "costes": "0,01 USD / acción y lado",
     "estados": {}
+  },
+  {
+    "id": "H-PROPIA-003",
+    "hipotesis": "H-PROPIA-003",
+    "etiqueta": "día",
+    "nombre": "MOMENTUM DÍA → 15:30 · ES",
+    "grupo": "MOMENTUM AL CIERRE",
+    "efecto": "momentum",
+    "costes": "1 tick (0,25 pt) por operación",
+    "pregunta": "¿Sigue el índice al cierre el signo del día?",
+    "experimentos": {
+      "IS": "HPROPIA003-IS-REAL-001"
+    },
+    "reglas": {
+      "Señal": "9:30 → 15:30 ET",
+      "Entrada": "15:30 ET · largo si señal > 0, corto si no",
+      "Salida": "16:00 ET",
+      "Tamaño": "1 punto del índice"
+    },
+    "estados": {
+      "IS": "holds"
+    },
+    "subgrupo": "REGLAS"
+  },
+  {
+    "id": "H-073",
+    "hipotesis": "H-073",
+    "etiqueta": "price-21",
+    "nombre": "PRICE-21 ±2 % · ES",
+    "grupo": "MOMENTUM AL CIERRE",
+    "efecto": "momentum",
+    "costes": "1 tick (0,25 pt) por operación",
+    "experimentos": {
+      "IS": "H073-IS-REAL-001"
+    },
+    "reglas": {
+      "Señal": "cierre previo → 14:45 ET, solo si |señal| ≥ 2 %",
+      "Entrada": "14:45 ET · largo si señal > 0, corto si < 0",
+      "Salida": "16:00 ET",
+      "Tamaño": "1 punto del índice"
+    },
+    "estados": {
+      "IS": "inconclusive"
+    },
+    "subgrupo": "REGLAS"
+  },
+  {
+    "id": "H-073-REG-ES",
+    "etiqueta": "ES",
+    "nombre": "REGRESIÓN DÍA → 15:30 · ES",
+    "hipotesis": "H-073",
+    "grupo": "MOMENTUM AL CIERRE",
+    "efecto": "momentum",
+    "costes": "1 tick (0,25 pt) por operación",
+    "reglas": {
+      "Señal": "cierre previo → 15:30 ET · regresión sobre señal y señal·|señal|",
+      "Entrada": "15:30 ET · largo si señal > 0, corto si no",
+      "Salida": "16:00 ET",
+      "Tamaño": "1 punto del índice"
+    },
+    "estados": {
+      "IS": "holds"
+    },
+    "experimentos": {
+      "IS": "H073-IS-REAL-002"
+    },
+    "subgrupo": "REGRESIÓN"
+  },
+  {
+    "id": "H-073-REG-NQ",
+    "etiqueta": "NQ",
+    "nombre": "REGRESIÓN DÍA → 15:30 · NQ",
+    "hipotesis": "H-073",
+    "grupo": "MOMENTUM AL CIERRE",
+    "efecto": "momentum",
+    "costes": "1 tick (0,25 pt) por operación",
+    "reglas": {
+      "Señal": "cierre previo → 15:30 ET · regresión sobre señal y señal·|señal|",
+      "Entrada": "15:30 ET · largo si señal > 0, corto si no",
+      "Salida": "16:00 ET",
+      "Tamaño": "1 punto del índice"
+    },
+    "estados": {
+      "IS": "holds"
+    },
+    "experimentos": {
+      "IS": "H073-IS-REAL-003"
+    },
+    "subgrupo": "REGRESIÓN"
   }
 ]

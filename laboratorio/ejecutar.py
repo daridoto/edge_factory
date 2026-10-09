@@ -264,6 +264,8 @@ def ejecutar_sesion(spec, plan, barras=None, serie=None, hoy=None, inicio=INICIO
     filtro = ss.get("filtro_senal")
     if ss.get("filtro_serie"):
         filtro = {"senal": filtro, **ss["filtro_serie"]}
+    if "umbral_senal" in ss:
+        filtro = {**(filtro if isinstance(filtro, dict) else {"senal": filtro}), "senal_abs_min": float(ss["umbral_senal"])}
     coste, capital = op["coste_lado"], op["capital"]
     periodos_anio = dataset.get("periodos_por_anio", 252)
 
@@ -319,6 +321,19 @@ def ejecutar_sesion(spec, plan, barras=None, serie=None, hoy=None, inicio=INICIO
                         Componente(nombre="R²", valor=100 * p["r2"], unidad="%")]
         if p["r2_os"] is not None:
             componentes.append(Componente(nombre=f"R² fuera de muestra recursivo (desde {p['desde']})", valor=100 * p["r2_os"], unidad="%"))
+        if es.get("interaccion"):
+            # misma regresión con la interacción señal·|señal|: pendiente que crece con el tamaño del movimiento,
+            # en lugar de un umbral elegido (β1 + 2·β2·|señal| es la pendiente marginal)
+            q = catalogo.regresion([[f.senal, f.senal * abs(f.senal)] for f in usadas], [f.salida / f.entrada - 1 for f in usadas],
+                                   [f.fecha.strftime("%Y-%m") for f in usadas])
+            componentes += [Componente(nombre="Interacción: β1 × 100 (señal)", valor=100 * q["betas"][0], unidad="β×100"),
+                            Componente(nombre=f"Interacción: t de β1 (Newey-West, retardo {q['retardo']})", valor=q["t_nw"][0], unidad="t"),
+                            Componente(nombre="Interacción: β2 (señal·|señal|)", valor=q["betas"][1], unidad="β"),
+                            Componente(nombre=f"Interacción: t de β2 (Newey-West, retardo {q['retardo']})", valor=q["t_nw"][1], unidad="t"),
+                            Componente(nombre="Interacción: R²", valor=100 * q["r2"], unidad="%")]
+            if q["r2_os"] is not None:
+                componentes.append(Componente(nombre=f"Interacción: R² fuera de muestra recursivo (desde {q['desde']})",
+                                              valor=100 * q["r2_os"], unidad="%"))
     sin_senal = sum(f.senal is None for f in filas) if direccion in ("senal", "acuerdo") else 0
     if direccion == "acuerdo":
         componentes.append(Componente(nombre="Sesiones sin acuerdo de señales (no operadas)",

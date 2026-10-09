@@ -9,7 +9,9 @@ Generado por `python -m laboratorio indice` desde `resultados/`; no se edita a m
 | [H-010](#h-010) | Primera media hora (cierre anterior → 10:00 ET) predice la última (15:30-16:00 ET) | 4 | 4 |
 | [H-018](#h-018) | La víspera de festivo rinde más que el resto | 2 | 4 |
 | [H-019](#h-019) | Noviembre-abril rinde más que mayo-octubre | 4 | 6 |
+| [H-073](#h-073) | Momentum de tarde ligado al rebalanceo de los ETF apalancados | 3 | 3 |
 | [H-PROPIA-001](#h-propia-001) | RAY largo 28 días cuando el volumen de Raydium dobla su nivel normal | 1 | 1 |
+| [H-PROPIA-003](#h-propia-003) | Momentum al cierre por el signo del día | 1 | 1 |
 
 <a id="h-001"></a>
 
@@ -102,6 +104,18 @@ Generado por `python -m laboratorio indice` desde `resultados/`; no se edita a m
 | **IWM · Nov-Abr** | IS | [H019-IS-REAL-003](resultados/H-019-halloween/H019-IS-REAL-003-iwm/ficha.md) | 2009–2020 | Diferencia ventana − resto | 6,63 pb/día | [-1,57; 15,55] · cruza 0 | 8/12 | 204,9 % | −41,0 % |
 | **DIA · Nov-Abr** | IS | [H019-IS-REAL-004](resultados/H-019-halloween/H019-IS-REAL-004-dia/ficha.md) | 2009–2020 | Diferencia ventana − resto | 4,45 pb/día | [-0,66; 9,64] · cruza 0 | 8/12 | 168,7 % | −36,7 % |
 
+<a id="h-073"></a>
+
+## H-073 · Momentum de tarde ligado al rebalanceo de los ETF apalancados
+
+[receta](estrategias/H-073.md) · [notas](conocimiento/H-073.md) · planes: `experimentos/H-073-letf-momentum-tarde-es/` · resultados: `resultados/H-073-letf-momentum-tarde-es/`
+
+| variante | muestra | experimento | periodo | mide | valor | IC 95 % | años + | ROI 100 % | DD 100 % |
+|---|---|---|---|---|---:|---|---:|---:|---:|
+| **ES · price-21 (±2 % a las 14:45)** | IS | [H073-IS-REAL-001](resultados/H-073-letf-momentum-tarde-es/H073-IS-REAL-001-price-21/ficha.md) | 2009–2020 | Retorno bruto medio por operación | 14,40 pb/operación | [-2,35; 33,33] · cruza 0 | 9/11 | 15,8 % | −8,2 % |
+| **ES · regresión día → 15:30-16:00** | IS | [H073-IS-REAL-002](resultados/H-073-letf-momentum-tarde-es/H073-IS-REAL-002-regresion-es/ficha.md) | 2009–2020 | Retorno bruto medio por operación | 1,92 pb/operación | [0,85; 3,09] | 9/12 | 14,1 % | −11,8 % |
+| **NQ · regresión día → 15:30-16:00** | IS | [H073-IS-REAL-003](resultados/H-073-letf-momentum-tarde-es/H073-IS-REAL-003-regresion-nq/ficha.md) | 2009–2020 | Retorno bruto medio por operación | 1,30 pb/operación | [0,18; 2,55] | 9/12 | 16,3 % | −8,1 % |
+
 <a id="h-propia-001"></a>
 
 ## H-PROPIA-001 · RAY largo 28 días cuando el volumen de Raydium dobla su nivel normal
@@ -111,3 +125,13 @@ Generado por `python -m laboratorio indice` desde `resultados/`; no se edita a m
 | variante | muestra | experimento | periodo | mide | valor | IC 95 % | años + | ROI 100 % | DD 100 % |
 |---|---|---|---|---|---:|---|---:|---:|---:|
 | **VOL×2** | IS | [HPROPIA001-IS-REAL-001](resultados/H-PROPIA-001-ray-volumen/HPROPIA001-IS-REAL-001-vol-x2/ficha.md) | 2022–2026 | Retorno neto medio por operación | 37,51 % / operación | [9,41; 68,22] | 3/5 | 3.664,8 % | −54,1 % |
+
+<a id="h-propia-003"></a>
+
+## H-PROPIA-003 · Momentum al cierre por el signo del día
+
+[receta](estrategias/H-PROPIA-003.md) · [notas](conocimiento/H-PROPIA-003.md) · planes: `experimentos/H-PROPIA-003-momentum-cierre-es/` · resultados: `resultados/H-PROPIA-003-momentum-cierre-es/`
+
+| variante | muestra | experimento | periodo | mide | valor | IC 95 % | años + | ROI 100 % | DD 100 % |
+|---|---|---|---|---|---:|---|---:|---:|---:|
+| **ES · día desde apertura → 15:30-16:00** | IS | [HPROPIA003-IS-REAL-001](resultados/H-PROPIA-003-momentum-cierre-es/HPROPIA003-IS-REAL-001-dia-apertura/ficha.md) | 2009–2020 | Retorno bruto medio por operación | 1,61 pb/operación | [0,47; 2,85] | 8/12 | 5,3 % | −10,7 % |

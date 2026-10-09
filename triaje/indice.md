@@ -1,6 +1,6 @@
 # Triaje de hipótesis por datos
 
-Actualizado: 2026-10-07 · compatibles: 18 · proxy: 6 · bloqueadas: 37
+Actualizado: 2026-10-09 · compatibles: 19 · proxy: 6 · bloqueadas: 37
 
 | id | enunciado (corto, ≤ 12 palabras) | familia | dataset | veredicto | motivos |
 |---|---|---|---|---|---|
@@ -19,6 +19,7 @@ Actualizado: 2026-10-07 · compatibles: 18 · proxy: 6 · bloqueadas: 37
 | [[H-038]] | S&P 500: miércoles rinde más y lunes menos | estacionalidad | SPY 1d | compatible | C-COBERTURA, C-EQUIV |
 | [[H-051]] | Tras varianza alta, la rentabilidad por unidad de varianza baja | sin_encaje | SPY 1d | compatible | — |
 | [[H-052]] | Exposición escalada por 1/varianza del mes previo mejora el Sharpe | sin_encaje | SPY 1d | compatible | — |
+| [[H-073]] | Movimiento ≥ ±2 % hasta 14:15-14:45: el cierre sigue el signo | momentum | ES 15min | compatible | C-EQUIV, C-ROLL |
 | [[H-055]] | Bitcoin: la rentabilidad semanal predice la siguiente con el mismo signo | momentum | BTCUSDT 1d | compatible | C-COBERTURA |
 | [[H-041]] | Rentabilidad pasada alta de una divisa predice asimetría más negativa | sin_encaje | EURUSD + JPYUSD 1d | compatible | C-COBERTURA |
 | [[H-058]] | BTC, XRP y ETH: los sábados rinden menos | estacionalidad | BTC + ETH + XRP 1d | compatible | C-COBERTURA |
@@ -194,6 +195,15 @@ Notas: familia `sin_encaje`: describe la relación entre varianza y rentabilidad
 | campo | OHLC (costes de Abdi-Ranaldo) | OK | "neta de costes (estimador de Abdi-Ranaldo con OHLC diario" |
 
 Notas: familia `sin_encaje`: la posición es siempre larga y lo que cambia es el tamaño según la varianza pasada, no la dirección ni el momento. La versión base implica apalancamiento (percentil 99 del peso: 6,4), que choca con C10 (sin apalancamiento); el Test mínimo nombra la variante "límite de apalancamiento a 1 o 1,5". Lo decide el estratega con el usuario.
+
+### H-073 · compatible
+| requisito | valor | estado | cita / dónde se nombra el proxy |
+|---|---|---|---|
+| instrumento | S&P 500 (cesta, índice o SPY) | OK (ES, C8) | Predicción: "en el S&P 500 (cesta de constituyentes, índice o SPY)" |
+| frecuencia | 15 min | OK (ES 15min) | datos: "OHLCV intradía (15 min)" |
+| campo | precio a 14:15/14:30/14:45 y cierre | OK | Test mínimo: "r_prev = precio(14:15/14:30/14:45)/cierre(t−1) − 1" |
+
+Notas: triada en línea el 2026-10-09 a petición del usuario (fuera del lote H-037–H-061). La muestra original (2006-2011) solapa con la IS en 2009-2011.
 
 ### H-055 · compatible
 | requisito | valor | estado | cita / dónde se nombra el proxy |

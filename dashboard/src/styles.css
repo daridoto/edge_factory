@@ -209,6 +209,9 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .cmp-table .th{font:var(--fs-1)/1.3 var(--sans);color:var(--muted)}
 .cmp-table a.tr:hover{background:var(--surface)}
 .cmp-table a.tr:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.cmp-table .det{grid-column:2/-1;contain:inline-size;font:var(--fs-1)/1.3 var(--mono);color:var(--muted);padding-top:2px}
+.spec .spec-var{flex-basis:100%}
+.spec .spec-var dt{display:flex;gap:6px;align-items:center;min-width:12ch;white-space:nowrap}
 .cmp-table .pos{color:var(--pos)} .cmp-table .neg{color:var(--neg)} .cmp-table .warn{font-size:var(--fs-1);color:var(--caution)}
 .cmp [data-name]{transition:opacity .15s}
 .cmp .dim{opacity:.35}

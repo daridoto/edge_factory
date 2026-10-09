@@ -24,7 +24,7 @@ const [hid, subHash] = location.hash.slice(1).split('/');
 const todo = (await loadRegistro()).filter(e => clave(e) === hid);
 // con `subgrupo` (p. ej. HORA 2 en ES y NQ), se ve un subgrupo cada vez (máximo 4 colores) y un selector cambia de uno a otro
 const subs = [...new Set(todo.map(e => e.subgrupo).filter(Boolean))];
-const sub = subs.find(x => x.toLowerCase() === subHash?.toLowerCase()) ?? subs[0];
+const sub = subs.find(x => x.toLowerCase() === decodeURIComponent(subHash ?? '').toLowerCase()) ?? subs[0];
 const group = sub ? todo.filter(e => e.subgrupo === sub) : todo;
 const fichas = await Promise.all(group.map(loadFicha));
 // Cifras de una entrada en una fase (IS, OOS o Total); null si esa entrada no la tiene.
@@ -59,9 +59,16 @@ if (subs.length > 1) $('c-name').insertAdjacentHTML('afterend', `<nav class="chi
 const q0 = items.find(i => i.e === group[0]);
 $('c-q').insertAdjacentHTML('afterend', linea(veredictoDe(todo)));
 marcarPagina(veredictoDe(todo));
-$('c-q').textContent = q0.r.question.replace(new RegExp(`(el )?${q0.D.identity.instrument}`), 'el índice');
-$('c-spec').innerHTML = [
-  ...Object.entries(q0.e.reglas).map(([k, v]) => k === 'Tamaño' && first.D.sizing ? [k, `${first.D.sizing} (plan: ${v})`] : [k, v]),
+$('c-q').textContent = group[0].pregunta ?? q0.r.question.replace(new RegExp(`(el )?${q0.D.identity.instrument}`), 'el índice');
+// reglas: si las variantes no comparten reglas (salvo el tamaño), una línea por variante con su color
+const sinTam = e => JSON.stringify(Object.entries(e.reglas).filter(([k]) => k !== 'Tamaño'));
+// solo en grupos que mezclan hipótesis (sus reglas no se resumen en las de la primera); el resto, como siempre
+const mixta = new Set(todo.map(e => e.hipotesis)).size > 1;
+const porVariante = mixta && entradas.some(i => sinTam(i.e) !== sinTam(q0.e));
+const reglas = Object.entries(q0.e.reglas).filter(([k]) => !porVariante || k === 'Tamaño');
+$('c-spec').innerHTML = (porVariante ? entradas.map(i => `<div class="spec-var" data-name="${i.name}"><dt><i class="sw" style="--sc:var(${i.color})"></i>${i.name}</dt><dd>${
+  Object.entries(i.e.reglas).filter(([k]) => k !== 'Tamaño').map(([k, v]) => `${k.toLowerCase()} ${v}`).join(' · ')}</dd></div>`).join('') : '') + [
+  ...reglas.map(([k, v]) => k === 'Tamaño' && first.D.sizing ? [k, `${first.D.sizing} (plan: ${v})`] : [k, v]),
   ['Periodo', `<span id="c-period">${fdate(first.ph.start)} → ${fdate(first.ph.end)}</span>`],
   ['Capital', `${nf(0).format(first.D.initialEquity)} USD`],
   ['Costes', first.e.costes],
@@ -92,6 +99,7 @@ const tip = () => ({ backgroundColor: css('--surface'), borderColor: css('--rule
 // solo se anima el primer dibujo; el resaltado redibuja sin animación
 let booted = false;
 const anim = () => ({ animation: !reduced && !booted, animationDuration: 700 });
+await document.fonts.ready;   // ECharts mide las etiquetas con la fuente ya cargada (si no, las recorta)
 const cCI = echarts.init($('c-ci'), null, { renderer: 'svg' }), cEq = echarts.init($('c-eq'), null, { renderer: 'canvas' });
 let hl = null;   // instrumento resaltado (hover en tabla o gráficos)
 const off = new Set();   // instrumentos ocultos en la equity (filtro)
@@ -182,7 +190,30 @@ function renderTable() {
     `<span class="${sign(i.worstLoyo)}">${sgn(i.worstLoyo)}</span>`,
   ];
   $('c-table').innerHTML = `<div class="tr th">${th.map(h => `<span>${h}</span>`).join('')}</div>`
-    + items.map(i => `<a class="tr" href="#${i.e.id}" data-name="${i.name}">${td(i).map(c => `<span>${c}</span>`).join('')}</a>`).join('');
+    + items.map(i => `<a class="tr" href="#${i.e.id}" data-name="${i.name}">${td(i).map(c => `<span>${c}</span>`).join('')}${detalle(i)}</a>`).join('');
+}
+
+// línea de detalle bajo la fila: lo que el lab trae de la evidencia (operaciones, mediana, largos/cortos, predicción,
+// sesiones descartadas por el filtro) y el peso de los costes. Solo en grupos que mezclan hipótesis y en pruebas
+// largo/corto por señal (con largos y cortos).
+function detalle(i) {
+  const r = i.r, d = r.detail ?? {}, n = v => v.toLocaleString('es-ES', { useGrouping: 'always' });
+  const bruto = i.ph.trades.reduce((a, t) => a + t.net + t.cost, 0) / i.D.initialEquity * 100;
+  const coste = i.ph.trades.reduce((a, t) => a + t.cost, 0) / i.D.initialEquity * 100;
+  const partes = [
+    `${n(r.n_tom)} ops`,
+    d.median != null && `mediana ${sgn(d.median)}`,
+    d.longs?.[0] != null && `largos ${sgn(d.longs[1])} (${n(d.longs[0])})`,
+    d.shorts?.[0] != null && `cortos ${sgn(d.shorts[1])} (${n(d.shorts[0])})`,
+    d.hit != null && `acierto ${nf(1).format(d.hit)} %`,
+    d.beta != null && `β×100 ${nf(2).format(d.beta)} (t ${nf(2).format(d.tBeta)})`,
+    d.r2os != null && `R²<sub>OS</sub> ${sgn(d.r2os)} %`,
+    d.beta2 != null && `interacción β2 ${sgn(d.beta2)} (t ${nf(2).format(d.tBeta2)})` + (d.r2osInt != null ? ` · R²<sub>OS</sub> ${sgn(d.r2osInt)} %` : ''),
+    r.n_rest ? `descartadas ${sgn(pb(r.mean_rest))} (${n(r.n_rest)})` : null,
+    `ROI bruto ${sgn(bruto)} % · costes −${nf(2).format(coste)} %`,
+  ].filter(Boolean);
+  const txt = partes.join(' · ');
+  return mixta && d.longs?.[0] != null ? `<span class="det" title="${txt.replace(/<\/?sub>/g, '')}">${txt}</span>` : '';
 }
 
 /* ---------- filtro de la equity: un botón por instrumento, con su color ---------- */

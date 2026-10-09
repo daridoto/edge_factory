@@ -149,6 +149,62 @@ def prediccion(xs, ys, meses, arranque=60):
                 desde=orden[arranque] if len(orden) > arranque else None)
 
 
+def _resolver(A, b):
+    """Resuelve A·x = b (Gauss con pivote parcial); A cuadrada pequeña."""
+    n = len(A)
+    M = [list(A[i]) + [b[i]] for i in range(n)]
+    for c in range(n):
+        p = max(range(c, n), key=lambda i: abs(M[i][c]))
+        M[c], M[p] = M[p], M[c]
+        for i in range(n):
+            if i != c:
+                f = M[i][c] / M[c][c]
+                M[i] = [a - f * bb for a, bb in zip(M[i], M[c])]
+    return [M[i][n] / M[i][i] for i in range(n)]
+
+
+def _mco_multiple(X, ys):
+    """Coeficientes [α, β1, …] de y = α + Σ βk·xk (MCO) y la matriz Z'Z, con Z = [1, x]."""
+    Z = [[1.0] + list(x) for x in X]
+    k = len(Z[0])
+    ZZ = [[sum(z[i] * z[j] for z in Z) for j in range(k)] for i in range(k)]
+    return _resolver(ZZ, [sum(z[i] * y for z, y in zip(Z, ys)) for i in range(k)]), Z, ZZ
+
+
+def regresion(X, ys, meses, arranque=60):
+    """Regresión múltiple y = α + Σ βk·xk (MCO) con t de Newey-West (mismo retardo y pesos que `prediccion`), R² y
+    R²_OS recursivo por meses como en `prediccion`. `X`: una fila de regresores por observación (sin constante).
+    Devuelve los β (sin α) y sus t, en el orden de las columnas de X."""
+    coef, Z, ZZ = _mco_multiple(X, ys)
+    T, k = len(Z), len(coef)
+    e = [y - sum(c * z for c, z in zip(coef, fila)) for fila, y in zip(Z, ys)]
+    g = [[z * r for z in fila] for fila, r in zip(Z, e)]
+    L = int(4 * (T / 100) ** (2 / 9))
+    S = [[sum(g[t][i] * g[t][j] for t in range(T)) for j in range(k)] for i in range(k)]
+    for l in range(1, L + 1):
+        w = 1 - l / (L + 1)
+        for i in range(k):
+            for j in range(k):
+                S[i][j] += w * sum(g[t][i] * g[t - l][j] + g[t - l][i] * g[t][j] for t in range(l, T))
+    inv = [_resolver(ZZ, [1.0 if r == c else 0.0 for r in range(k)]) for c in range(k)]   # columnas de (Z'Z)⁻¹
+    inv = [[inv[c][r] for c in range(k)] for r in range(k)]
+    V = [[sum(inv[i][a] * S[a][b] * inv[b][j] for a in range(k) for b in range(k)) for j in range(k)] for i in range(k)]
+    my = sum(ys) / T
+    r2 = 1 - sum(r * r for r in e) / sum((y - my) ** 2 for y in ys)
+    orden = sorted(set(meses))
+    sse = sse_media = 0.0
+    for m in orden[arranque:]:
+        antes = [i for i, mm in enumerate(meses) if mm < m]
+        c, _, _ = _mco_multiple([X[i] for i in antes], [ys[i] for i in antes])
+        media = sum(ys[i] for i in antes) / len(antes)
+        for i, mm in enumerate(meses):
+            if mm == m:
+                sse += (ys[i] - c[0] - sum(b * x for b, x in zip(c[1:], X[i]))) ** 2
+                sse_media += (ys[i] - media) ** 2
+    return dict(betas=coef[1:], t_nw=[coef[i] / V[i][i] ** .5 for i in range(1, k)], retardo=L, r2=r2,
+                r2_os=1 - sse / sse_media if sse_media else None, desde=orden[arranque] if len(orden) > arranque else None)
+
+
 def desglose(obs):
     """Retorno medio por etiqueta, en pb, ordenado por etiqueta."""
     acc = defaultdict(list)

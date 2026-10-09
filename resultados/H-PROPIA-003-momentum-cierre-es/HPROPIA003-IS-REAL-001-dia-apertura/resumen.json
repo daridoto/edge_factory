@@ -1,0 +1,246 @@
+{
+  "version_esquema": "2.5",
+  "experimento": {
+    "id": "HPROPIA003-IS-REAL-001",
+    "hipotesis": "H-PROPIA-003",
+    "version": "real-is-v1",
+    "fecha": "2026-10-09",
+    "sintetico": false,
+    "pregunta": "¿Sigue el ES de 15:30 a 16:00 ET el signo del movimiento 9:30 → 15:30 del mismo día?",
+    "variante": "ES · día desde apertura → 15:30-16:00",
+    "muestra": "IS",
+    "base": null,
+    "mercado": "clasica",
+    "inicio": "2009-09-27",
+    "fin": "2020-12-31",
+    "instrumento": "ES",
+    "frecuencia": "15min",
+    "moneda": "USD",
+    "capital_inicial": 10000.0,
+    "reglas": {
+      "entrada": "A las 15:30 ET (cierre de la barra de 15:15), lun-vie: largo si precio 15:30 > precio 9:30, corto si no.",
+      "salida": "A las 16:00 ET (cierre de la barra de 15:45).",
+      "tamano": "1 unidad del índice (1 USD por punto); referencia al 100 % del capital aparte.",
+      "costes": "1 tick (0,25 puntos) por operación completa: 0,125 puntos por lado."
+    },
+    "receta": "estrategias/H-PROPIA-003.md",
+    "plan": "experimentos/H-PROPIA-003-momentum-cierre-es/HPROPIA003-IS-REAL-001-dia-apertura.md",
+    "fuente_datos": "data/indices/ES_15min_2009-2026.csv"
+  },
+  "evidencia": {
+    "estadistico": "Retorno bruto medio por operación (día apertura → 15:30-16:00)",
+    "unidad": "pb/operación",
+    "valor": 1.6069924505306725,
+    "componentes": [
+      {
+        "nombre": "Sesiones operadas",
+        "valor": 2810.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Sesiones descartadas por el filtro",
+        "valor": 0.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Retorno medio operadas",
+        "valor": 1.6069924505306725,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Mediana operadas",
+        "valor": 0.0,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "t de la media operadas (sin bloques)",
+        "valor": 2.683663341645024,
+        "unidad": "t"
+      },
+      {
+        "nombre": "Operaciones largos",
+        "valor": 1515.0,
+        "unidad": "operaciones"
+      },
+      {
+        "nombre": "Retorno medio largos (con signo)",
+        "valor": 1.5413339384744817,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Operaciones cortos",
+        "valor": 1295.0,
+        "unidad": "operaciones"
+      },
+      {
+        "nombre": "Retorno medio cortos (con signo)",
+        "valor": 1.6838053044033592,
+        "unidad": "pb/operación"
+      },
+      {
+        "nombre": "Acierto (posición × retorno > 0)",
+        "valor": 49.25266903914591,
+        "unidad": "%"
+      },
+      {
+        "nombre": "Sesiones con señal = 0 (van cortas)",
+        "valor": 26.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "β × 100 (retorno ventana sobre señal)",
+        "valor": 3.625919449039176,
+        "unidad": "β×100"
+      },
+      {
+        "nombre": "t de β (Newey-West, retardo 8)",
+        "valor": 2.1899432181752503,
+        "unidad": "t"
+      },
+      {
+        "nombre": "R²",
+        "valor": 0.669080584442383,
+        "unidad": "%"
+      },
+      {
+        "nombre": "R² fuera de muestra recursivo (desde 2014-09)",
+        "valor": 0.3867440835810143,
+        "unidad": "%"
+      }
+    ],
+    "desglose": {}
+  },
+  "robustez": {
+    "bootstrap": {
+      "metodo": "bloques circulares",
+      "unidad": "sesión",
+      "bloque": 5,
+      "replicas": 5000,
+      "semilla": 7301,
+      "nivel": 0.95,
+      "ic_inf": 0.46790567492505597,
+      "ic_sup": 2.8457502248230555,
+      "incluye_cero": false,
+      "motivo": "Una operación por sesión; bloques de 5 sesiones (una semana) conservan la dependencia de corto plazo."
+    },
+    "por_anio": {
+      "2009": -0.2192507620983715,
+      "2010": 3.827637553322465,
+      "2011": 6.176691943967617,
+      "2012": 0.40057448975882337,
+      "2013": 2.3483510835191774,
+      "2014": 0.3476296011380671,
+      "2015": 2.4913913198182414,
+      "2016": -0.46312165914722964,
+      "2017": -0.6693382965446287,
+      "2018": 2.951520873292519,
+      "2019": -0.022160827453781513,
+      "2020": 0.725793243219697
+    },
+    "sin_cada_anio": {
+      "2009": 1.6502368253288102,
+      "2010": 1.389180054750782,
+      "2011": 1.1587726096347473,
+      "2012": 1.7232566863132113,
+      "2013": 1.5349118962104313,
+      "2014": 1.7294373351455725,
+      "2015": 1.5206253734518085,
+      "2016": 1.8100399853212756,
+      "2017": 1.82831472933651,
+      "2018": 1.4768429388815945,
+      "2019": 1.7653911878278723,
+      "2020": 1.6934250417909518
+    },
+    "pnl_costes_x2": -674.0
+  },
+  "metricas": {
+    "operaciones": 2810,
+    "pnl_neto": 28.5,
+    "esperanza": 0.010142348754448399,
+    "tasa_acierto": 0.45729537366548045,
+    "payoff": 1.1159305658764689,
+    "profit_factor": 1.0055896052954156,
+    "rentabilidad_total": 0.002850000000000019,
+    "rentabilidad_anual": 0.00020481209202963922,
+    "sharpe": 0.025293041014055172,
+    "sortino": 0.03582964641166995,
+    "max_drawdown": 0.024134364379648332,
+    "max_recuperacion": null,
+    "drawdown_abierto": 257,
+    "exposicion": 0.01744344846423162,
+    "rotacion": 1146.913613998863,
+    "costes": 702.5,
+    "peso_costes": 0.06876804855366844,
+    "concentracion_anual": 0.0893238434163701,
+    "autocorrelacion": -0.02154364489024228
+  },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": 0.053293692567588646,
+    "rentabilidad_anual": 0.003743245033655212,
+    "sharpe": 0.10546894233103987,
+    "max_drawdown": 0.10661137014481825,
+    "pico": "2011-11-27",
+    "valle": "2018-10-09",
+    "recuperacion": null,
+    "sesiones_bajo_agua": 2827,
+    "motor_sha256": "14065ba387d87326d77a056e93d9dd21aba68a1e09fad21c7c6773ac21287ba5"
+  },
+  "variantes": null,
+  "sensibilidad": null,
+  "control": null,
+  "no_calculables": {
+    "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
+  },
+  "operaciones_por_anio": {
+    "2009": 65,
+    "2010": 251,
+    "2011": 251,
+    "2012": 247,
+    "2013": 249,
+    "2014": 249,
+    "2015": 250,
+    "2016": 251,
+    "2017": 249,
+    "2018": 248,
+    "2019": 249,
+    "2020": 251
+  },
+  "conclusiones": {
+    "estado": "exploratoria",
+    "lectura": "Retorno bruto medio por operación (día apertura → 15:30-16:00): 1,61 pb/operación (2810 sesiones); mediana operadas 0,00 pb/operación. El intervalo no incluye cero bajo los supuestos del remuestreo; no prueba estabilidad futura.",
+    "supuestos": [
+      "Hora ET con horario de verano ya aplicado; ts marca el inicio de la barra.",
+      "Apertura = cierre de la barra de 09:15 (precio a las 9:30); 15:30 = cierre de la barra de 15:15.",
+      "Retorno simple con precios de operación, con rebote bid-ask; señal = 0 va corta (literal del usuario).",
+      "Si falta una barra necesaria, no se opera ese día."
+    ],
+    "limites": [
+      "Sin dato de exposición de los ETF apalancados ni de gamma de los dealers: la señal es solo el precio.",
+      "W3124869677 no encuentra efecto con entrada a partir de las 15:00 sin umbral de ±2 %.",
+      "La regla de roll anterior a 2022 no está verificada (C6)."
+    ],
+    "siguiente_comprobacion": "Comparar con H073-IS-REAL-001 (regla del paper). OOS bloqueado."
+  },
+  "procedencia": {
+    "motor_sha256": "14065ba387d87326d77a056e93d9dd21aba68a1e09fad21c7c6773ac21287ba5",
+    "datos_sha256": "44434bd608c35346979b35671a0c0975696bef285e867460db5c8d94e19b8e7d",
+    "plan_sha256": "804e9e6308b80e4da37e10697fef5164d8144a1db5411212a24d8cbfbd509b02",
+    "periodos_por_anio": 252
+  },
+  "historial": [
+    {
+      "id": "HPROPIA003-IS-REAL-001",
+      "fecha": "2026-10-09",
+      "cambio": "Primer ensayo de la regla del usuario."
+    }
+  ],
+  "ficheros": {
+    "equity": "equity.csv",
+    "operaciones": "operaciones.csv",
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv",
+    "variantes": null
+  }
+}

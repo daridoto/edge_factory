@@ -4,6 +4,7 @@ tamaño según una serie diaria de la sesión previa. Sale de la tabla de varian
 - Entra al precio de la hora de entrada y sale al de la hora de salida del mismo día (sin posición entre sesiones).
 - Filtro (`filtro_senal`): "negativa" opera si señal < 0; "positiva", si > 0; sin filtro, todas. Señal vacía: no opera.
   `filtro_serie` = {serie_max, serie_min}: opera solo con la serie de la sesión previa en ese rango (p. ej. tendencia ≤ 0).
+  `umbral_senal` = u: opera solo si |señal| ≥ u (p. ej. movimiento previo de ±2 %).
 - Tamaño: unidades = fraccion · w · equity previa / entrada (o w unidades sin fraccion), con w = multiplicador si la
   serie de la sesión previa supera el umbral y 1 si no (o si falta el dato). w > 1 es apalancamiento declarado.
 - Dirección (`direccion`): "largo" (por defecto); "senal": largo si señal > 0 y corto si no (sin señal: no opera);
@@ -37,14 +38,17 @@ def horas(ventana):
 
 
 def opera(fila, filtro):
-    """`filtro`: None (todas), "negativa"/"positiva" (signo de la señal) o dict con `senal` y/o `serie_max` /
-    `serie_min` (opera solo si la serie de la sesión previa está en ese rango). Sin el dato que pide: no opera."""
+    """`filtro`: None (todas), "negativa"/"positiva" (signo de la señal) o dict con `senal`, `senal_abs_min` (|señal| ≥ u)
+    y/o `serie_max` / `serie_min` (opera solo si la serie de la sesión previa está en ese rango). Sin el dato que pide:
+    no opera."""
     if filtro is None:
         return True
     f = {"senal": filtro} if isinstance(filtro, str) else filtro
     if f.get("senal"):
         if fila.senal is None or not {"negativa": fila.senal < 0, "positiva": fila.senal > 0}[f["senal"]]:
             return False
+    if "senal_abs_min" in f and (fila.senal is None or abs(fila.senal) < f["senal_abs_min"]):
+        return False
     if "serie_max" in f or "serie_min" in f:
         if fila.serie is None or fila.serie > f.get("serie_max", float("inf")) or fila.serie < f.get("serie_min", float("-inf")):
             return False

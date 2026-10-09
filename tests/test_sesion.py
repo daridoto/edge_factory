@@ -74,6 +74,15 @@ class Tendencia(unittest.TestCase):
         g = sesion.grupos(FILAS + [fila("2018-01-08", 100, 101)], "filtro", f)
         self.assertNotIn("2018-01-08", g)                                                  # sin dato: fuera de la evidencia
 
+    def test_filtro_por_magnitud_de_senal(self):
+        f = {"senal": None, "senal_abs_min": .02}
+        filas = [fila("2018-01-02", 100, 101, senal=.025), fila("2018-01-03", 100, 99, senal=-.02),
+                 fila("2018-01-04", 100, 102, senal=.019), fila("2018-01-05", 100, 101)]
+        self.assertEqual([sesion.opera(x, f) for x in filas], [True, True, False, False])   # sin señal: no opera
+        g = sesion.grupos(filas, "filtro", f, direccion="senal")
+        self.assertAlmostEqual(catalogo.media_ventana(list(g.values())), (.01 + .01) / 2 * catalogo.PB)  # corto gana
+        self.assertAlmostEqual(catalogo.media_vs_resto(list(g.values())), ((.01 + .01) / 2 - .02) * catalogo.PB)
+
     def test_particion_serie_y_control(self):
         g = sesion.grupos(FILAS, "serie", "negativa", {"umbral": 20})
         self.assertEqual(sorted(g), ["2018-01-02", "2018-01-04"])           # operadas con dato
@@ -205,6 +214,22 @@ class SenalDelDiaYCortos(unittest.TestCase):
         self.assertAlmostEqual(ops[0].pnl_neto, .8)
         g = sesion.grupos([fila], "filtro", direccion="senal")
         self.assertAlmostEqual(g["2019-01-02"][1], .01)
+
+    def test_regresion_con_interaccion_recupera_los_coeficientes(self):
+        rng = random.Random(5)
+        xs = [rng.gauss(0, .01) for _ in range(600)]
+        ys = [.0001 + .05 * x + 40 * x * abs(x) + rng.gauss(0, .0005) for x in xs]
+        meses = [f"{2010 + i // 120}-{i // 10 % 12 + 1:02d}" for i in range(600)]
+        q = catalogo.regresion([[x, x * abs(x)] for x in xs], ys, sorted(meses), arranque=12)
+        self.assertAlmostEqual(q["betas"][0], .05, delta=.01)
+        self.assertAlmostEqual(q["betas"][1], 40, delta=5)
+        self.assertGreater(q["t_nw"][1], 5)
+        self.assertGreater(q["r2_os"], .3)
+        # con un solo regresor coincide con prediccion
+        p = catalogo.prediccion(xs, ys, sorted(meses), arranque=12)
+        u = catalogo.regresion([[x] for x in xs], ys, sorted(meses), arranque=12)
+        self.assertAlmostEqual(u["betas"][0], p["beta"]); self.assertAlmostEqual(u["t_nw"][0], p["t_nw"])
+        self.assertAlmostEqual(u["r2_os"], p["r2_os"])
 
     def test_prediccion_recupera_la_pendiente(self):
         rng = random.Random(3)
