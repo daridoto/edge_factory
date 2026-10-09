@@ -92,16 +92,20 @@ def ejecutar(spec, plan, barras=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS, **
     d, v, es, op, bs, cc = (spec[k] for k in ("datos", "ventana", "estadistico", "operativa", "bootstrap", "conclusiones"))
     dataset = datos.DATASETS[d["dataset"]]
     sintetico = barras is not None
-    barras = barras if sintetico else datos.cargar(d["dataset"], inicio, fin, muestra=muestra, base=base)
+    tramo = d.get("tramo", "cierre_cierre")
+    intradia = tramo == "apertura_cierre"
+    barras = barras if sintetico else datos.cargar(d["dataset"], inicio, fin, muestra=muestra, base=base, apertura=intradia)
     # en OOS, el primer retorno diario parte del último cierre IS (información pasada, siempre permitida);
     # sin él, la primera sesión del primer mes no tendría periodo y las posiciones del mes se correrían
-    previa = datos.cargar(d["dataset"])[-1:] if muestra == "OOS" and d["periodo"] == "1d" and not sintetico else []
-    periodos = datos.periodos(previa + barras, d["periodo"], d.get("excluir_horas", ()))
+    previa = datos.cargar(d["dataset"])[-1:] if muestra == "OOS" and d["periodo"] == "1d" and not sintetico and not intradia else []
+    periodos = datos.periodos(previa + barras, d["periodo"], d.get("excluir_horas", ()), tramo=tramo)
     obs = catalogo.VENTANAS[v["tipo"]](periodos, v["valores"], inicio, fin, bs["unidad"])
     if "solo_vispera" in v:  # p. ej. horas del día solo en vísperas de festivo
         obs = catalogo.solo_vispera(obs, v["solo_vispera"])
     estadistico = catalogo.ESTADISTICOS[es["tipo"]]
     longitud = len(v["valores"]) if v["tipo"] in catalogo.LONGITUD_FIJA else None
+    if intradia:
+        longitud = 1  # cada sesión se abre y cierra por separado, aunque haya días consecutivos seleccionados
     g = catalogo.grupos(obs)
     n_v, s_v, n_r, s_r = catalogo._sumas(g.values())
     desde = obs[0].periodo.fin.ts.date() if previa else None  # la operación abierta en IS entra al primer cierre OOS
@@ -142,7 +146,8 @@ def ejecutar(spec, plan, barras=None, hoy=None, inicio=INICIO_IS, fin=FIN_IS, **
         conclusiones=Conclusiones(lectura=lectura, supuestos=cc["supuestos"], limites=cc["limites"],
                                   siguiente_comprobacion=cc["siguiente"]),
         procedencia=Procedencia(motor_sha256=motor.huella_motor(),
-                                datos_sha256=motor.digest(json.dumps([(str(x.ts), x.close, x.precio) for x in barras]
+                                datos_sha256=motor.digest(json.dumps([(str(x.ts), x.close, x.precio, x.open) if intradia
+                                                                     else (str(x.ts), x.close, x.precio) for x in barras]
                                                                      + [f.model_dump(mode="json") for f in filas or []]).encode()),
                                 plan_sha256=huella_plan(plan),
                                 periodos_por_anio=dataset.get("periodos_por_anio", 252)),

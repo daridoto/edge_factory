@@ -193,3 +193,52 @@ class VentanaMeses(unittest.TestCase):
         sesiones, ops = backtest(obs, None, 10000, 0, desde=date(2021, 1, 4))
         self.assertEqual((len(ops), ops[0].entrada, ops[0].salida), (1, date(2021, 1, 4), date(2021, 1, 5)))
         self.assertEqual(sesiones[0].pnl_bruto, 0)
+
+
+class AperturaCierre(unittest.TestCase):
+    def test_carga_apertura_solo_is_y_exige_columna(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp) / 'mixto.csv'
+            p.write_text('Date,Open,Close,Unadjusted Close\n2008-01-01,NO,NO,NO\n2010-01-04,50,55,110\n2021-01-04,NO,NO,NO\n')
+            for nombre in ETF_DIARIOS:
+                bs = cargar(nombre, ruta=p, apertura=True)
+                self.assertEqual(len(bs), 1)
+                self.assertEqual(bs[0].open, 50)
+            p.write_text('Date,Close,Unadjusted Close\n2010-01-04,55,110\n')
+            with self.assertRaisesRegex(ValueError, 'Faltan columnas'):
+                cargar('SPY 1d', ruta=p, apertura=True)
+
+    def test_excluye_gap_y_convierte_ajuste_para_costes(self):
+        bs = [Barra(datetime(2010, 1, 28, 16), 40, 80, 40),
+              Barra(datetime(2010, 1, 29, 16), 55, 110, 50)]
+        ps = periodos(bs, '1d', tramo='apertura_cierre')
+        self.assertAlmostEqual(ps[-1].fin.close / ps[-1].inicio.close - 1, .1)
+        self.assertEqual(ps[-1].inicio.precio, 100)
+        obs = dias_de_mes(ps, [-1], date(2010, 1, 1), date(2010, 1, 31), 'mes')
+        sesiones, (op,) = backtest(obs, 1, 10000, .01, fraccion=.5)
+        self.assertEqual(op.entrada, op.salida)
+        self.assertEqual(op.entrada, date(2010, 1, 29))
+        self.assertAlmostEqual(op.pnl_bruto, 500)
+        self.assertAlmostEqual(op.coste_entrada + op.coste_salida, 1)
+        self.assertAlmostEqual(sesiones[-1].equity, 10499)
+        with self.assertRaisesRegex(ValueError, 'Falta apertura'):
+            periodos([bs[0]._replace(open=None)], '1d', tramo='apertura_cierre')
+        with self.assertRaisesRegex(ValueError, 'requiere periodo 1d'):
+            periodos(bs, '1h', tramo='apertura_cierre')
+
+    def test_ejecutor_varios_dias_no_mantiene_overnight_y_huella_incluye_open(self):
+        from laboratorio import ejecutar
+        from tests.fixtura import precios_2018
+        plan = 'experimentos/H-001-cambio-de-mes/H001-IS-REAL-009-spy-ultimo-dia-intradia.md'
+        spec = ejecutar.leer_plan(ejecutar.motor.RAIZ / plan)
+        spec['ventana']['valores'] = [-2, -1]
+        bs = [b._replace(open=b.close / (1 + (.001 if i % 2 else -.0005)))
+              for i, b in enumerate(precios_2018())]
+        args = dict(barras=bs, inicio=date(2018, 1, 1), fin=date(2018, 12, 31))
+        r, sesiones, ops, ref, _ = ejecutar.ejecutar(spec, plan, **args)
+        self.assertEqual(len(ops), 24)
+        self.assertTrue(all(o.entrada == o.salida for o in ops))
+        self.assertAlmostEqual(sum(o.pnl_neto for o in ops), sesiones[-1].equity - 10000)
+        args['barras'] = [b._replace(open=b.open * 1.001) for b in bs]
+        r2, *_ = ejecutar.ejecutar(spec, plan, **args)
+        self.assertNotEqual(r.procedencia.datos_sha256, r2.procedencia.datos_sha256)

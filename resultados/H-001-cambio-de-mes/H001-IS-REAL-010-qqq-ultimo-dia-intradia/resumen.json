@@ -1,0 +1,249 @@
+{
+  "version_esquema": "2.5",
+  "experimento": {
+    "id": "H001-IS-REAL-010",
+    "hipotesis": "H-001",
+    "version": "real-is-intradia-v1",
+    "fecha": "2026-10-08",
+    "sintetico": false,
+    "pregunta": "¿Rinde más QQQ de apertura a cierre en el último día bursátil del mes que en las demás sesiones?",
+    "variante": "QQQ · último día · Open-Close",
+    "muestra": "IS",
+    "base": null,
+    "mercado": "clasica",
+    "inicio": "2009-10-01",
+    "fin": "2020-12-31",
+    "instrumento": "QQQ",
+    "frecuencia": "1d",
+    "moneda": "USD",
+    "capital_inicial": 10000.0,
+    "reglas": {
+      "entrada": "Comprar al Open del último día bursátil de cada mes completo IS.",
+      "salida": "Vender al Close de esa misma sesión; sin posición nocturna.",
+      "tamano": "99,9 % de equity por operación, acciones fraccionarias; margen restante para costes, sin apalancamiento.",
+      "costes": "0,01 USD por acción y lado (C1–C3), Open negociado reconstruido con el factor Close/Unadjusted Close del día."
+    },
+    "receta": "estrategias/H-001.md",
+    "plan": "experimentos/H-001-cambio-de-mes/H001-IS-REAL-010-qqq-ultimo-dia-intradia.md",
+    "fuente_datos": "data/etf/indices/Nasdaq 100 QQQ - Temp. 1d - Date 2006-07-17 a 2026-07-15 - Norgate.csv"
+  },
+  "evidencia": {
+    "estadistico": "Diferencia ventana − resto (último día · Open-Close)",
+    "unidad": "pb/día",
+    "valor": -12.936911524802364,
+    "componentes": [
+      {
+        "nombre": "Sesiones último día · Open-Close",
+        "valor": 135.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Sesiones resto",
+        "valor": 2698.0,
+        "unidad": "sesiones"
+      },
+      {
+        "nombre": "Retorno medio último día · Open-Close",
+        "valor": -9.680551358445568,
+        "unidad": "pb/día"
+      },
+      {
+        "nombre": "Retorno medio resto",
+        "valor": 3.2563601663567967,
+        "unidad": "pb/día"
+      }
+    ],
+    "desglose": {}
+  },
+  "robustez": {
+    "bootstrap": {
+      "metodo": "bloques circulares",
+      "unidad": "mes",
+      "bloque": 3,
+      "replicas": 5000,
+      "semilla": 7301,
+      "nivel": 0.95,
+      "ic_inf": -26.9587462761064,
+      "ic_sup": 1.1706142142682279,
+      "incluye_cero": true,
+      "motivo": "Evento mensual: bloques circulares de 3 meses; 5000 réplicas, semilla fija del laboratorio."
+    },
+    "por_anio": {
+      "2009": -119.11814570915467,
+      "2010": -58.86303138854414,
+      "2011": 7.981144021552061,
+      "2012": -3.1846012224797984,
+      "2013": 3.6394168978132786,
+      "2014": -8.94971098083594,
+      "2015": -51.610414892138024,
+      "2016": -10.059663668356773,
+      "2017": -8.633144091115472,
+      "2018": 12.742180790669211,
+      "2019": -20.313685998234735,
+      "2020": 21.56040621104512
+    },
+    "sin_cada_anio": {
+      "2009": -10.522302549626547,
+      "2010": -8.456248621084182,
+      "2011": -14.977913397655838,
+      "2012": -13.887437309841975,
+      "2013": -14.553937367374983,
+      "2014": -13.326047237786996,
+      "2015": -9.163984510496448,
+      "2016": -13.21753847317695,
+      "2017": -13.357338693389526,
+      "2018": -15.43895206011605,
+      "2019": -12.216788430020795,
+      "2020": -16.30057561890373
+    },
+    "pnl_costes_x2": -1788.24245262751
+  },
+  "metricas": {
+    "operaciones": 135,
+    "pnl_neto": -1523.2633663737997,
+    "esperanza": -11.28343234350965,
+    "tasa_acierto": 0.4074074074074074,
+    "payoff": 0.9506865931216419,
+    "profit_factor": 0.6535970327711288,
+    "rentabilidad_total": -0.15232633663737993,
+    "rentabilidad_anual": -0.014592588967770824,
+    "sharpe": -0.4826563828602494,
+    "sortino": -0.6393790050508668,
+    "max_drawdown": 0.1952531426691747,
+    "max_recuperacion": null,
+    "drawdown_abierto": 2812,
+    "exposicion": 0.04765266501941405,
+    "rotacion": 269.5994432441042,
+    "costes": 264.9790862537103,
+    "peso_costes": 0.036743416931406064,
+    "concentracion_anual": 0.08888888888888889,
+    "autocorrelacion": -0.0009411133163602232
+  },
+  "referencia": {
+    "fraccion": 0.999,
+    "rentabilidad_total": -0.15232633663737993,
+    "rentabilidad_anual": -0.014592588967770824,
+    "sharpe": -0.4826563828602494,
+    "max_drawdown": 0.1952531426691747,
+    "pico": "2009-10-29",
+    "valle": "2020-01-31",
+    "recuperacion": null,
+    "sesiones_bajo_agua": 2812,
+    "motor_sha256": "082214a5fd21bbf7c8b8aeb62896e900b000fcfc344d38104a24a299512677b7"
+  },
+  "variantes": null,
+  "sensibilidad": null,
+  "control": null,
+  "no_calculables": {
+    "max_recuperacion": "Drawdown abierto al cierre: recuperación censurada"
+  },
+  "operaciones_por_anio": {
+    "2009": 3,
+    "2010": 12,
+    "2011": 12,
+    "2012": 12,
+    "2013": 12,
+    "2014": 12,
+    "2015": 12,
+    "2016": 12,
+    "2017": 12,
+    "2018": 12,
+    "2019": 12,
+    "2020": 12
+  },
+  "conclusiones": {
+    "estado": "exploratoria",
+    "lectura": "Diferencia ventana − resto (último día · Open-Close): -12,94 pb/día. El intervalo incluye cero: en IS no se distingue de no tener efecto.",
+    "supuestos": [
+      "Solo IS según proteccion.py; se excluye septiembre de 2009 por incompleto.",
+      "Último día identificado por calendario observado (C5); una operación por mes.",
+      "Evidencia bruta Open-Close comparada con Open-Close del resto, incluidos los tres primeros días del mes.",
+      "Open y Close ajustados con el mismo factor diario; no se cobra el gap nocturno ni dividendos por tenencia nocturna.",
+      "Ejecución idealizada en Open y Close; efectivo sin remunerar, sin stops ni filtros de volumen."
+    ],
+    "limites": [
+      "Selección exploratoria tras estudiar previamente TOM: el intervalo no corrige esa exploración.",
+      "Precio de apertura/cierre del proveedor, no garantía de ejecución en subasta; costes simplificados sin impacto.",
+      "Con OHLC diario no se mide el drawdown intradía; drawdown de la curva a cierre.",
+      "C5 presupone conocidos los cierres no programados; no es una simulación exacta del calendario disponible en tiempo real.",
+      "No establece causalidad ni autoriza OOS; tamaño elegido para lectura sobre capital, no optimizado."
+    ],
+    "siguiente_comprobacion": "Revisar con el usuario el resultado antes de proponer o ejecutar otra variante."
+  },
+  "procedencia": {
+    "motor_sha256": "082214a5fd21bbf7c8b8aeb62896e900b000fcfc344d38104a24a299512677b7",
+    "datos_sha256": "d67c005f70938cba51bfcc82322a97d44815f197d465af7316c4ed9c66dbd536",
+    "plan_sha256": "3a5ecc391f36b636388ebd7aa5a146c9306c994a006fa57e9a88d089aee2d666",
+    "periodos_por_anio": 252
+  },
+  "historial": [
+    {
+      "id": "H001-IS-REAL-001",
+      "fecha": "2026-09-24",
+      "cambio": "Primera ejecución real (2026-09-22); regenerada con el ejecutor único."
+    },
+    {
+      "id": "H001-IS-REAL-002",
+      "fecha": "2026-09-24",
+      "cambio": "Misma especificación que H001-IS-REAL-001 con QQQ en lugar de SPY."
+    },
+    {
+      "id": "H001-IS-REAL-003",
+      "fecha": "2026-09-24",
+      "cambio": "Misma especificación que H001-IS-REAL-001 con IWM en lugar de SPY."
+    },
+    {
+      "id": "H001-IS-REAL-004",
+      "fecha": "2026-09-24",
+      "cambio": "Misma especificación que H001-IS-REAL-001 con DIA en lugar de SPY."
+    },
+    {
+      "id": "H001-IS-REAL-005",
+      "fecha": "2026-09-24",
+      "cambio": "Mismo plan que H001-IS-REAL-001; tamaño 30 % de la equity por operación en lugar de 1 acción."
+    },
+    {
+      "id": "H001-IS-REAL-006",
+      "fecha": "2026-09-24",
+      "cambio": "Mismo plan que H001-IS-REAL-002; tamaño 30 % de la equity por operación en lugar de 1 acción."
+    },
+    {
+      "id": "H001-IS-REAL-007",
+      "fecha": "2026-09-24",
+      "cambio": "Mismo plan que H001-IS-REAL-003; tamaño 30 % de la equity por operación en lugar de 1 acción."
+    },
+    {
+      "id": "H001-IS-REAL-008",
+      "fecha": "2026-09-24",
+      "cambio": "Mismo plan que H001-IS-REAL-004; tamaño 30 % de la equity por operación en lugar de 1 acción."
+    },
+    {
+      "id": "H001-OOS-REAL-001",
+      "fecha": "2026-10-06",
+      "cambio": "OOS 2021-01-01 → 2026-05-28 de H001-IS-REAL-006, sin cambiar nada de su especificación."
+    },
+    {
+      "id": "H001-TOT-REAL-001",
+      "fecha": "2026-10-06",
+      "cambio": "Total 2009-09-27 → 2026-05-28 de H001-IS-REAL-006, sin cambiar nada de su especificación."
+    },
+    {
+      "id": "H001-IS-REAL-009",
+      "fecha": "2026-10-08",
+      "cambio": "MVP intradía solicitado: último día bursátil, apertura a cierre, sin overnight ni filtros."
+    },
+    {
+      "id": "H001-IS-REAL-010",
+      "fecha": "2026-10-08",
+      "cambio": "MVP intradía solicitado: último día bursátil, apertura a cierre, sin overnight ni filtros."
+    }
+  ],
+  "ficheros": {
+    "equity": "equity.csv",
+    "operaciones": "operaciones.csv",
+    "ficha": "ficha.md",
+    "equity_100": "equity_100.csv",
+    "operaciones_100": "operaciones_100.csv",
+    "variantes": null
+  }
+}

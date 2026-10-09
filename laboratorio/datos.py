@@ -66,14 +66,19 @@ def _limites(d, inicio, fin, hipotesis, muestra="IS", base=None):
     return str(inicio), str(fin)
 
 
-def cargar(nombre, inicio=None, fin=None, ruta=None, hipotesis=None, muestra="IS", base=None):
+def cargar(nombre, inicio=None, fin=None, ruta=None, hipotesis=None, muestra="IS", base=None, apertura=False):
     """Barras de la muestra, ordenadas. Fuera de ella solo se lee la fecha para descartar la fila."""
-    d = DATASETS[nombre]
+    d = dict(DATASETS[nombre])
+    if apertura:
+        if d["frecuencia"] != "1d":
+            raise ValueError("Apertura diaria requiere un dataset 1d")
+        d.setdefault("open", "Open")
     inicio, fin = _limites(d, inicio, fin, hipotesis, muestra, base)
     barras = []
     with Path(ruta or RAIZ / d["ruta"]).open(newline="", encoding="utf-8-sig") as f:
         lector = csv.DictReader(f)
-        if not {d["ts"], d["close"], d["precio"]} <= set(lector.fieldnames or []):
+        requeridas = {d[k] for k in ("ts", "close", "precio", "open", "high", "low") if k in d}
+        if not requeridas <= set(lector.fieldnames or []):
             raise ValueError(f"Faltan columnas en {nombre}")
         for fila in lector:
             texto = fila[d["ts"]]
@@ -110,7 +115,20 @@ def cargar_serie(nombre, inicio=None, fin=None, ruta=None, hipotesis=None, muest
     return dict(sorted(serie.items()))
 
 
-def periodos(barras, frecuencia, excluir_horas=()):
+def periodos(barras, frecuencia, excluir_horas=(), tramo="cierre_cierre"):
+    if tramo == "apertura_cierre":
+        if frecuencia != "1d":
+            raise ValueError("apertura_cierre requiere periodo 1d")
+        out = []
+        for b in barras:
+            if b.open is None or not math.isfinite(b.open) or b.open <= 0:
+                raise ValueError("Falta apertura válida para apertura_cierre")
+            # OHLC ajustados con el mismo factor del día: reconstruir el Open negociado.
+            entrada = Barra(b.ts.replace(hour=9, minute=30), b.open, b.precio * b.open / b.close)
+            out.append(Periodo(entrada, b))
+        return out
+    if tramo != "cierre_cierre":
+        raise ValueError(f"Tramo desconocido: {tramo}")
     if frecuencia == "1d":
         return [Periodo(a, b) for a, b in zip(barras, barras[1:])]
     if frecuencia == "1h":

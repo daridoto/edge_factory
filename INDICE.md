@@ -4,7 +4,7 @@ Generado por `python -m laboratorio indice` desde `resultados/`; no se edita a m
 
 | hipótesis | qué es | variantes | experimentos |
 |---|---|---:|---:|
-| [H-001](#h-001) | Cambio de mes (−1 a +3): rendimiento diario medio mayor que el resto del mes | 9 | 10 |
+| [H-001](#h-001) | Cambio de mes (−1 a +3): rendimiento diario medio mayor que el resto del mes | 13 | 14 |
 | [H-007](#h-007) | Deriva nocturna del ES en la hora 2:00-3:00 ET | 8 | 18 |
 | [H-010](#h-010) | Primera media hora (cierre anterior → 10:00 ET) predice la última (15:30-16:00 ET) | 4 | 4 |
 | [H-018](#h-018) | La víspera de festivo rinde más que el resto | 2 | 4 |
@@ -27,6 +27,10 @@ Generado por `python -m laboratorio indice` desde `resultados/`; no se edita a m
 | **QQQ · 30 %** | IS | [H001-IS-REAL-006](resultados/H-001-cambio-de-mes/H001-IS-REAL-006-qqq-30pct/ficha.md) | 2009–2020 | Diferencia ventana − resto | 4,30 pb/día | [-4,83; 13,86] · cruza 0 | 6/12 | 79,5 % | −11,0 % |
 | **IWM · 30 %** | IS | [H001-IS-REAL-007](resultados/H-001-cambio-de-mes/H001-IS-REAL-007-iwm-30pct/ficha.md) | 2009–2020 | Diferencia ventana − resto | -3,55 pb/día | [-15,78; 8,59] · cruza 0 | 3/12 | 10,3 % | −24,8 % |
 | **DIA · 30 %** | IS | [H001-IS-REAL-008](resultados/H-001-cambio-de-mes/H001-IS-REAL-008-dia-30pct/ficha.md) | 2009–2020 | Diferencia ventana − resto | 0,05 pb/día | [-8,55; 9,13] · cruza 0 | 4/12 | 30,3 % | −12,8 % |
+| **SPY · último día · Open-Close** | IS | [H001-IS-REAL-009](resultados/H-001-cambio-de-mes/H001-IS-REAL-009-spy-ultimo-dia-intradia/ficha.md) | 2009–2020 | Diferencia ventana − resto | -12,89 pb/día | [-24,17; -1,34] | 3/12 | -14,5 % | −17,3 % |
+| **QQQ · último día · Open-Close** | IS | [H001-IS-REAL-010](resultados/H-001-cambio-de-mes/H001-IS-REAL-010-qqq-ultimo-dia-intradia/ficha.md) | 2009–2020 | Diferencia ventana − resto | -12,94 pb/día | [-26,96; 1,17] · cruza 0 | 4/12 | -15,2 % | −19,5 % |
+| **SPY · primer día · Open-Close** | IS | [H001-IS-REAL-011](resultados/H-001-cambio-de-mes/H001-IS-REAL-011-spy-primer-dia-intradia/ficha.md) | 2009–2020 | Diferencia ventana − resto | -0,67 pb/día | [-14,72; 13,04] · cruza 0 | 7/12 | -0,1 % | −11,1 % |
+| **QQQ · primer día · Open-Close** | IS | [H001-IS-REAL-012](resultados/H-001-cambio-de-mes/H001-IS-REAL-012-qqq-primer-dia-intradia/ficha.md) | 2009–2020 | Diferencia ventana − resto | 0,07 pb/día | [-16,67; 17,04] · cruza 0 | 6/12 | 0,0 % | −10,5 % |
 | **QQQ · TOM** | OOS | [H001-OOS-REAL-001](resultados/H-001-cambio-de-mes/H001-OOS-REAL-001-qqq-tom/ficha.md) | 2021–2026 | Diferencia ventana − resto | -4,16 pb/día | [-20,70; 11,94] · cruza 0 | 4/6 | 7,5 % | −14,5 % |
 |  | Total | [H001-TOT-REAL-001](resultados/H-001-cambio-de-mes/H001-TOT-REAL-001-qqq-tom/ficha.md) | 2009–2026 | Diferencia ventana − resto | 1,58 pb/día | [-6,73; 10,13] · cruza 0 | 10/18 | 89,6 % | −14,5 % |
 
