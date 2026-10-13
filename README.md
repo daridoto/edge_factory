@@ -24,11 +24,26 @@ El laboratorio **mide**; no puntúa ni recomienda. La decisión es siempre human
 
 ![Portada del dashboard: una tarjeta por hipótesis con efecto, IC 95 %, años positivos y ROI](docs/dashboard-portada.png)
 
+## De dónde salen las hipótesis
+
+Las hipótesis vienen de un repo hermano (`papers`, privado porque contiene PDFs con
+derechos de autor), un pipeline de literatura con agentes:
+
+1. Búsqueda en OpenAlex por lotes temáticos y descarga de versiones legales.
+2. Extracción del texto con marcas de página.
+3. Agente `extractor` (uno por paper, en paralelo) → ficha con citas literales y página.
+4. Script `verificar_citas.py` → comprueba que cada cita aparece en el texto.
+5. Agente `traductor` → hipótesis H-NNN con predicción, test mínimo y qué la refutaría.
+
+Hasta ahora: 7 lotes, 54 papers fichados, 85 hipótesis. La IA extrae y clasifica,
+pero nunca rellena con conocimiento propio del modelo: todo lleva cita.
+
 ## Flujo
 
 ```mermaid
 flowchart LR
-    A[Hipótesis<br/>H-NNN] --> B{Triaje}
+    P[Papers<br/>fichas con citas] --> A[Hipótesis<br/>H-NNN]
+    A --> B{Triaje}
     B -->|compatible / proxy| C[Receta<br/>pseudocódigo]
     B -->|bloqueada| X[Fuera]
     C --> D[Plan<br/>bloque TOML]
