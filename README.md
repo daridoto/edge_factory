@@ -45,6 +45,18 @@ flowchart LR
 | **Ejecución** | plan → backtest, métricas y batería de robustez | [`laboratorio/`](laboratorio/) |
 | **Resultados** | `resumen.json` · `equity.csv` · `operaciones.csv` · `ficha.md`, y la misma operativa al 100 % del capital (`equity_100.csv`, `operaciones_100.csv`) | [`resultados/`](resultados/) |
 
+## Agentes de IA
+
+El flujo está pensado para trabajar con agentes (Claude Code). Cada paso tiene un agente con un rol acotado, y entre pasos decide una persona.
+
+| agente | entrada → salida | límites |
+|---|---|---|
+| `triaje` | hipótesis del repo de papers → `compatible` · `proxy` · `bloqueada`, con códigos de motivo | reglas fijas y vocabulario cerrado; no opina sobre la idea |
+| `estratega` | hipótesis + fichas de los papers → receta en pseudocódigo con citas | no ejecuta backtests ni mira resultados |
+| `investigador` | receta → plan TOML → ejecución → ficha | solo in-sample; no optimiza ni aprueba |
+
+Los guardarraíles no dependen del prompt, están en el código: `proteccion.py` rechaza cualquier muestra fuera de IS sin autorización registrada, y `contratos.py` (pydantic) valida cada salida. Así, un agente no puede «mirar el futuro» aunque se equivoque.
+
 ## Principios
 
 > 🔒 **In-sample por defecto.** La muestra IS va de 2009-09-27 a 2020-12-31. OOS y holdout no se usan sin autorización explícita y concreta, que se registra por experimento; el plan OOS debe repetir sin cambios la especificación IS. Las fechas viven en un único sitio (`laboratorio/proteccion.py`) y el contrato rechaza cualquier otra muestra.
