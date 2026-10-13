@@ -57,9 +57,10 @@ flowchart LR
 
 | | |
 |---|---|
-| Hipótesis triadas | **36** · 11 compatibles · 5 proxy · 20 bloqueadas · probadas H-001, H-007, H-010, H-018, H-019; el resto de compatibles son variantes de familias ya vistas |
-| Recetas | H-001 · H-007 · H-008 · H-010 · H-018 · H-019 · H-PROPIA-001 |
-| Experimentos | H-001 en SPY, QQQ, IWM y DIA (OOS de QQQ: sin efecto) · H-007 en ES y NQ (IS y OOS 2021–2026 de varias variantes: sin ventaja fuera de muestra) · H-010 en ES (cuatro variantes en IS: no cubre costes) · H-018 en SPY (IS y OOS 2021–2026: víspera de festivo con el IC por encima de cero fuera de muestra; candidata) · H-019 en SPY, QQQ, IWM y DIA (OOS de SPY: sin efecto) · H-PROPIA-001 en RAY |
+| Hipótesis triadas | **62** · 19 compatibles · 6 proxy · 37 bloqueadas (las bloqueadas necesitan datos que no hay) |
+| Recetas | H-001 · H-007 · H-008 · H-010 · H-018 · H-019 · H-073 · H-PROPIA-003 |
+| Experimentos | 8 hipótesis probadas, 51 experimentos · H-001 en SPY, QQQ, IWM y DIA (OOS de QQQ: sin efecto) · H-007 en ES y NQ (OOS 2021–2026: sin ventaja fuera de muestra) · H-010 en ES (no cubre costes) · H-018 en SPY (víspera de festivo: IC por encima de cero fuera de muestra; **candidata**) · H-019 (OOS de SPY: sin efecto) · H-073 y H-PROPIA-003 en ES y NQ (momentum al cierre, solo IS) · H-PROPIA-001 en RAY |
+| Tests | 89, con datos sintéticos |
 
 Todas las hipótesis, sus variantes y sus cifras en [`INDICE.md`](INDICE.md) (y en [`resultados/indice.csv`](resultados/indice.csv) para máquinas).
 
@@ -112,4 +113,4 @@ Lee `resultados/` en solo lectura: portada con todas las hipótesis, ficha por h
 
 ## Datos
 
-`data/` no se versiona. Incluye diarios de SPY, QQQ, IWM y DIA, futuro ES en 15 minutos y series cripto (RAY, BTC y volumen de Raydium).
+`data/` no se versiona (datos de proveedores); `resultados/` sí, así que fichas, índice y dashboard se pueden revisar sin los datos. Incluye diarios de SPY, QQQ, IWM y DIA, futuro ES en 15 minutos y series cripto (RAY, BTC y volumen de Raydium).
