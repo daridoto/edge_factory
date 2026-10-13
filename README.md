@@ -22,6 +22,8 @@ Toma hipótesis de trading sacadas de papers (o propias), comprueba si se pueden
 
 El laboratorio **mide**; no puntúa ni recomienda. La decisión es siempre humana.
 
+![Portada del dashboard: una tarjeta por hipótesis con efecto, IC 95 %, años positivos y ROI](docs/dashboard-portada.png)
+
 ## Flujo
 
 ```mermaid
@@ -77,6 +79,7 @@ edge_factory/
 ├── esquemas/        JSON Schema de la salida
 ├── conocimiento/    notas por hipótesis y conceptos
 ├── dashboard/       interfaz de lectura (Vite + ECharts)
+├── docs/            capturas del dashboard
 ├── tests/           tests con datos sintéticos
 └── data/            datos históricos (no versionados)
 ```
@@ -106,10 +109,15 @@ python3.11 -m venv .venv && .venv/bin/pip install -r requirements.txt
 ### Dashboard
 
 ```sh
-cd dashboard && npm install && npm run dev
+cd dashboard && ln -sfn ../../resultados public/lab   # una vez: enlace a resultados/
+npm install && npm run dev
 ```
 
 Lee `resultados/` en solo lectura: portada con todas las hipótesis, ficha por hipótesis y comparativa entre instrumentos.
+
+| Comparativa entre instrumentos | Ficha de una variante |
+|---|---|
+| ![Comparativa H-001 en QQQ, SPY, DIA e IWM](docs/dashboard-comparativa.png) | ![Ficha H-001 en QQQ: equity, drawdown, bootstrap y efecto por año](docs/dashboard-ficha.png) |
 
 ## Datos
 
